@@ -136,16 +136,19 @@ class Filter
 
         // Sorting
         if (!empty($_GET['sort'])) {
-            switch ($_GET['sort']) {
+            $sort = sanitize_text_field($_GET['sort']);
+            switch ($sort) {
                 case 'price_asc':
-                    $query->set('meta_key', 'kaufpreis'); 
-                    $query->set('orderby', 'meta_value_num');
-                    $query->set('order', 'ASC');
-                    break;
                 case 'price_desc':
-                    $query->set('meta_key', 'kaufpreis');
-                    $query->set('orderby', 'meta_value_num');
-                    $query->set('order', 'DESC');
+                    $order = ($sort === 'price_asc') ? 'ASC' : 'DESC';
+                    // Use both kaufpreis and kaltmiete for unified price sort
+                    add_filter('posts_clauses', function ($clauses, $q) use ($order) {
+                        global $wpdb;
+                        $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS pm_kauf ON ({$wpdb->posts}.ID = pm_kauf.post_id AND pm_kauf.meta_key = 'kaufpreis')";
+                        $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS pm_miete ON ({$wpdb->posts}.ID = pm_miete.post_id AND pm_miete.meta_key = 'kaltmiete')";
+                        $clauses['orderby'] = "CAST(COALESCE(NULLIF(pm_kauf.meta_value, ''), NULLIF(pm_miete.meta_value, ''), '0') AS DECIMAL(12,2)) {$order}";
+                        return $clauses;
+                    }, 10, 2);
                     break;
                 case 'size_desc':
                     $query->set('meta_key', 'wohnflaeche');
@@ -156,7 +159,7 @@ class Filter
                     $query->set('orderby', 'date');
                     $query->set('order', 'ASC');
                     break;
-                default: // date_desc
+                default:
                     $query->set('orderby', 'date');
                     $query->set('order', 'DESC');
             }
@@ -178,8 +181,8 @@ class Filter
     public static function render_filter_bar()
     {
         $location = isset($_GET['location']) ? sanitize_text_field($_GET['location']) : '';
-        $marketing = isset($_GET['marketing']) ? sanitize_text_field($_GET['marketing']) : '';
-        $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : '';
+        $marketing = isset($_GET['marketing']) ? sanitize_title($_GET['marketing']) : '';
+        $type = isset($_GET['type']) ? sanitize_title($_GET['type']) : '';
         $price_min = isset($_GET['price_min']) ? esc_attr($_GET['price_min']) : '';
         $price_max = isset($_GET['price_max']) ? esc_attr($_GET['price_max']) : '';
         $area = isset($_GET['area_min']) ? esc_attr($_GET['area_min']) : '';

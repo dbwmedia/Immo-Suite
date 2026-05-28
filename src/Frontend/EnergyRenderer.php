@@ -48,7 +48,8 @@ class EnergyRenderer
         $energy_pass_art = get_post_meta($post_id, 'energiepass_art', true);
         $energy_end = get_post_meta($post_id, 'energiepass_endenergie', true);
         $energy_class = get_post_meta($post_id, 'energiepass_wertklasse', true);
-        $energy_source = get_post_meta($post_id, 'energiepass_traeger', true);
+        $energy_source_raw = get_post_meta($post_id, 'energiepass_traeger', true);
+        $energy_source = $energy_source_raw ? ucwords(strtolower(str_replace('_', ' ', $energy_source_raw))) : '';
         $energy_valid = get_post_meta($post_id, 'energiepass_gueltig_bis', true);
         $energy_year = get_post_meta($post_id, 'energiepass_baujahr', true);
 

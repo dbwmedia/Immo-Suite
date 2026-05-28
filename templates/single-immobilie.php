@@ -203,7 +203,7 @@ get_header(); ?>
 					<?php foreach ($gallery_images as $index => $img): ?>
 						<div class="dbw-gallery-slide" id="slide-<?php echo $index; ?>"
 							onclick="dbwLightbox.open('gallery', <?php echo $index; ?>)">
-							<img src="<?php echo esc_url($img['full']); ?>" alt="<?php echo esc_attr($img['alt']); ?>"
+							<img src="<?php echo esc_url($img['full']); ?>" alt="<?php echo esc_attr($img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1)); ?>"
 								<?php echo ($index > 0) ? 'loading="lazy"' : ''; ?>>
 							<?php if ($img['alt']): ?>
 								<div
@@ -225,7 +225,7 @@ get_header(); ?>
 				<div class="dbw-gallery-thumbs">
 					<?php foreach ($gallery_images as $index => $img): ?>
 						<div class="dbw-gallery-thumb" onclick="document.getElementById('slide-<?php echo $index; ?>').scrollIntoView({behavior: 'smooth', block: 'nearest'})">
-							<img src="<?php echo esc_url($img['url']); ?>" loading="lazy" alt="<?php echo esc_attr($img['alt']); ?>">
+							<img src="<?php echo esc_url($img['url']); ?>" loading="lazy" alt="<?php echo esc_attr($img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1)); ?>">
 						</div>
 						<?php
 					endforeach; ?>
@@ -643,6 +643,34 @@ get_header(); ?>
 		}
 
 		$similar_query = new \WP_Query($args);
+
+		// Fallback: if no results with strict tax query, try broader search
+		if (!$similar_query->have_posts() && !empty($args['tax_query'])) {
+			// Try with only objektart (drop vermarktungsart)
+			$fallback_args = array(
+				'post_type'      => 'immobilie',
+				'posts_per_page' => 3,
+				'post__not_in'   => array(get_the_ID()),
+				'orderby'        => 'rand',
+			);
+			if (!empty($terms) && !is_wp_error($terms)) {
+				$fallback_args['tax_query'] = array(
+					array('taxonomy' => 'objektart', 'field' => 'id', 'terms' => $terms),
+				);
+			}
+			$similar_query = new \WP_Query($fallback_args);
+		}
+
+		// Last fallback: just show any 3 recent properties
+		if (!$similar_query->have_posts()) {
+			$similar_query = new \WP_Query(array(
+				'post_type'      => 'immobilie',
+				'posts_per_page' => 3,
+				'post__not_in'   => array(get_the_ID()),
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			));
+		}
 
 		if ($similar_query->have_posts()) {
 			?>
