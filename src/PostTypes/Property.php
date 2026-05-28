@@ -15,6 +15,9 @@ class Property
      */
     public function register_post_type()
     {
+        $settings = get_option('dbw_immo_suite_settings');
+        $cpt_slug = !empty($settings['cpt_slug']) ? $settings['cpt_slug'] : 'immobilien';
+
         $labels = array(
             'name' => _x('Immobilien', 'Post Type General Name', 'dbw-immo-suite'),
             'singular_name' => _x('Immobilie', 'Post Type Singular Name', 'dbw-immo-suite'),
@@ -59,7 +62,8 @@ class Property
             'show_in_admin_bar' => true,
             'show_in_nav_menus' => true,
             'can_export' => true,
-            'has_archive' => true,
+            'has_archive' => $cpt_slug,
+            'rewrite' => array('slug' => $cpt_slug, 'with_front' => false),
             'exclude_from_search' => false,
             'publicly_queryable' => true,
             'capability_type' => 'post',

@@ -1,0 +1,44 @@
+<?php
+/**
+ * Uninstall routine for DBW Immo Suite.
+ * Fired when the plugin is deleted via the WordPress admin.
+ */
+
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+    exit;
+}
+
+// Remove plugin options
+delete_option('dbw_immo_suite_settings');
+delete_option('dbw_immo_import_history');
+
+// Remove all hash options for ZIP files
+global $wpdb;
+$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'dbw_immo_last_xml_hash_%'");
+
+// Remove transients
+delete_transient('dbw_immo_import_lock');
+delete_transient('dbw_immo_batch_zips');
+delete_transient('dbw_immo_batch_processed_ids');
+
+// Remove scheduled cron
+wp_clear_scheduled_hook('dbw_immo_cron_hook');
+
+// Remove Customizer theme_mods
+$mods_to_remove = array(
+    'dbw_immo_color_primary', 'dbw_immo_color_secondary', 'dbw_immo_color_accent', 'dbw_immo_color_light',
+    'dbw_immo_border_radius', 'dbw_immo_archive_per_page', 'dbw_immo_archive_columns',
+    'dbw_immo_archive_show_year', 'dbw_immo_archive_show_area', 'dbw_immo_archive_show_rooms',
+    'dbw_immo_archive_show_price', 'dbw_immo_archive_show_energy_class',
+    'dbw_immo_single_show_map', 'dbw_immo_single_show_energy', 'dbw_immo_single_show_gallery',
+    'dbw_immo_single_show_contact', 'dbw_immo_single_show_share', 'dbw_immo_single_show_print',
+    'dbw_immo_single_show_similar', 'dbw_immo_highlights_bg_style', 'dbw_immo_highlights_text_color',
+    'dbw_immo_expose_btn_text',
+);
+
+foreach ($mods_to_remove as $mod) {
+    remove_theme_mod($mod);
+}
+
+// Note: We intentionally do NOT delete the CPT posts, taxonomies, or meta data
+// to prevent accidental data loss. Users can delete posts manually if needed.

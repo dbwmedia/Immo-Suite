@@ -628,7 +628,7 @@ get_header(); ?>
 			unset($args['tax_query']);
 		}
 
-		$similar_query = new WP_Query($args);
+		$similar_query = new \WP_Query($args);
 
 		if ($similar_query->have_posts()) {
 			?>

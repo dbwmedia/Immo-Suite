@@ -151,10 +151,13 @@ get_header(); ?>
 
 						<!-- Card Footer (Price & Action) -->
 						<div class="dbw-card-footer">
-							<?php if ($price && get_theme_mod('dbw_immo_archive_show_price', true)): ?>
+							<?php if ($price && get_theme_mod('dbw_immo_archive_show_price', true)):
+								$price_label = get_post_meta(get_the_ID(), 'kaufpreis', true) ? __('Kaufpreis', 'dbw-immo-suite') : __('Kaltmiete', 'dbw-immo-suite');
+								$price_display = (float) preg_replace('/[^0-9.]/', '', $price);
+							?>
 								<div class="dbw-property-price">
-									<span class="dbw-price-label">Kaufpreis</span>
-									<span class="dbw-price-value"><?php echo esc_html(number_format_i18n((float) $price, 0)); ?>
+									<span class="dbw-price-label"><?php echo esc_html($price_label); ?></span>
+									<span class="dbw-price-value"><?php echo esc_html(number_format_i18n($price_display, 0)); ?>
 										€</span>
 								</div>
 							<?php endif; ?>

@@ -1,4 +1,6 @@
 jQuery(document).ready(function ($) {
+    var nonce = (typeof dbwImmoAdmin !== 'undefined') ? dbwImmoAdmin.nonce : '';
+
     $('#dbw-immo-trigger-import').on('click', function (e) {
         e.preventDefault();
 
@@ -10,7 +12,8 @@ jQuery(document).ready(function ($) {
 
         // Step 1: Prepare Import (Scan files, extract ZIPs)
         $.post(ajaxurl, {
-            action: 'dbw_immo_prepare_import'
+            action: 'dbw_immo_prepare_import',
+            nonce: nonce
         }, function (response) {
             if (!response.success) {
                 $status.html('<div class="notice notice-error inline"><p>' + response.data + '</p></div>');
@@ -53,12 +56,8 @@ jQuery(document).ready(function ($) {
         });
     });
 
-    /**
-     * Recursive function to process the import queue one by one.
-     */
     function processBatchQueue(currentIdx, queue, looseFiles, $status, $btn) {
         if (currentIdx >= queue.length) {
-            // Step 3: Finalize
             finalizeImport(looseFiles, $status, $btn, queue.length);
             return;
         }
@@ -66,35 +65,30 @@ jQuery(document).ready(function ($) {
         var item = queue[currentIdx];
         var progress = Math.round(((currentIdx + 1) / queue.length) * 100);
 
-        // Update Status
         $status.html('<span class="spinner is-active" style="float:none; margin:0 5px 0 0;"></span> Importiere ' + (currentIdx + 1) + ' von ' + queue.length + ' (' + progress + '%)');
 
         $.post(ajaxurl, {
             action: 'dbw_immo_process_batch',
+            nonce: nonce,
             file: item.file,
             index: item.index
         }, function (response) {
             if (!response.success) {
                 console.error("Batch Error at index " + currentIdx + ": " + response.data);
-                // We continue despite errors to try importing the rest
             }
-            // Next item
             processBatchQueue(currentIdx + 1, queue, looseFiles, $status, $btn);
         }).fail(function (xhr) {
             console.error("Server Failure at index " + currentIdx);
-            // Retry or skip? For now, we skip to next
             processBatchQueue(currentIdx + 1, queue, looseFiles, $status, $btn);
         });
     }
 
-    /**
-     * Finalize Import (Step 3): Cleanup temps, renames, and Garbage Collection
-     */
     function finalizeImport(looseFiles, $status, $btn, totalProcessed) {
         $status.html('<span class="spinner is-active" style="float:none; margin:0 5px 0 0;"></span> Räume temporäre Dateien auf und führe Garbage Collection aus...');
 
         $.post(ajaxurl, {
             action: 'dbw_immo_finalize_import',
+            nonce: nonce,
             loose_files: looseFiles
         }, function (response) {
             if (totalProcessed > 0) {

@@ -89,10 +89,29 @@ class PropertyDetails
 
             <!-- TAB: Basis -->
             <div id="tab-basis" class="dbw-tab-content active">
+                <!-- Status Control -->
+                <div class="dbw-field-row" style="background-color: #fef9e7; padding: 15px; border-radius: 5px; border-left: 4px solid #f39c12; margin-bottom: 20px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;"><?php _e('Objektstatus', 'dbw-immo-suite'); ?></label>
+                    <?php $current_status = $val('_dbw_immo_status') ?: 'aktiv'; ?>
+                    <select name="_dbw_immo_status" style="min-width: 200px;">
+                        <option value="aktiv" <?php selected($current_status, 'aktiv'); ?>><?php _e('Aktiv', 'dbw-immo-suite'); ?></option>
+                        <option value="reserviert" <?php selected($current_status, 'reserviert'); ?>><?php _e('Reserviert', 'dbw-immo-suite'); ?></option>
+                        <option value="verkauft" <?php selected($current_status, 'verkauft'); ?>><?php _e('Verkauft', 'dbw-immo-suite'); ?></option>
+                        <option value="referenz" <?php selected($current_status, 'referenz'); ?>><?php _e('Referenz', 'dbw-immo-suite'); ?></option>
+                    </select>
+                    <br><br>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="_dbw_immo_manual_status_override" value="1" <?php checked('1', $val('_dbw_immo_manual_status_override')); ?>>
+                        <strong><?php _e('Status sperren (nicht vom Import ueberschreiben)', 'dbw-immo-suite'); ?></strong>
+                    </label>
+                    <p class="description" style="margin-top: 5px; margin-left: 24px;"><?php _e('Wenn aktiviert, wird der Status bei einem OpenImmo-Import nicht mehr automatisch aktualisiert.', 'dbw-immo-suite'); ?></p>
+                </div>
+
+                <!-- Highlight -->
                 <div class="dbw-field-row" style="background-color: #f0f7ff; padding: 15px; border-radius: 5px; border-left: 4px solid #0073aa; margin-bottom: 20px;">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                         <input type="checkbox" name="_dbw_immo_is_highlight" value="1" <?php checked('1', $val('_dbw_immo_is_highlight')); ?>>
-                        <strong><?php _e('🌟 Als Highlight markieren', 'dbw-immo-suite'); ?></strong>
+                        <strong><?php _e('Als Highlight markieren', 'dbw-immo-suite'); ?></strong>
                     </label>
                     <p class="description" style="margin-top: 5px; margin-left: 24px; font-weight: normal;"><?php _e('Diese Immobilie im "Immobilien Grid" Block als Highlight priorisiert hervorheben.', 'dbw-immo-suite'); ?></p>
                 </div>
@@ -271,7 +290,29 @@ class PropertyDetails
             }
         }
 
-        // Handle Checkbox for Highlights (because un-checked checkboxes are not sent in $_POST)
+        // Status field
+        if (isset($_POST['_dbw_immo_status'])) {
+            $allowed_statuses = array('aktiv', 'reserviert', 'verkauft', 'referenz');
+            $new_status = sanitize_text_field($_POST['_dbw_immo_status']);
+            if (in_array($new_status, $allowed_statuses)) {
+                $old_status = get_post_meta($post_id, '_dbw_immo_status', true);
+                update_post_meta($post_id, '_dbw_immo_status', $new_status);
+
+                // Set sales date when status changes to verkauft
+                if ($new_status === 'verkauft' && $old_status !== 'verkauft') {
+                    update_post_meta($post_id, '_dbw_immo_sales_date', current_time('mysql'));
+                }
+            }
+        }
+
+        // Manual status override lock
+        if (isset($_POST['_dbw_immo_manual_status_override'])) {
+            update_post_meta($post_id, '_dbw_immo_manual_status_override', '1');
+        } else {
+            delete_post_meta($post_id, '_dbw_immo_manual_status_override');
+        }
+
+        // Highlight checkbox
         if (isset($_POST['_dbw_immo_is_highlight'])) {
             update_post_meta($post_id, '_dbw_immo_is_highlight', '1');
         } else {

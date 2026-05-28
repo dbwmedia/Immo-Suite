@@ -757,6 +757,7 @@ class Importer
     public function ajax_prepare_import()
     {
         try {
+            check_ajax_referer('dbw_immo_import_nonce', 'nonce');
             if (!current_user_can('manage_options'))
                 wp_send_json_error('Keine Berechtigung');
             @set_time_limit(600);
@@ -894,6 +895,7 @@ class Importer
     public function ajax_process_batch()
     {
         try {
+            check_ajax_referer('dbw_immo_import_nonce', 'nonce');
             if (!current_user_can('manage_options'))
                 wp_send_json_error('Keine Berechtigung');
             @set_time_limit(300); // 5 min per batch
@@ -937,6 +939,7 @@ class Importer
     public function ajax_finalize_import()
     {
         try {
+            check_ajax_referer('dbw_immo_import_nonce', 'nonce');
             if (!current_user_can('manage_options'))
                 wp_send_json_error('Keine Berechtigung');
 
@@ -948,18 +951,24 @@ class Importer
                     $this->delete_directory($az['temp_dir']);
                     rename($az['file'], $az['file'] . '.processed');
                     $this->log_debug('ZIP erfolgreich verarbeitet: ' . basename($az['file']));
-                    $this->log_history($az['file'], array('created' => 0, 'updated' => 0, 'errors' => 0), 'success'); // Basic logging for manual
+                    $this->log_history($az['file'], array('created' => 0, 'updated' => 0, 'errors' => 0), 'success');
                 }
                 delete_transient('dbw_immo_batch_zips');
             }
 
-            // 2. Cleanup Loose XMLs passed from UI
-            $loose_files = isset($_POST['loose_files']) ? $_POST['loose_files'] : array();
-            if (is_array($loose_files) && !empty($loose_files)) {
+            // 2. Cleanup Loose XMLs - validate against allowed import path
+            $options = get_option('dbw_immo_suite_settings');
+            $allowed_base = $this->resolve_import_path($options);
+
+            $loose_files = isset($_POST['loose_files']) ? (array) $_POST['loose_files'] : array();
+            if (!empty($loose_files) && $allowed_base) {
                 foreach ($loose_files as $lf) {
-                    if (file_exists($lf)) {
-                        rename($lf, $lf . '.processed');
-                        $this->log_debug('Lose XML-Datei archiviert: ' . basename($lf));
+                    $lf = sanitize_text_field($lf);
+                    $real_path = realpath($lf);
+                    // Only allow files within the configured import directory
+                    if ($real_path && strpos($real_path, realpath($allowed_base)) === 0 && file_exists($real_path)) {
+                        rename($real_path, $real_path . '.processed');
+                        $this->log_debug('Lose XML-Datei archiviert: ' . basename($real_path));
                     }
                 }
             }
@@ -989,7 +998,7 @@ class Importer
     public function ajax_run_import()
     {
         try {
-            // Verify Nonce (TODO: Add nonce check in JS and here)
+            check_ajax_referer('dbw_immo_import_nonce', 'nonce');
             if (!current_user_can('manage_options')) {
                 wp_send_json_error('Keine Berechtigung');
             }
@@ -1006,6 +1015,23 @@ class Importer
         catch (\Throwable $e) {
             wp_send_json_error('AJAX CRITICAL: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Resolve the configured import path to an absolute directory.
+     */
+    private function resolve_import_path($options)
+    {
+        $xml_path = isset($options['xml_path']) ? $options['xml_path'] : '';
+        if (!empty($xml_path) && is_dir($xml_path)) {
+            return trailingslashit($xml_path);
+        } elseif (!empty($xml_path) && is_dir(ABSPATH . ltrim($xml_path, '/'))) {
+            return trailingslashit(ABSPATH . ltrim($xml_path, '/'));
+        } elseif (empty($xml_path)) {
+            $upload_dir = wp_upload_dir();
+            return $upload_dir['basedir'] . '/openimmo/';
+        }
+        return false;
     }
 
     private function log_debug($msg)

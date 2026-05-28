@@ -84,6 +84,10 @@ class Plugin
     public function enqueue_admin_scripts()
     {
         wp_enqueue_script('dbw-immo-admin', DBW_IMMO_SUITE_URL . 'assets/js/admin.js', array('jquery'), DBW_IMMO_SUITE_VERSION, false);
+        wp_localize_script('dbw-immo-admin', 'dbwImmoAdmin', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('dbw_immo_import_nonce'),
+        ));
     }
 
     /**
@@ -129,9 +133,6 @@ class Plugin
 
         $this->loader->add_action('wp_enqueue_scripts', $this, 'enqueue_public_scripts');
         $this->loader->add_action('enqueue_block_assets', $this, 'enqueue_block_assets');
-
-        // Register custom block categories
-        $this->loader->add_filter('block_categories_all', $this, 'register_block_categories', 10, 2);
     }
 
     /**

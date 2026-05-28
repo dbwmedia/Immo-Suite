@@ -14,15 +14,6 @@ class TemplateLoader
     public function init()
     {
         add_filter('template_include', array($this, 'template_include'));
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
-    }
-
-    /**
-     * Enqueue Frontend Styles.
-     */
-    public function enqueue_styles()
-    {
-        wp_enqueue_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), DBW_IMMO_SUITE_VERSION, 'all');
     }
 
     /**
