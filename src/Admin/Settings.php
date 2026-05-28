@@ -394,7 +394,7 @@ class Settings
 
 	public function enable_references_callback()
 	{
-		$this->checkbox_callback('enable_references', 'Referenz-System aktivieren');
+		$this->checkbox_callback('enable_references', __('Referenz-System aktivieren (erstellt automatisch eine Referenz-Seite und ermoeglicht die Anzeige verkaufter Objekte)', 'dbw-immo-suite'));
 	}
 
 	public function reference_slug_callback()

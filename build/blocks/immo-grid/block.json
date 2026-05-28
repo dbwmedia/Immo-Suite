@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 2,
+  "name": "dbw/immo-grid",
+  "version": "1.0.0",
+  "title": "DBW Immo Grid",
+  "category": "dbw-immo-suite",
+  "icon": "index-card",
+  "description": "Zeigt eine Liste oder Grid von aktuellen Immobilien an.",
+  "supports": {
+    "html": false
+  },
+  "textdomain": "dbw-immo-suite",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "attributes": {
+    "postsPerPage": {
+      "type": "number",
+      "default": 3
+    },
+    "marketing": {
+      "type": "string",
+      "default": ""
+    },
+    "propertyType": {
+      "type": "string",
+      "default": ""
+    },
+    "hidePrice": {
+      "type": "boolean",
+      "default": false
+    },
+    "showDate": {
+      "type": "boolean",
+      "default": false
+    },
+    "onlyHighlights": {
+      "type": "boolean",
+      "default": false
+    },
+    "location": {
+      "type": "string",
+      "default": ""
+    },
+    "columns": {
+      "type": "number",
+      "default": 3
+    }
+  }
+}

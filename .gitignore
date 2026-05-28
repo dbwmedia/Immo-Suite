@@ -29,7 +29,8 @@ wp-content/uploads/
 
 # Build
 dist/
-build/
+# Note: build/ is intentionally tracked in git so the plugin works without npm.
+# After changing block JS/JSON files, run: npm run build
 
 # Environment
 .env

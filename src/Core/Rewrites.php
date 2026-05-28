@@ -37,6 +37,17 @@ class Rewrites
             return;
         }
 
+        // Validate that the reference page still exists
+        $page_id = $settings['reference_page_id'];
+        if (get_post_status($page_id) === false) {
+            // Page was deleted — trigger re-creation
+            do_action('dbw_immo_references_enabled', $settings);
+            $settings = get_option('dbw_immo_suite_settings');
+            if (empty($settings['reference_page_id'])) {
+                return;
+            }
+        }
+
         $cpt_slug = !empty($settings['cpt_slug']) ? $settings['cpt_slug'] : 'immobilien';
         $ref_slug = !empty($settings['reference_slug']) ? $settings['reference_slug'] : 'referenzen';
         $page_id = $settings['reference_page_id'];

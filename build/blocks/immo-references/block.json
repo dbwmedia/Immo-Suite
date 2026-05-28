@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 2,
+  "name": "dbw/immo-references",
+  "version": "1.0.0",
+  "title": "DBW Immo Referenzen",
+  "category": "dbw-immo-suite",
+  "icon": "building",
+  "description": "Zeigt verkaufte und Referenz-Objekte an.",
+  "supports": {
+    "html": false
+  },
+  "textdomain": "dbw-immo-suite",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./index.css",
+  "attributes": {
+    "status": {
+      "type": "array",
+      "default": [
+        "verkauft",
+        "referenz"
+      ]
+    },
+    "hidePrice": {
+      "type": "boolean",
+      "default": true
+    },
+    "showDate": {
+      "type": "boolean",
+      "default": true
+    },
+    "postsPerPage": {
+      "type": "number",
+      "default": 12
+    },
+    "location": {
+      "type": "string",
+      "default": ""
+    },
+    "columns": {
+      "type": "number",
+      "default": 3
+    }
+  }
+}

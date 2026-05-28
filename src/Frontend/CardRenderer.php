@@ -206,8 +206,8 @@ class CardRenderer
             ),
             array(
                 'key'     => '_dbw_immo_status',
-                'value'   => array('verkauft', 'referenz'),
-                'compare' => 'NOT IN',
+                'value'   => 'aktiv',
+                'compare' => '=',
             ),
         );
     }

@@ -1,0 +1,18 @@
+# Files to exclude when packaging the plugin for distribution
+# Used by deployment scripts to create a clean ZIP
+
+.git
+.gitignore
+.distignore
+node_modules
+src/blocks/*/edit.js
+src/blocks/*/save.js
+src/blocks/*/index.js
+package.json
+package-lock.json
+idea.md
+Demo Daten
+.DS_Store
+*.log
+.vscode
+.idea
