@@ -556,7 +556,10 @@ get_header(); ?>
 					style="background-color: transparent; border: 1px solid rgba(0,0,0,0.08); border-radius: var(--dbw-radius, 12px); padding: 1.5rem;">
 					<?php if (get_theme_mod('dbw_immo_single_show_contact', true)): ?>
 						<!-- Contact Person -->
-						<h4 style="margin-top: 0; margin-bottom: 1rem;">Ihr Ansprechpartner</h4>
+						<h4 style="margin-top: 0; margin-bottom: 1rem;"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
+							__('Ihr Ansprechpartner', 'dbw-immo-suite'),
+							__('Dein Ansprechpartner', 'dbw-immo-suite')
+						)); ?></h4>
 
 						<div class="dbw-contact-flex"
 							style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.5rem;">
@@ -587,9 +590,9 @@ get_header(); ?>
 						</div>
 
 						<?php
-						// Render contact form
-						if (class_exists('DBW\ImmoSuite\Frontend\ContactForm')) {
-							\DBW\ImmoSuite\Frontend\ContactForm::render($id);
+						// Render CTA buttons (open multi-step modal)
+						if (class_exists('DBW\ImmoSuite\Frontend\ContactModal')) {
+							\DBW\ImmoSuite\Frontend\ContactModal::render_cta_buttons($id);
 						} elseif ($contact_email) {
 							// Fallback: simple mailto link
 							echo '<a href="mailto:' . esc_attr($contact_email) . '?subject=Anfrage: ' . rawurlencode(get_the_title()) . '" class="button button-primary" style="display:block; width:100%; padding:12px; height:auto; font-size:1rem; text-transform:uppercase; font-weight:bold; background-color:var(--dbw-accent,#0073aa); border:none; color:#fff; cursor:pointer; border-radius:4px; text-decoration:none; text-align:center;">Anfrage senden</a>';
@@ -671,7 +674,10 @@ get_header(); ?>
 		if ($similar_query->have_posts()) {
 			?>
 			<div class="dbw-similar-properties" style="margin: 4rem auto 2rem auto; font-family: inherit; padding-top: 3rem;">
-				<h3 class="dbw-section-title" style="margin-bottom: 2rem; font-size: 1.5rem;">Das könnte Sie auch interessieren
+				<h3 class="dbw-section-title" style="margin-bottom: 2rem; font-size: 1.5rem;"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
+					__('Das koennte Sie auch interessieren', 'dbw-immo-suite'),
+					__('Das koennte dich auch interessieren', 'dbw-immo-suite')
+				)); ?>
 				</h3>
 				<div class="dbw-property-grid"
 					style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">

@@ -36,7 +36,7 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Ausstattungs-Badges** — strukturierte Merkmale als Pill-Tags (Balkon, Garage, Kamin etc.)
 - **OpenStreetMap-Karte** via Leaflet.js (kein API-Key noetig) mit Marker
 - **Energieausweis-Skala** — grafische Darstellung mit Pfeil-Indikator
-- **Kontaktformular** — AJAX-basiert mit wp_mail, Nonce-Schutz, Validierung
+- **Kontakt-Modal** — Single-Step-Dialog mit Intent-Auswahl (Besichtigung, Mehr Infos, Preis/Finanzierung, Rueckruf), kontextuellen Zusatzfeldern, Datenschutz-Checkbox, AJAX-Submit, animiertem Erfolgs-Screen mit Makler-Kontaktkarte, Honeypot-Spamschutz, Mobile-Bottom-Sheet + Sticky-CTA-Bar
 - **Highlights-Sidebar** — Sticky-Box mit Eckdaten, Preis, Provision, Energieklasse
 - **Aehnliche Objekte** — "Das koennte Sie auch interessieren" mit 3-stufigem Fallback
 - **Floating Action Buttons** — Zurueck, Teilen (Web Share API), Drucken, Grundrisse-Anker
@@ -95,6 +95,14 @@ Zeigt verkaufte und Referenz-Objekte an.
 - **Grayscale-Bilder** + farbige Status-Badges fuer verkaufte/referenz/reservierte Objekte
 - **Filter-Option** — Verkaufte/Reservierte Objekte aus normalem Archiv ausblenden
 
+### Globale Du/Sie-Anrede
+- **Umschaltbar im Backend** — Radio-Toggle zwischen "Sie" (Standard) und "Du"
+- **Wirkt global** auf alle Plugin-Texte: Kontaktformular, Modal, E-Mails, Templates
+- **Explizite String-Paare** statt fehleranfaelligem Auto-Regex (deutsche Sprache!)
+- **Live-Vorschau** im Admin bei Umschaltung
+- **Helper-Funktion** `dbw_anrede($sie, $du)` fuer Entwickler
+- **i18n-kompatibel** — beide Formen als separate uebersetzbare Strings in der .pot-Datei
+
 ### WordPress Customizer
 - **Design System** — Primary, Secondary, Accent, Hintergrundfarbe, Eckenradius
 - **Archiv-Steuerung** — Objekte/Seite, Spalten, Sichtbarkeit (Preis, Flaeche, Zimmer, Baujahr, Energie)
@@ -104,7 +112,7 @@ Zeigt verkaufte und Referenz-Objekte an.
 ### Admin-Backend
 - **7 Tabs im Property-Editor** — Basisdaten, Preise, Flaechen, Ausstattung, Technik, Kontakt, Import Info
 - **Import-Dashboard** — System-Status, manueller Import-Trigger, Historie (letzte 20 Laeufe)
-- **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Maklerfirma (SEO), Shortcode-Doku
+- **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Darstellung (Du/Sie-Anrede), Maklerfirma (SEO), Shortcode-Doku
 - **Automatischer WP-Cron Import** — stuendlich, mit Lock-Mechanismus
 
 ---
@@ -144,6 +152,7 @@ src/
   Core/
     Plugin.php              # Hook-Registrierung, Asset-Loading
     Loader.php              # Action/Filter Queue
+    Anrede.php              # Globale Du/Sie-Anrede Helper
     PageGenerator.php       # Automatische Referenz-Seite
     Rewrites.php            # URL-Rewrites fuer Referenzen
   PostTypes/

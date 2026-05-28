@@ -75,6 +75,12 @@ function check_requirements()
 	}
 }
 
+// Global anrede helper shortcut
+function dbw_anrede($sie, $du)
+{
+	return Core\Anrede::pick($sie, $du);
+}
+
 // Initialize Plugin
 function run_dbw_immo_suite()
 {

@@ -7,6 +7,27 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.6.0] — 2026-05-28
+
+Globale Du/Sie-Anrede: Plugin-Betreiber koennen zwischen foermlicher ("Sie") und persoenlicher ("Du") Ansprache umschalten.
+
+### Hinzugefuegt
+- **Du/Sie-Toggle** in den Plugin-Einstellungen (Sektion "Darstellung") mit Radio-Buttons und Live-Vorschau
+- **Neue Helper-Klasse `Anrede.php`** (`src/Core/Anrede.php`) mit Methoden: `pick()`, `mode()`, `ihre()`, `ihnen()`, `sie_pronoun()`
+- **Globale Funktion `dbw_anrede($sie, $du)`** fuer einfache Nutzung in Templates und Erweiterungen
+- **Admin-Notice** mit Cache-Hinweis nach Umschaltung der Anrede
+
+### Geaendert
+- **ContactModal.php** — 10 Strings auf `dbw_anrede()` umgestellt (Hook-Frage, Kontaktdaten-Labels, Erfolgsseite, Agent-Hint, Naechste-Schritte)
+- **ContactForm.php** — E-Mail-Antwort-Texte (Erfolg/Fehler) auf `dbw_anrede()` umgestellt
+- **single-immobilie.php** — "Ihr Ansprechpartner" und "Das koennte Sie auch interessieren" auf `dbw_anrede()` umgestellt
+- **Plugin.php** — `wp_localize_script` um `i18n`-Array erweitert fuer JS-seitige Strings
+- **contact-modal.js** — "Senden..." und "Netzwerkfehler" nutzen lokalisierte Strings aus `dbwContactModal.i18n`
+- **Settings.php** — Sanitization fuer `anrede`-Feld (Whitelist: sie/du), Event-Handler fuer Admin-Notice
+- **.pot-Datei** regeneriert mit allen neuen Du/Sie-String-Paaren
+
+---
+
 ## [1.5.0] — 2026-05-28
 
 SEO-Optimierung: Strukturierte Daten (Schema.org JSON-LD) fuer Google Rich Results, AI Overviews und Sprachassistenten.

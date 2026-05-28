@@ -16,6 +16,8 @@ class Settings
 		add_action('admin_menu', array($this, 'add_plugin_page'));
 		add_action('admin_init', array($this, 'page_init'));
 		add_action('wp_ajax_dbw_immo_validate_path', array($this, 'ajax_validate_path'));
+		add_action('update_option_dbw_immo_suite_settings', array($this, 'on_settings_update'), 10, 2);
+		add_action('admin_notices', array($this, 'anrede_changed_notice'));
 	}
 
 	public function add_plugin_page()
@@ -216,6 +218,22 @@ class Settings
 			'reference_section_id'
 		);
 
+		// -- Darstellung Section --
+		add_settings_section(
+			'display_section_id',
+			__('Darstellung', 'dbw-immo-suite'),
+			array($this, 'print_display_section_info'),
+			'dbw-immo-suite-settings'
+		);
+
+		add_settings_field(
+			'anrede',
+			__('Anrede', 'dbw-immo-suite'),
+			array($this, 'anrede_callback'),
+			'dbw-immo-suite-settings',
+			'display_section_id'
+		);
+
 		// -- SEO / Maklerfirma Section --
 		add_settings_section(
 			'seo_section_id',
@@ -267,6 +285,9 @@ class Settings
 			$new_input['cpt_slug'] = sanitize_title($input['cpt_slug']);
 		}
 		$new_input['enable_garbage_collection'] = isset($input['enable_garbage_collection']) ? 1 : 0;
+
+		// Anrede
+		$new_input['anrede'] = in_array($input['anrede'] ?? 'sie', ['sie', 'du'], true) ? $input['anrede'] : 'sie';
 
 		// Reference Settings
 		$new_input['enable_references'] = isset($input['enable_references']) ? 1 : 0;
@@ -503,6 +524,43 @@ class Settings
 			echo '<p class="description">' . $desc . '</p>';
 	}
 
+	public function print_display_section_info()
+	{
+		print __('Einstellungen fuer die Darstellung im Frontend.', 'dbw-immo-suite');
+	}
+
+	public function anrede_callback()
+	{
+		$settings = get_option($this->option_name);
+		$value = isset($settings['anrede']) ? $settings['anrede'] : 'sie';
+		$preview_sie = __('Wie koennen wir Ihnen weiterhelfen?', 'dbw-immo-suite');
+		$preview_du = __('Wie koennen wir dir weiterhelfen?', 'dbw-immo-suite');
+		?>
+		<fieldset>
+			<label>
+				<input type="radio" name="<?php echo esc_attr($this->option_name); ?>[anrede]" value="sie" <?php checked($value, 'sie'); ?> onchange="dbwAnredePreview(this.value)">
+				<strong>Sie</strong> &mdash; <?php esc_html_e('Foermliche Anrede (Standard)', 'dbw-immo-suite'); ?>
+			</label><br>
+			<label>
+				<input type="radio" name="<?php echo esc_attr($this->option_name); ?>[anrede]" value="du" <?php checked($value, 'du'); ?> onchange="dbwAnredePreview(this.value)">
+				<strong>Du</strong> &mdash; <?php esc_html_e('Persoenliche Anrede', 'dbw-immo-suite'); ?>
+			</label>
+		</fieldset>
+		<p class="description"><?php esc_html_e('Beeinflusst alle vom Plugin gerenderten Texte (Formulare, Buttons, E-Mails).', 'dbw-immo-suite'); ?></p>
+		<div id="dbw-anrede-preview" style="margin-top: 10px; padding: 10px 14px; background: #f0f6fc; border-left: 4px solid #2271b1; border-radius: 0 4px 4px 0; font-style: italic; color: #555;">
+			<?php echo esc_html($value === 'du' ? $preview_du : $preview_sie); ?>
+		</div>
+		<script>
+		function dbwAnredePreview(mode) {
+			var el = document.getElementById('dbw-anrede-preview');
+			el.textContent = (mode === 'du')
+				? <?php echo wp_json_encode($preview_du); ?>
+				: <?php echo wp_json_encode($preview_sie); ?>;
+		}
+		</script>
+		<?php
+	}
+
 	public function print_seo_section_info()
 	{
 		print __('Diese Angaben werden als strukturierte Daten (Schema.org / JSON-LD) ausgegeben und verbessern die Sichtbarkeit in Google Rich Results, AI Overviews und Sprachassistenten.', 'dbw-immo-suite');
@@ -588,5 +646,28 @@ class Settings
 		}
 
 		wp_send_json_success(array('message' => $msg));
+	}
+
+	/**
+	 * Detect anrede change and set transient for admin notice.
+	 */
+	public function on_settings_update($old_value, $new_value)
+	{
+		if (($old_value['anrede'] ?? 'sie') !== ($new_value['anrede'] ?? 'sie')) {
+			set_transient('dbw_immo_anrede_changed', true, 30);
+		}
+	}
+
+	/**
+	 * Show admin notice after anrede change.
+	 */
+	public function anrede_changed_notice()
+	{
+		if (get_transient('dbw_immo_anrede_changed')) {
+			echo '<div class="notice notice-success is-dismissible"><p>'
+				. esc_html__('Anrede umgestellt. Falls Caching aktiv ist, bitte einmal leeren.', 'dbw-immo-suite')
+				. '</p></div>';
+			delete_transient('dbw_immo_anrede_changed');
+		}
 	}
 }

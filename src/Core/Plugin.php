@@ -126,6 +126,9 @@ class Plugin
         $plugin_contact_form = new \DBW\ImmoSuite\Frontend\ContactForm();
         $this->loader->add_action('init', $plugin_contact_form, 'init');
 
+        $plugin_contact_modal = new \DBW\ImmoSuite\Frontend\ContactModal();
+        $this->loader->add_action('init', $plugin_contact_modal, 'init');
+
         $plugin_seo_meta = new \DBW\ImmoSuite\Frontend\SeoMeta();
         $this->loader->add_action('init', $plugin_seo_meta, 'init');
 
@@ -159,6 +162,24 @@ class Plugin
             wp_enqueue_style('dbw-immo-frontend');
             wp_enqueue_script('dbw-immo-frontend-js');
             wp_enqueue_script('dbw-immo-view-switch-js');
+        }
+
+        // Contact modal script (single property pages only)
+        if (is_singular('immobilie')) {
+            wp_enqueue_script('dbw-immo-contact-modal', DBW_IMMO_SUITE_URL . 'assets/js/contact-modal.js', array(), DBW_IMMO_SUITE_VERSION, true);
+            wp_localize_script('dbw-immo-contact-modal', 'dbwContactModal', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'i18n'    => array(
+                    'sending' => \DBW\ImmoSuite\dbw_anrede(
+                        __('Senden...', 'dbw-immo-suite'),
+                        __('Senden...', 'dbw-immo-suite')
+                    ),
+                    'network_error' => \DBW\ImmoSuite\dbw_anrede(
+                        __('Netzwerkfehler', 'dbw-immo-suite'),
+                        __('Netzwerkfehler', 'dbw-immo-suite')
+                    ),
+                ),
+            ));
         }
     }
 
