@@ -606,67 +606,63 @@ get_header(); ?>
 	endwhile; ?>
 
 	<?php
-	// Similar Properties Block inside the main container
+	// Similar Properties — use $id from the main loop (get_the_ID() is unreliable after endwhile)
 	if (get_theme_mod('dbw_immo_single_show_similar', true)) {
-		// Determine the current terms to find similar items
-		$terms = wp_get_post_terms(get_the_ID(), 'objektart', array('fields' => 'ids'));
-		$vermarktung = wp_get_post_terms(get_the_ID(), 'vermarktungsart', array('fields' => 'ids'));
+		$terms = wp_get_post_terms($id, 'objektart', array('fields' => 'ids'));
+		$vermarktung = wp_get_post_terms($id, 'vermarktungsart', array('fields' => 'ids'));
 
 		$args = array(
-			'post_type' => 'immobilie',
+			'post_type'      => 'immobilie',
 			'posts_per_page' => 3,
-			'post__not_in' => array(get_the_ID()), // Exclude current property
-			'orderby' => 'rand',     // Random similar items, or date
-			'tax_query' => array(
-				'relation' => 'AND',
-			)
+			'post__not_in'   => array($id),
+			'post_status'    => 'publish',
+			'orderby'        => 'rand',
 		);
 
+		// Build tax_query from available terms
+		$tax_query = array();
 		if (!empty($terms) && !is_wp_error($terms)) {
-			$args['tax_query'][] = array(
+			$tax_query[] = array(
 				'taxonomy' => 'objektart',
-				'field' => 'id',
-				'terms' => $terms,
+				'field'    => 'term_id',
+				'terms'    => $terms,
 			);
 		}
 		if (!empty($vermarktung) && !is_wp_error($vermarktung)) {
-			$args['tax_query'][] = array(
+			$tax_query[] = array(
 				'taxonomy' => 'vermarktungsart',
-				'field' => 'id',
-				'terms' => $vermarktung,
+				'field'    => 'term_id',
+				'terms'    => $vermarktung,
 			);
 		}
-
-		// Fallback if tax_query is empty, remove it
-		if (count($args['tax_query']) === 1) {
-			unset($args['tax_query']);
+		if (count($tax_query) > 1) {
+			$tax_query['relation'] = 'AND';
+		}
+		if (!empty($tax_query)) {
+			$args['tax_query'] = $tax_query;
 		}
 
 		$similar_query = new \WP_Query($args);
 
-		// Fallback: if no results with strict tax query, try broader search
-		if (!$similar_query->have_posts() && !empty($args['tax_query'])) {
-			// Try with only objektart (drop vermarktungsart)
-			$fallback_args = array(
-				'post_type'      => 'immobilie',
-				'posts_per_page' => 3,
-				'post__not_in'   => array(get_the_ID()),
-				'orderby'        => 'rand',
-			);
+		// Fallback: only objektart (drop vermarktungsart)
+		if (!$similar_query->have_posts() && count($tax_query) > 1) {
+			$fallback_args = $args;
+			unset($fallback_args['tax_query']);
 			if (!empty($terms) && !is_wp_error($terms)) {
 				$fallback_args['tax_query'] = array(
-					array('taxonomy' => 'objektart', 'field' => 'id', 'terms' => $terms),
+					array('taxonomy' => 'objektart', 'field' => 'term_id', 'terms' => $terms),
 				);
 			}
 			$similar_query = new \WP_Query($fallback_args);
 		}
 
-		// Last fallback: just show any 3 recent properties
+		// Last fallback: any 3 recent properties
 		if (!$similar_query->have_posts()) {
 			$similar_query = new \WP_Query(array(
 				'post_type'      => 'immobilie',
 				'posts_per_page' => 3,
-				'post__not_in'   => array(get_the_ID()),
+				'post__not_in'   => array($id),
+				'post_status'    => 'publish',
 				'orderby'        => 'date',
 				'order'          => 'DESC',
 			));
