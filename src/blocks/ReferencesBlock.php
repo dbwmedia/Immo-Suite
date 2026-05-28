@@ -35,8 +35,10 @@ class ReferencesBlock
     {
         $status = isset($attributes['status']) ? $attributes['status'] : array('verkauft', 'referenz');
         $posts_per_page = isset($attributes['postsPerPage']) ? intval($attributes['postsPerPage']) : 12;
-        $hide_price = isset($attributes['hidePrice']) ? $attributes['hidePrice'] : true;
-        $show_date = isset($attributes['showDate']) ? $attributes['showDate'] : true;
+        // Fall back to plugin settings if block attributes use defaults
+        $settings = get_option('dbw_immo_suite_settings');
+        $hide_price = isset($attributes['hidePrice']) ? $attributes['hidePrice'] : !empty($settings['hide_price_sold']);
+        $show_date = isset($attributes['showDate']) ? $attributes['showDate'] : !empty($settings['show_sold_date']);
         $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         $columns = isset($attributes['columns']) ? intval($attributes['columns']) : 3;
 

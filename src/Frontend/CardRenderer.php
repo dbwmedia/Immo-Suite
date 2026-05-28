@@ -54,12 +54,16 @@ class CardRenderer
 
         // Determine tag
         $tag_data = null;
+        $is_inactive = $opts['is_reference'] || in_array($immo_status, array('verkauft', 'referenz', 'reserviert'));
+
         if ($opts['is_reference']) {
             $badge_text = ($immo_status === 'referenz')
-                ? (!empty($settings['reference_badge_text']) ? $settings['reference_badge_text'] : 'Referenz')
-                : (!empty($settings['sold_badge_text']) ? $settings['sold_badge_text'] : 'Verkauft');
+                ? (!empty($settings['reference_badge_text']) ? $settings['reference_badge_text'] : __('Referenz', 'dbw-immo-suite'))
+                : (!empty($settings['sold_badge_text']) ? $settings['sold_badge_text'] : __('Verkauft', 'dbw-immo-suite'));
             $badge_class = ($immo_status === 'referenz') ? 'dbw-tag-reference' : 'dbw-tag-sold';
             $tag_data = array('label' => $badge_text, 'class' => $badge_class);
+        } elseif ($immo_status === 'reserviert') {
+            $tag_data = array('label' => __('Reserviert', 'dbw-immo-suite'), 'class' => 'dbw-tag-reserved');
         } elseif (class_exists('\DBW\ImmoSuite\Frontend\Filter')) {
             $tag_data = Filter::get_status_label($post_id);
         }
@@ -68,7 +72,7 @@ class CardRenderer
         $image_style = '';
         if (has_post_thumbnail()) {
             $image_style = 'background-image: url(' . get_the_post_thumbnail_url($post_id, 'medium-large') . ');';
-            if ($opts['is_reference']) {
+            if ($is_inactive) {
                 $image_style .= ' filter: grayscale(100%);';
             }
         }
