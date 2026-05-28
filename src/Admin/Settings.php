@@ -215,6 +215,36 @@ class Settings
 			'dbw-immo-suite-settings',
 			'reference_section_id'
 		);
+
+		// -- SEO / Maklerfirma Section --
+		add_settings_section(
+			'seo_section_id',
+			__('Maklerfirma (SEO)', 'dbw-immo-suite'),
+			array($this, 'print_seo_section_info'),
+			'dbw-immo-suite-settings'
+		);
+
+		$seo_fields = array(
+			'org_name'     => __('Firmenname', 'dbw-immo-suite'),
+			'org_url'      => __('Website-URL', 'dbw-immo-suite'),
+			'org_logo_url' => __('Logo-URL', 'dbw-immo-suite'),
+			'org_phone'    => __('Telefon', 'dbw-immo-suite'),
+			'org_email'    => __('E-Mail', 'dbw-immo-suite'),
+			'org_street'   => __('Straße', 'dbw-immo-suite'),
+			'org_zip'      => __('PLZ', 'dbw-immo-suite'),
+			'org_city'     => __('Stadt', 'dbw-immo-suite'),
+		);
+
+		foreach ($seo_fields as $field_id => $label) {
+			add_settings_field(
+				$field_id,
+				$label,
+				array($this, 'seo_field_callback'),
+				'dbw-immo-suite-settings',
+				'seo_section_id',
+				array('id' => $field_id)
+			);
+		}
 	}
 
 	public function sanitize($input)
@@ -252,6 +282,23 @@ class Settings
 		$new_input['hide_price_sold'] = isset($input['hide_price_sold']) ? 1 : 0;
 		$new_input['show_sold_date'] = isset($input['show_sold_date']) ? 1 : 0;
 		$new_input['filter_sold_from_main'] = isset($input['filter_sold_from_main']) ? 1 : 0; // Default off, user must enable
+
+		// SEO / Maklerfirma fields
+		$seo_text_fields = array('org_name', 'org_street', 'org_zip', 'org_city', 'org_phone');
+		foreach ($seo_text_fields as $f) {
+			if (isset($input[$f])) {
+				$new_input[$f] = sanitize_text_field($input[$f]);
+			}
+		}
+		if (isset($input['org_url'])) {
+			$new_input['org_url'] = esc_url_raw($input['org_url']);
+		}
+		if (isset($input['org_logo_url'])) {
+			$new_input['org_logo_url'] = esc_url_raw($input['org_logo_url']);
+		}
+		if (isset($input['org_email'])) {
+			$new_input['org_email'] = sanitize_email($input['org_email']);
+		}
 
 		// Trigger Page Generation if enabled and changed
 		$old_options = get_option($this->option_name);
@@ -454,6 +501,37 @@ class Settings
 		);
 		if ($desc)
 			echo '<p class="description">' . $desc . '</p>';
+	}
+
+	public function print_seo_section_info()
+	{
+		print __('Diese Angaben werden als strukturierte Daten (Schema.org / JSON-LD) ausgegeben und verbessern die Sichtbarkeit in Google Rich Results, AI Overviews und Sprachassistenten.', 'dbw-immo-suite');
+	}
+
+	public function seo_field_callback($args)
+	{
+		$id = $args['id'];
+		$options = get_option($this->option_name);
+		$val = !empty($options[$id]) ? $options[$id] : '';
+
+		$type = 'text';
+		$placeholder = '';
+		if ($id === 'org_url') {
+			$type = 'url';
+			$placeholder = home_url('/');
+		} elseif ($id === 'org_email') {
+			$type = 'email';
+		} elseif ($id === 'org_logo_url') {
+			$type = 'url';
+			$placeholder = 'https://example.com/logo.png';
+		} elseif ($id === 'org_phone') {
+			$type = 'tel';
+		}
+
+		printf(
+			'<input type="%s" id="%s" name="%s[%s]" value="%s" class="regular-text" placeholder="%s" />',
+			$type, $id, $this->option_name, $id, esc_attr($val), esc_attr($placeholder)
+		);
 	}
 
 	/**

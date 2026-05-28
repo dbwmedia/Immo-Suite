@@ -33,6 +33,10 @@ class GridBlock
      */
     public function render_block($attributes, $content)
     {
+        wp_enqueue_style('dbw-immo-frontend');
+        wp_enqueue_script('dbw-immo-frontend-js');
+        wp_enqueue_script('dbw-immo-view-switch-js');
+
         $posts_per_page = isset($attributes['postsPerPage']) ? intval($attributes['postsPerPage']) : 3;
         $marketing = isset($attributes['marketing']) ? $attributes['marketing'] : '';
         $property_type = isset($attributes['propertyType']) ? $attributes['propertyType'] : '';

@@ -33,6 +33,9 @@ class ReferencesBlock
      */
     public function render_block($attributes, $content)
     {
+        wp_enqueue_style('dbw-immo-frontend');
+        wp_enqueue_script('dbw-immo-frontend-js');
+
         $status = isset($attributes['status']) ? $attributes['status'] : array('verkauft', 'referenz');
         $posts_per_page = isset($attributes['postsPerPage']) ? intval($attributes['postsPerPage']) : 12;
         // Fall back to plugin settings if block attributes use defaults

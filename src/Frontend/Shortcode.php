@@ -44,6 +44,10 @@ class Shortcode
      */
     public function render_grid($atts)
     {
+        wp_enqueue_style('dbw-immo-frontend');
+        wp_enqueue_script('dbw-immo-frontend-js');
+        wp_enqueue_script('dbw-immo-view-switch-js');
+
         $atts = shortcode_atts(array(
             'count'      => 6,
             'columns'    => 3,
@@ -167,6 +171,9 @@ class Shortcode
      */
     public function render_references($atts)
     {
+        wp_enqueue_style('dbw-immo-frontend');
+        wp_enqueue_script('dbw-immo-frontend-js');
+
         $atts = shortcode_atts(array(
             'count'      => 12,
             'columns'    => 3,

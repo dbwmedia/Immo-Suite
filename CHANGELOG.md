@@ -7,6 +7,28 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.5.0] — 2026-05-28
+
+SEO-Optimierung: Strukturierte Daten (Schema.org JSON-LD) fuer Google Rich Results, AI Overviews und Sprachassistenten.
+
+### Hinzugefuegt
+- **Schema.org RealEstateListing** auf jeder Detailseite als JSON-LD — Preis, Waehrung, Flaeche (MTK), Zimmer, Badezimmer, Schlafzimmer, Baujahr, Geo-Koordinaten, Adresse, Energieklasse, Ausstattungs-Features, Verfuegbarkeit (InStock/LimitedAvailability/SoldOut), Geschaeftsfunktion (Sell/LeaseOut)
+- **Schema.org BreadcrumbList** auf Archiv- und Detailseiten (Start → Immobilien → Objekt)
+- **Schema.org RealEstateAgent** sitewide — Firmenname, URL, Logo, Telefon, E-Mail, Adresse aus Plugin-Settings
+- **Settings-Sektion "Maklerfirma (SEO)"** mit 8 Feldern (Firmenname, URL, Logo, Telefon, E-Mail, Strasse, PLZ, Stadt)
+- **Canonical-Tag** auf gefilterten Archiv-Seiten (`/immobilien/?marketing=Miete` → `/immobilien/`) gegen Duplicate Content
+- **Neue Datei `SchemaOutput.php`** — saubere Trennung von Meta-Tags (SeoMeta) und strukturierten Daten (SchemaOutput)
+
+### Geaendert
+- **Conditional Asset Loading** — CSS/JS werden nur noch auf Immobilien-Seiten geladen (CPT, Archiv, Taxonomie) oder on-demand wenn ein Block/Shortcode gerendert wird; nicht mehr sitewide
+- **Block/Shortcode Render-Callbacks** enqueuen CSS/JS selbstaendig (GridBlock, ReferencesBlock, Shortcode)
+- **enqueue_block_assets** laedt CSS nur noch im Editor, nicht mehr auf jeder Frontend-Seite
+
+### Behoben
+- HTML-Entity-Bug im RealEstateAgent-Schema — `&amp;` statt `&` im Firmennamen (get_bloginfo gibt HTML-encoded aus)
+
+---
+
 ## [1.4.0] — 2026-05-28
 
 Grosses Produktionsreife-Release mit Security-Fixes, neuen Features und umfassender Code-Konsolidierung.

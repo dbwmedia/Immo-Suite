@@ -12,6 +12,7 @@ class SeoMeta
     public function init()
     {
         add_action('wp_head', array($this, 'output_meta_tags'), 1);
+        add_action('wp_head', array($this, 'output_canonical_archive'), 1);
     }
 
     public function output_meta_tags()
@@ -90,5 +91,24 @@ class SeoMeta
         echo '<meta name="twitter:title" content="' . esc_attr($title) . '">' . "\n";
         echo '<meta name="twitter:description" content="' . esc_attr($description) . '">' . "\n";
         echo "<!-- /DBW Immo Suite SEO -->\n\n";
+    }
+
+    /**
+     * Output canonical on filtered archive pages to prevent duplicate content.
+     */
+    public function output_canonical_archive()
+    {
+        if (!is_post_type_archive('immobilie')) {
+            return;
+        }
+
+        if (defined('WPSEO_VERSION') || defined('RANK_MATH_VERSION') || defined('FLAVOR_SEO_VERSION')) {
+            return;
+        }
+
+        // Only output canonical when query params are present (filtered view)
+        if (!empty($_GET)) {
+            echo '<link rel="canonical" href="' . esc_url(get_post_type_archive_link('immobilie')) . '" />' . "\n";
+        }
     }
 }

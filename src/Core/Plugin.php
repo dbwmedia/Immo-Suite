@@ -129,6 +129,9 @@ class Plugin
         $plugin_seo_meta = new \DBW\ImmoSuite\Frontend\SeoMeta();
         $this->loader->add_action('init', $plugin_seo_meta, 'init');
 
+        $plugin_schema_output = new \DBW\ImmoSuite\Frontend\SchemaOutput();
+        $this->loader->add_action('init', $plugin_schema_output, 'init');
+
         $plugin_block_references = new \DBW\ImmoSuite\blocks\ReferencesBlock();
         $this->loader->add_action('init', $plugin_block_references, 'init');
 
@@ -146,9 +149,17 @@ class Plugin
      */
     public function enqueue_public_scripts()
     {
-        wp_enqueue_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), DBW_IMMO_SUITE_VERSION, 'all');
-        wp_enqueue_script('dbw-immo-frontend-js', DBW_IMMO_SUITE_URL . 'assets/js/frontend.js', array(), DBW_IMMO_SUITE_VERSION, true);
-        wp_enqueue_script('dbw-immo-view-switch-js', DBW_IMMO_SUITE_URL . 'assets/js/view-switch.js', array(), DBW_IMMO_SUITE_VERSION, true);
+        // Register assets so blocks/shortcodes can enqueue them on-demand
+        wp_register_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), DBW_IMMO_SUITE_VERSION, 'all');
+        wp_register_script('dbw-immo-frontend-js', DBW_IMMO_SUITE_URL . 'assets/js/frontend.js', array(), DBW_IMMO_SUITE_VERSION, true);
+        wp_register_script('dbw-immo-view-switch-js', DBW_IMMO_SUITE_URL . 'assets/js/view-switch.js', array(), DBW_IMMO_SUITE_VERSION, true);
+
+        // Auto-enqueue on immobilie CPT pages, archives, and taxonomy pages
+        if (is_singular('immobilie') || is_post_type_archive('immobilie') || is_tax(array('objektart', 'vermarktungsart', 'ort'))) {
+            wp_enqueue_style('dbw-immo-frontend');
+            wp_enqueue_script('dbw-immo-frontend-js');
+            wp_enqueue_script('dbw-immo-view-switch-js');
+        }
     }
 
     /**
@@ -156,8 +167,10 @@ class Plugin
      */
     public function enqueue_block_assets()
     {
-        // Enqueuing the CSS on 'enqueue_block_assets' loads it for both the frontend AND the editor.
-        wp_enqueue_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), filemtime(DBW_IMMO_SUITE_PATH . 'assets/css/frontend.css'), 'all');
+        // In the editor, always load so blocks render correctly; on the frontend, conditional loading is handled by enqueue_public_scripts
+        if (is_admin()) {
+            wp_enqueue_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), filemtime(DBW_IMMO_SUITE_PATH . 'assets/css/frontend.css'), 'all');
+        }
     }
 
     /**

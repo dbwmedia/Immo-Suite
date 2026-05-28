@@ -43,7 +43,10 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Print-Expose** — sauberes A4-Layout beim Drucken (automatisch, ohne Extra-Klick)
 
 #### SEO & Performance
+- **Schema.org JSON-LD** — RealEstateListing auf Detailseiten (Preis, Flaeche, Zimmer, Geo, Energieklasse, Availability), BreadcrumbList auf Archiv+Detail, RealEstateAgent sitewide
 - **Open Graph + Twitter Card Meta-Tags** — automatisch generiert aus Objektdaten
+- **Canonical-Tag** auf gefilterten Archiv-Seiten gegen Duplicate Content
+- **Conditional Asset Loading** — CSS/JS nur auf Immobilien-Seiten oder bei Shortcode/Block-Nutzung
 - **Lazy Loading** fuer Galerie-Bilder (erstes Bild eager fuer LCP)
 - **Alt-Text Fallback** — "Objekttitel — Bild N" wenn kein Alt gesetzt
 - **Saubere URLs** mit konfigurierbarem CPT-Slug
@@ -101,7 +104,7 @@ Zeigt verkaufte und Referenz-Objekte an.
 ### Admin-Backend
 - **7 Tabs im Property-Editor** — Basisdaten, Preise, Flaechen, Ausstattung, Technik, Kontakt, Import Info
 - **Import-Dashboard** — System-Status, manueller Import-Trigger, Historie (letzte 20 Laeufe)
-- **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Shortcode-Doku
+- **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Maklerfirma (SEO), Shortcode-Doku
 - **Automatischer WP-Cron Import** — stuendlich, mit Lock-Mechanismus
 
 ---
@@ -161,7 +164,8 @@ src/
     Shortcode.php           # [dbw_immo_grid] + [dbw_immo_references]
     EnergyRenderer.php      # Energieausweis-Skala + Archiv-Flag
     ContactForm.php         # AJAX-Kontaktformular
-    SeoMeta.php             # Open Graph + Twitter Card Tags
+    SeoMeta.php             # Open Graph + Twitter Card Tags + Canonical
+    SchemaOutput.php        # Schema.org JSON-LD (RealEstateListing, BreadcrumbList, RealEstateAgent)
   Import/
     Importer.php            # OpenImmo XML Parser + Batch AJAX
   blocks/
