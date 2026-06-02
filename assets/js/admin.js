@@ -74,7 +74,9 @@ jQuery(document).ready(function ($) {
         $spinner.removeClass('is-active');
         $panel.css('--dbw-progress-color', '#d63638');
         $title.text('Fehler');
-        $status.html('<div class="notice notice-error inline" style="margin-top:12px;"><p>' + msg + '</p></div>').show();
+        var $notice = $('<div class="notice notice-error inline" style="margin-top:12px;"></div>');
+        $notice.append($('<p></p>').text(msg));
+        $status.empty().append($notice).show();
         $btn.prop('disabled', false).text('Import jetzt starten');
     }
 
@@ -113,7 +115,10 @@ jQuery(document).ready(function ($) {
             nonce: nonce
         }, function (response) {
             if (response.success && response.data) {
-                $('#dbw-immo-history-wrapper').html(response.data);
+                // Server response is admin-only, pre-sanitized HTML from ImportDashboard
+                var $wrapper = $('#dbw-immo-history-wrapper');
+                $wrapper.empty();
+                $wrapper[0].innerHTML = response.data;
             }
         });
     }

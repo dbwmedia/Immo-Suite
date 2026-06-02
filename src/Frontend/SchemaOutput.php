@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { exit; }
+
 namespace DBW\ImmoSuite\Frontend;
 
 /**
@@ -103,7 +105,8 @@ class SchemaOutput
             'url'         => get_permalink($id),
             'name'        => get_the_title($id),
             'description' => wp_strip_all_tags(get_the_excerpt($id) ?: wp_trim_words(get_post_field('post_content', $id), 50, '...')),
-            'datePosted'  => get_the_date('c', $id),
+            'datePosted'   => get_the_date('c', $id),
+            'dateModified' => get_the_modified_date('c', $id),
         );
 
         if (!empty($images)) {
@@ -130,7 +133,7 @@ class SchemaOutput
         }
 
         if ($price > 0) {
-            $schema['offers'] = array(
+            $offer = array(
                 '@type'            => 'Offer',
                 'price'            => $price,
                 'priceCurrency'    => 'EUR',
@@ -138,6 +141,20 @@ class SchemaOutput
                 'url'              => get_permalink($id),
                 'businessFunction' => $is_rent ? 'https://schema.org/LeaseOut' : 'https://schema.org/Sell',
             );
+            if ($is_rent) {
+                $offer['priceSpecification'] = array(
+                    '@type'       => 'UnitPriceSpecification',
+                    'price'       => $price,
+                    'priceCurrency' => 'EUR',
+                    'unitText'    => 'MONTH',
+                    'referenceQuantity' => array(
+                        '@type' => 'QuantitativeValue',
+                        'value' => 1,
+                        'unitCode' => 'MON',
+                    ),
+                );
+            }
+            $schema['offers'] = $offer;
         }
 
         // Accommodation details via "about"

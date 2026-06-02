@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { exit; }
+
 namespace DBW\ImmoSuite\Frontend;
 
 /**
@@ -44,7 +46,7 @@ class ContactForm
         }
 
         $post_id   = intval($_POST['property_id'] ?? 0);
-        $name      = sanitize_text_field($_POST['name'] ?? '');
+        $name      = str_replace(array("\n", "\r", "\t"), '', sanitize_text_field($_POST['name'] ?? ''));
         $email     = sanitize_email($_POST['email'] ?? '');
         $phone     = sanitize_text_field($_POST['phone'] ?? '');
         $message   = sanitize_textarea_field($_POST['message'] ?? '');
@@ -53,6 +55,12 @@ class ContactForm
 
         if (!$post_id || !$name || !$email) {
             wp_send_json_error(__('Bitte alle Pflichtfelder ausfuellen.', 'dbw-immo-suite'));
+        }
+
+        // Verify property exists and is public
+        $property = get_post($post_id);
+        if (!$property || $property->post_type !== 'immobilie' || $property->post_status === 'trash') {
+            wp_send_json_error(__('Immobilie nicht gefunden.', 'dbw-immo-suite'));
         }
 
         if (!is_email($email)) {

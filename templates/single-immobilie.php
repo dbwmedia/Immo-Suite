@@ -235,13 +235,13 @@ get_header(); ?>
 				<!-- Thumbnails Strip -->
 				<div class="dbw-gallery-thumbs">
 					<?php foreach ($gallery_images as $index => $img): ?>
-						<div class="dbw-gallery-thumb" onclick="document.getElementById('slide-<?php echo $index; ?>').scrollIntoView({behavior: 'smooth', block: 'nearest'})">
+						<button type="button" class="dbw-gallery-thumb" onclick="document.getElementById('slide-<?php echo $index; ?>').scrollIntoView({behavior: 'smooth', block: 'nearest'})" aria-label="<?php echo esc_attr(sprintf(__('Bild %d anzeigen', 'dbw-immo-suite'), $index + 1)); ?>">
 							<?php echo wp_get_attachment_image($img['id'], 'thumbnail', false, array(
 								'loading' => 'lazy',
 								'decoding' => 'async',
 								'alt' => $img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1),
 							)); ?>
-						</div>
+						</button>
 						<?php
 					endforeach; ?>
 				</div>
@@ -328,7 +328,7 @@ get_header(); ?>
 								</p>
 							<?php endif; ?>
 							<?php if ($text_ausstattung): ?>
-								<?php echo wpautop(esc_html($text_ausstattung)); ?>
+								<?php echo wp_kses_post(wpautop($text_ausstattung)); ?>
 							<?php endif; ?>
 						</div>
 					</div>
@@ -339,7 +339,7 @@ get_header(); ?>
 						<h3 class="dbw-section-title">Lage</h3>
 						<?php if ($text_lage): ?>
 						<div class="dbw-description">
-							<?php echo wpautop(esc_html($text_lage)); ?>
+							<?php echo wp_kses_post(wpautop($text_lage)); ?>
 						</div>
 						<?php endif; ?>
 
@@ -413,7 +413,7 @@ get_header(); ?>
 					<div class="dbw-section">
 						<h3 class="dbw-section-title">Sonstiges</h3>
 						<div class="dbw-description">
-							<?php echo wpautop(esc_html($text_sonstiges)); ?>
+							<?php echo wp_kses_post(wpautop($text_sonstiges)); ?>
 						</div>
 					</div>
 					<?php

@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { exit; }
+
 namespace DBW\ImmoSuite\Frontend;
 
 /**
@@ -109,7 +111,7 @@ class CardRenderer
 
         ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class($card_classes); ?>>
-            <a href="<?php the_permalink(); ?>" class="dbw-property-image<?php echo $has_image ? '' : ' dbw-property-image--placeholder'; ?>">
+            <a href="<?php the_permalink(); ?>" class="dbw-property-image<?php echo $has_image ? ' has-image' : ' dbw-property-image--placeholder'; ?>">
                 <?php if ($has_image) : ?>
                     <?php echo wp_get_attachment_image($image_id, 'medium_large', false, array(
                         'class' => 'dbw-card-img' . $grayscale_class,

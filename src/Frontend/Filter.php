@@ -1,5 +1,7 @@
 <?php
 
+if (!defined('ABSPATH')) { exit; }
+
 namespace DBW\ImmoSuite\Frontend;
 
 /**
@@ -140,13 +142,19 @@ class Filter
             switch ($sort) {
                 case 'price_asc':
                 case 'price_desc':
-                    $order = ($sort === 'price_asc') ? 'ASC' : 'DESC';
+                    $safe_order = ($sort === 'price_asc') ? 'ASC' : 'DESC';
                     // Use both kaufpreis and kaltmiete for unified price sort
-                    add_filter('posts_clauses', function ($clauses, $q) use ($order) {
+                    add_filter('posts_clauses', function ($clauses, $q) use ($safe_order) {
                         global $wpdb;
-                        $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS pm_kauf ON ({$wpdb->posts}.ID = pm_kauf.post_id AND pm_kauf.meta_key = 'kaufpreis')";
-                        $clauses['join'] .= " LEFT JOIN {$wpdb->postmeta} AS pm_miete ON ({$wpdb->posts}.ID = pm_miete.post_id AND pm_miete.meta_key = 'kaltmiete')";
-                        $clauses['orderby'] = "CAST(COALESCE(NULLIF(pm_kauf.meta_value, ''), NULLIF(pm_miete.meta_value, ''), '0') AS DECIMAL(12,2)) {$order}";
+                        $clauses['join'] .= $wpdb->prepare(
+                            " LEFT JOIN {$wpdb->postmeta} AS pm_kauf ON ({$wpdb->posts}.ID = pm_kauf.post_id AND pm_kauf.meta_key = %s)",
+                            'kaufpreis'
+                        );
+                        $clauses['join'] .= $wpdb->prepare(
+                            " LEFT JOIN {$wpdb->postmeta} AS pm_miete ON ({$wpdb->posts}.ID = pm_miete.post_id AND pm_miete.meta_key = %s)",
+                            'kaltmiete'
+                        );
+                        $clauses['orderby'] = "CAST(COALESCE(NULLIF(pm_kauf.meta_value, ''), NULLIF(pm_miete.meta_value, ''), '0') AS DECIMAL(12,2)) " . $safe_order;
                         return $clauses;
                     }, 10, 2);
                     break;
