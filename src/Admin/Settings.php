@@ -35,11 +35,12 @@ class Settings
 	public function create_admin_page()
 	{
 		$tabs = array(
-			'import'     => __('Import', 'dbw-immo-suite'),
-			'display'    => __('Darstellung', 'dbw-immo-suite'),
-			'references' => __('Referenzen & Verkauf', 'dbw-immo-suite'),
-			'seo'        => __('Maklerfirma (SEO)', 'dbw-immo-suite'),
-			'shortcodes' => __('Shortcodes', 'dbw-immo-suite'),
+			'import'      => __('Import', 'dbw-immo-suite'),
+			'display'     => __('Darstellung', 'dbw-immo-suite'),
+			'calculator'  => __('Finanzierung', 'dbw-immo-suite'),
+			'references'  => __('Referenzen & Verkauf', 'dbw-immo-suite'),
+			'seo'         => __('Maklerfirma (SEO)', 'dbw-immo-suite'),
+			'shortcodes'  => __('Shortcodes', 'dbw-immo-suite'),
 		);
 		?>
 		<div class="wrap">
@@ -64,6 +65,10 @@ class Settings
 
 				<div class="dbw-tab-panel" id="tab-display" style="display:none;">
 					<?php do_settings_sections('dbw-settings-display'); ?>
+				</div>
+
+				<div class="dbw-tab-panel" id="tab-calculator" style="display:none;">
+					<?php do_settings_sections('dbw-settings-calculator'); ?>
 				</div>
 
 				<div class="dbw-tab-panel" id="tab-references" style="display:none;">
@@ -196,15 +201,15 @@ class Settings
 		add_settings_field('grayscale_sold', __('Grayscale bei Verkauft', 'dbw-immo-suite'), array($this, 'grayscale_sold_callback'), 'dbw-settings-display', 'section_display');
 		add_settings_field('grayscale_reserved', __('Grayscale bei Reserviert', 'dbw-immo-suite'), array($this, 'grayscale_reserved_callback'), 'dbw-settings-display', 'section_display');
 
-		// ── Finanzierungsrechner ──
-		add_settings_section('section_calculator', __('Finanzierungsrechner', 'dbw-immo-suite'), array($this, 'print_calculator_section_info'), 'dbw-settings-display');
-		add_settings_field('calc_notar_percent', __('Notarkosten (%)', 'dbw-immo-suite'), array($this, 'calc_notar_callback'), 'dbw-settings-display', 'section_calculator');
-		add_settings_field('calc_grundbuch_percent', __('Grundbuchamt (%)', 'dbw-immo-suite'), array($this, 'calc_grundbuch_callback'), 'dbw-settings-display', 'section_calculator');
-		add_settings_field('calc_default_zinssatz', __('Zinssatz Standard (%)', 'dbw-immo-suite'), array($this, 'calc_zinssatz_callback'), 'dbw-settings-display', 'section_calculator');
-		add_settings_field('calc_default_tilgung', __('Tilgung Standard (%)', 'dbw-immo-suite'), array($this, 'calc_tilgung_callback'), 'dbw-settings-display', 'section_calculator');
-		add_settings_field('calc_gest_override', __('Grunderwerbsteuer Override (%)', 'dbw-immo-suite'), array($this, 'calc_gest_override_callback'), 'dbw-settings-display', 'section_calculator');
+		// ── Tab 3: Finanzierungsrechner ──
+		add_settings_section('section_calculator', __('Kaufnebenkosten & Finanzierung', 'dbw-immo-suite'), array($this, 'print_calculator_section_info'), 'dbw-settings-calculator');
+		add_settings_field('calc_notar_percent', __('Notarkosten (%)', 'dbw-immo-suite'), array($this, 'calc_notar_callback'), 'dbw-settings-calculator', 'section_calculator');
+		add_settings_field('calc_grundbuch_percent', __('Grundbuchamt (%)', 'dbw-immo-suite'), array($this, 'calc_grundbuch_callback'), 'dbw-settings-calculator', 'section_calculator');
+		add_settings_field('calc_default_zinssatz', __('Zinssatz Standard (%)', 'dbw-immo-suite'), array($this, 'calc_zinssatz_callback'), 'dbw-settings-calculator', 'section_calculator');
+		add_settings_field('calc_default_tilgung', __('Tilgung Standard (%)', 'dbw-immo-suite'), array($this, 'calc_tilgung_callback'), 'dbw-settings-calculator', 'section_calculator');
+		add_settings_field('calc_gest_override', __('Grunderwerbsteuer Override (%)', 'dbw-immo-suite'), array($this, 'calc_gest_override_callback'), 'dbw-settings-calculator', 'section_calculator');
 
-		// ── Tab 3: Referenzen & Verkauf ──
+		// ── Tab 4: Referenzen & Verkauf ──
 		add_settings_section('section_references', __('Referenzen & Verkaufte Objekte', 'dbw-immo-suite'), array($this, 'print_reference_section_info'), 'dbw-settings-references');
 		add_settings_field('enable_references', __('Aktivieren', 'dbw-immo-suite'), array($this, 'enable_references_callback'), 'dbw-settings-references', 'section_references');
 		add_settings_field('reference_slug', __('Seiten-Slug (URL)', 'dbw-immo-suite'), array($this, 'reference_slug_callback'), 'dbw-settings-references', 'section_references');
