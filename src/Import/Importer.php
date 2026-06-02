@@ -274,14 +274,14 @@ class Importer
      */
     private function process_file($file, &$stats)
     {
-        libxml_use_internal_errors(true);
-        $this->current_xml_file = $file; // Store current file path for image resolution
-        $xml = simplexml_load_file($file);
+        $xml = $this->safe_load_xml($file);
 
         if (!$xml) {
             $stats['errors']++;
             return;
         }
+
+        $this->current_xml_file = $file;
 
         // Support wrapping 'openimmo_feedback' or just 'anbieter' list
         if (isset($xml->anbieter)) {
@@ -812,33 +812,50 @@ class Importer
      */
     private function upload_image($file_name, $base_path, $post_id)
     {
-        // Check if already imported
-        $existing_att = new \WP_Query(array(
-            'post_type' => 'attachment',
-            'post_parent' => $post_id,
-            'post_status' => 'inherit', // Attachments use 'inherit' status
-            'meta_key' => '_openimmo_filename',
-            'meta_value' => $file_name,
-            'fields' => 'ids',
+        // Check if already imported (direct query instead of WP_Query for performance)
+        global $wpdb;
+        $existing_att_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT pm.post_id FROM {$wpdb->postmeta} pm
+             INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+             WHERE pm.meta_key = '_openimmo_filename' AND pm.meta_value = %s
+             AND p.post_parent = %d AND p.post_type = 'attachment'
+             LIMIT 1",
+            $file_name, $post_id
         ));
 
-        if ($existing_att->have_posts()) {
-            return $existing_att->posts[0];
+        if ($existing_att_id) {
+            return (int) $existing_att_id;
         }
 
+        // Prevent path traversal: ensure file stays within base_path
         $full_path = trailingslashit($base_path) . $file_name;
+        $real_full = realpath($full_path);
+        $real_base = realpath($base_path);
 
-        if (!file_exists($full_path)) {
+        if (!$real_full || !$real_base || strpos($real_full, $real_base) !== 0) {
+            $this->log_debug(sprintf('Path traversal blocked: %s (base: %s)', $file_name, $base_path));
+            return false;
+        }
+
+        if (!file_exists($real_full)) {
+            return false;
+        }
+
+        // Validate file type before uploading
+        $allowed_types = array('jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'svg');
+        $ext = strtolower(pathinfo($real_full, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed_types, true)) {
+            $this->log_debug(sprintf('Blocked upload of disallowed file type: %s', $file_name));
             return false;
         }
 
         $file_array = array(
-            'name' => basename($full_path),
-            'tmp_name' => $full_path,
+            'name' => basename($real_full),
+            'tmp_name' => $real_full,
         );
 
-        $tmp_file = sys_get_temp_dir() . '/' . basename($full_path);
-        copy($full_path, $tmp_file);
+        $tmp_file = wp_tempnam(basename($real_full));
+        copy($real_full, $tmp_file);
         $file_array['tmp_name'] = $tmp_file;
 
         require_once(ABSPATH . 'wp-admin/includes/image.php');
@@ -846,6 +863,11 @@ class Importer
         require_once(ABSPATH . 'wp-admin/includes/media.php');
 
         $att_id = media_handle_sideload($file_array, $post_id);
+
+        // Cleanup temp file if sideload failed (WP removes it on success)
+        if (is_wp_error($att_id) && file_exists($tmp_file)) {
+            @unlink($tmp_file);
+        }
 
         if (!is_wp_error($att_id)) {
             update_post_meta($att_id, '_openimmo_filename', $file_name);
@@ -862,20 +884,15 @@ class Importer
      */
     private function get_property_by_openimmo_id($openimmo_id)
     {
-        $query = new \WP_Query(array(
-            'post_type' => 'immobilie',
-            'meta_key' => 'openimmo_id',
-            'meta_value' => $openimmo_id,
-            'fields' => 'ids',
-            'posts_per_page' => 1,
-            'post_status' => 'any',
-        ));
-
-        if ($query->have_posts()) {
-            return $query->posts[0];
-        }
-
-        return false;
+        global $wpdb;
+        return $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} pm
+             INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+             WHERE pm.meta_key = 'openimmo_id' AND pm.meta_value = %s
+             AND p.post_type = 'immobilie'
+             LIMIT 1",
+            $openimmo_id
+        )) ?: false;
     }
 
     /**
@@ -992,8 +1009,7 @@ class Importer
             // a) From active ZIPs
             foreach ($active_zips as $az) {
                 foreach ($az['xmls'] as $xml_file) {
-                    libxml_use_internal_errors(true);
-                    $xml = @simplexml_load_file($xml_file);
+                    $xml = $this->safe_load_xml($xml_file);
                     if ($xml && isset($xml->anbieter->immobilie)) {
                         $count = count($xml->anbieter->immobilie);
                         if ($count > 0) {
@@ -1010,8 +1026,7 @@ class Importer
             $loose_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($xml_path));
             foreach ($loose_files as $file) {
                 if ($file->isFile() && strtolower($file->getExtension()) === 'xml' && strpos($file->getPathname(), '/tmp_') === false) {
-                    libxml_use_internal_errors(true);
-                    $xml = @simplexml_load_file($file->getPathname());
+                    $xml = $this->safe_load_xml($file->getPathname());
                     if ($xml && isset($xml->anbieter->immobilie)) {
                         $count = count($xml->anbieter->immobilie);
                         if ($count > 0) {
@@ -1059,7 +1074,8 @@ class Importer
 
         }
         catch (\Throwable $e) {
-            wp_send_json_error('Fehler bei Vorbereitung: ' . $e->getMessage());
+            $this->log_debug('Prepare Error: ' . $e->getMessage());
+            wp_send_json_error(__('Fehler bei der Import-Vorbereitung. Details im Import-Log.', 'dbw-immo-suite'));
         }
     }
 
@@ -1092,16 +1108,25 @@ class Importer
             @set_time_limit(300); // 5 min per batch
             @ini_set('memory_limit', '2048M');
 
-            $file = isset($_POST['file']) ? stripslashes($_POST['file']) : '';
+            $file = isset($_POST['file']) ? sanitize_text_field(wp_unslash($_POST['file'])) : '';
             $index = isset($_POST['index']) ? intval($_POST['index']) : 0;
 
-            if (!file_exists($file))
-                wp_send_json_error('Datei nicht gefunden: ' . $file);
+            // Validate file path is within allowed import directory
+            $options = get_option('dbw_immo_suite_settings');
+            $allowed_base = $this->resolve_import_path($options);
+            $real_file = realpath($file);
+            $real_base = $allowed_base ? realpath($allowed_base) : false;
+
+            if (!$real_file || !$real_base || strpos($real_file, $real_base) !== 0) {
+                wp_send_json_error(__('Ungültiger Dateipfad.', 'dbw-immo-suite'));
+            }
+
+            if (!file_exists($real_file))
+                wp_send_json_error(__('Datei nicht gefunden.', 'dbw-immo-suite'));
 
             $this->current_xml_file = $file; // IMPORTANT for images
 
-            libxml_use_internal_errors(true);
-            $xml = simplexml_load_file($file);
+            $xml = $this->safe_load_xml($file);
             if (!$xml || !isset($xml->anbieter->immobilie[$index])) {
                 wp_send_json_error('Immobilie nicht gefunden bei Index ' . $index);
             }
@@ -1130,8 +1155,8 @@ class Importer
 
         }
         catch (\Throwable $e) {
-            $this->log_debug("Batch Error ($file #$index): " . $e->getMessage());
-            wp_send_json_error('Batch Error: ' . $e->getMessage());
+            $this->log_debug("Batch Error (#$index): " . $e->getMessage());
+            wp_send_json_error(__('Import-Fehler bei Immobilie Nr. ', 'dbw-immo-suite') . ($index + 1));
         }
     }
 
@@ -1229,7 +1254,8 @@ class Importer
             }
         }
         catch (\Throwable $e) {
-            wp_send_json_error('AJAX CRITICAL: ' . $e->getMessage());
+            $this->log_debug('Finalize Error: ' . $e->getMessage());
+            wp_send_json_error(__('Fehler beim Abschluss. Details im Import-Log.', 'dbw-immo-suite'));
         }
     }
 
@@ -1250,12 +1276,43 @@ class Importer
         return false;
     }
 
+    /**
+     * Safely load an XML file with XXE protection.
+     *
+     * @param string $file Path to XML file.
+     * @return \SimpleXMLElement|false
+     */
+    private function safe_load_xml($file)
+    {
+        $previous = libxml_use_internal_errors(true);
+        $disable_entities = function_exists('libxml_disable_entity_loader');
+
+        if ($disable_entities) {
+            $previous_entities = libxml_disable_entity_loader(true);
+        }
+
+        $xml = simplexml_load_file($file, 'SimpleXMLElement', LIBXML_NONET | LIBXML_NOENT);
+
+        if ($disable_entities) {
+            libxml_disable_entity_loader($previous_entities);
+        }
+
+        if (!$xml) {
+            $errors = libxml_get_errors();
+            foreach ($errors as $error) {
+                $this->log_debug(sprintf('XML Parse Error in %s (Line %d): %s', basename($file), $error->line, trim($error->message)));
+            }
+            libxml_clear_errors();
+        }
+
+        libxml_use_internal_errors($previous);
+        return $xml;
+    }
+
     private function log_debug($msg)
     {
-        // Log to wp-content root for reliability
         $log_file = WP_CONTENT_DIR . '/openimmo_import.log';
-        $entry = date('Y-m-d H:i:s') . ' - ' . $msg . PHP_EOL;
-        // Simple file append
+        $entry = date('Y-m-d H:i:s') . ' - ' . wp_strip_all_tags($msg) . PHP_EOL;
         @file_put_contents($log_file, $entry, FILE_APPEND);
     }
 
@@ -1306,9 +1363,10 @@ class Importer
         $archived_count = 0;
 
         if ($all_properties->have_posts()) {
+            $processed_flip = array_flip($this->processed_openimmo_ids);
             foreach ($all_properties->posts as $post_id) {
                 $oid = get_post_meta($post_id, 'openimmo_id', true);
-                if (!empty($oid) && !in_array($oid, $this->processed_openimmo_ids)) {
+                if (!empty($oid) && !isset($processed_flip[$oid])) {
                     // Not in the feed -> Archive it
                     $update_data = array(
                         'ID' => $post_id,

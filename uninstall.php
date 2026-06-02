@@ -14,7 +14,7 @@ delete_option('dbw_immo_import_history');
 
 // Remove all hash options for ZIP files
 global $wpdb;
-$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'dbw_immo_last_xml_hash_%'");
+$wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", 'dbw\_immo\_last\_xml\_hash\_%'));
 
 // Remove transients
 delete_transient('dbw_immo_import_lock');

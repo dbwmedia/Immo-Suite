@@ -271,11 +271,11 @@ class PropertyDetails
                 </div>
                 <div class="dbw-field-row">
                     <label><?php _e('Debug: Alle Metadaten', 'dbw-immo-suite'); ?></label>
-                    <textarea rows="10" readonly style="width:100%; font-family:monospace; font-size:11px;"><?php 
+                    <textarea rows="10" readonly style="width:100%; font-family:monospace; font-size:11px;"><?php
                         // Show all non-hidden meta data for debug
                         foreach ($meta as $key => $values) {
-                            if (substr($key, 0, 1) === '_' && $key !== '_openimmo_id') continue; 
-                            echo $key . ': ' . print_r($values[0], true) . "\n";
+                            if (substr($key, 0, 1) === '_' && $key !== '_openimmo_id') continue;
+                            echo esc_html($key . ': ' . $values[0]) . "\n";
                         }
                     ?></textarea>
                 </div>

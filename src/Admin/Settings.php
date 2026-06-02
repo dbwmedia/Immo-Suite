@@ -387,7 +387,7 @@ class Settings
 			if (preset.value === 'custom') {
 				data.append('custom_path', document.getElementById('xml_path_custom').value);
 			}
-			data.append('_wpnonce', '<?php echo wp_create_nonce('dbw_validate_path'); ?>');
+			data.append('_wpnonce', '<?php echo wp_create_nonce('dbw_immo_validate_path'); ?>');
 			fetch(ajaxurl, { method: 'POST', body: data })
 				.then(function(r) { return r.json(); })
 				.then(function(res) {
@@ -575,7 +575,7 @@ class Settings
 			wp_send_json_error(array('message' => 'Keine Berechtigung.'));
 		}
 
-		check_ajax_referer('dbw_validate_path', '_wpnonce');
+		check_ajax_referer('dbw_immo_validate_path', '_wpnonce');
 
 		$path_key = isset($_POST['path_key']) ? sanitize_text_field(wp_unslash($_POST['path_key'])) : '';
 
@@ -596,6 +596,12 @@ class Settings
 			// Try relative from ABSPATH if not absolute
 			if (!is_dir($resolved)) {
 				$resolved = ABSPATH . ltrim($custom, '/');
+			}
+			// Prevent path traversal outside WordPress root
+			$real_resolved = realpath($resolved);
+			$real_abspath = realpath(ABSPATH);
+			if ($real_resolved && $real_abspath && strpos($real_resolved, $real_abspath) !== 0) {
+				wp_send_json_error(array('message' => 'Pfad liegt ausserhalb des WordPress-Verzeichnisses.'));
 			}
 		} else {
 			wp_send_json_error(array('message' => 'Ungültige Auswahl.'));

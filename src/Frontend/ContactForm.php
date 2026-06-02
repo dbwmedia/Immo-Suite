@@ -21,6 +21,15 @@ class ContactForm
     {
         check_ajax_referer('dbw_immo_contact_nonce', 'nonce');
 
+        // Rate limiting — 1 submission per email per 2 minutes
+        $rate_key = 'dbw_contact_' . md5(sanitize_email($_POST['email'] ?? '') . $_SERVER['REMOTE_ADDR']);
+        if (get_transient($rate_key)) {
+            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
+                __('Bitte warten Sie einen Moment, bevor Sie erneut absenden.', 'dbw-immo-suite'),
+                __('Bitte warte einen Moment, bevor du erneut absendest.', 'dbw-immo-suite')
+            ));
+        }
+
         // Honeypot check — silently succeed to not reveal detection
         if (!empty($_POST['website'])) {
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(
@@ -134,6 +143,9 @@ class ContactForm
         );
 
         $sent = wp_mail($to, $subject, $body, $headers);
+
+        // Set rate limit after successful processing (even if mail fails)
+        set_transient($rate_key, 1, 120);
 
         if ($sent) {
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(
