@@ -207,10 +207,14 @@ class CardRenderer
                 </div>
 
                 <div class="dbw-card-footer">
-                    <?php if (!$opts['hide_price'] && $price && get_theme_mod('dbw_immo_archive_show_price', true)) : ?>
+                    <?php if (!$opts['hide_price'] && get_theme_mod('dbw_immo_archive_show_price', true)) : ?>
                         <div class="dbw-property-price">
-                            <span class="dbw-price-label"><?php echo esc_html($price_label); ?></span>
-                            <span class="dbw-price-value"><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price, 'preis')); ?> €</span>
+                            <?php if ($price) : ?>
+                                <span class="dbw-price-label"><?php echo esc_html($price_label); ?></span>
+                                <span class="dbw-price-value"><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price, 'preis')); ?> €</span>
+                            <?php else : ?>
+                                <span class="dbw-price-value"><?php _e('Preis auf Anfrage', 'dbw-immo-suite'); ?></span>
+                            <?php endif; ?>
                         </div>
                     <?php else : ?>
                         <div class="dbw-property-price"></div>
