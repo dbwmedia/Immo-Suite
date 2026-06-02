@@ -57,6 +57,7 @@ class Plugin
         $this->loader->add_action('wp_ajax_dbw_immo_prepare_import', $importer, 'ajax_prepare_import');
         $this->loader->add_action('wp_ajax_dbw_immo_process_batch', $importer, 'ajax_process_batch');
         $this->loader->add_action('wp_ajax_dbw_immo_finalize_import', $importer, 'ajax_finalize_import');
+        $this->loader->add_action('wp_ajax_dbw_immo_import_progress', $importer, 'ajax_import_progress');
 
         // Admin Assets
         $this->loader->add_action('admin_enqueue_scripts', $this, 'enqueue_admin_scripts');
