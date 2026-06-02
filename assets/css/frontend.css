@@ -497,7 +497,7 @@
 	margin: 0 auto;
 	padding: 2rem 1rem;
 	box-sizing: border-box;
-	overflow: hidden;
+	overflow: visible;
 }
 
 #dbw-immo-suite .dbw-single-header {
