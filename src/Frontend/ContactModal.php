@@ -79,9 +79,9 @@ class ContactModal
                             <p class="dbw-modal__quickfacts">
                                 <?php
                                 $parts = array();
-                                if ($area) $parts[]  = number_format_i18n($area, 0) . ' m&sup2;';
-                                if ($rooms) $parts[] = $rooms . ' Zi.';
-                                if ($price) $parts[] = number_format_i18n($price, 0) . ' &euro;';
+                                if ($area) $parts[]  = \DBW\ImmoSuite\dbw_format_number($area, 'flaeche') . ' m&sup2;';
+                                if ($rooms) $parts[] = \DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer') . ' Zi.';
+                                if ($price) $parts[] = \DBW\ImmoSuite\dbw_format_number($price, 'preis') . ' &euro;';
                                 echo implode(' &middot; ', $parts);
                                 ?>
                             </p>
@@ -307,9 +307,9 @@ class ContactModal
             $price_miete = get_post_meta($post_id, 'kaltmiete', true);
             $price_label = '';
             if ($price_kauf > 0) {
-                $price_label = number_format_i18n((float) $price_kauf, 0) . ' &euro;';
+                $price_label = \DBW\ImmoSuite\dbw_format_number($price_kauf, 'preis') . ' &euro;';
             } elseif ($price_miete > 0) {
-                $price_label = number_format_i18n((float) $price_miete, 0) . ' &euro;/mtl.';
+                $price_label = \DBW\ImmoSuite\dbw_format_number($price_miete, 'preis') . ' &euro;/mtl.';
             }
             ?>
             <?php if ($price_label): ?>

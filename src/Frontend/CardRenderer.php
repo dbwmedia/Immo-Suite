@@ -154,7 +154,7 @@ class CardRenderer
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                                 </div>
                                 <div class="dbw-meta-data">
-                                    <span class="dbw-meta-value"><?php echo esc_html($area); ?> m²</span>
+                                    <span class="dbw-meta-value"><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($area, 'flaeche')); ?> m²</span>
                                     <?php if ($opts['show_meta_labels']) : ?>
                                         <span class="dbw-meta-label"><?php _e('Wohnfläche', 'dbw-immo-suite'); ?></span>
                                     <?php endif; ?>
@@ -168,7 +168,7 @@ class CardRenderer
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                                 </div>
                                 <div class="dbw-meta-data">
-                                    <span class="dbw-meta-value"><?php echo esc_html($rooms); ?> Zi.</span>
+                                    <span class="dbw-meta-value"><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer')); ?> Zi.</span>
                                     <?php if ($opts['show_meta_labels']) : ?>
                                         <span class="dbw-meta-label"><?php _e('Zimmer', 'dbw-immo-suite'); ?></span>
                                     <?php endif; ?>
@@ -210,7 +210,7 @@ class CardRenderer
                     <?php if (!$opts['hide_price'] && $price && get_theme_mod('dbw_immo_archive_show_price', true)) : ?>
                         <div class="dbw-property-price">
                             <span class="dbw-price-label"><?php echo esc_html($price_label); ?></span>
-                            <span class="dbw-price-value"><?php echo esc_html(number_format_i18n((float) $price, 0)); ?> €</span>
+                            <span class="dbw-price-value"><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price, 'preis')); ?> €</span>
                         </div>
                     <?php else : ?>
                         <div class="dbw-property-price"></div>

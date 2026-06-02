@@ -81,6 +81,37 @@ function dbw_anrede($sie, $du)
 	return Core\Anrede::pick($sie, $du);
 }
 
+/**
+ * Format a numeric property value for display.
+ *
+ * @param mixed  $value Raw value from post meta.
+ * @param string $type  'zimmer', 'flaeche', or 'preis'.
+ * @return string Formatted string (without unit suffix).
+ */
+function dbw_format_number($value, $type = 'flaeche')
+{
+	$num = (float) $value;
+	if ($num <= 0) {
+		return '';
+	}
+
+	switch ($type) {
+		case 'zimmer':
+			// 3.00 → "3", 2.50 → "2,5"
+			if (fmod($num, 1) == 0) {
+				return number_format($num, 0, ',', '.');
+			}
+			return rtrim(rtrim(number_format($num, 1, ',', '.'), '0'), ',');
+
+		case 'preis':
+			return number_format($num, 0, ',', '.');
+
+		case 'flaeche':
+		default:
+			return number_format(round($num), 0, ',', '.');
+	}
+}
+
 // Initialize Plugin
 function run_dbw_immo_suite()
 {

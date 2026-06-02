@@ -246,7 +246,7 @@ get_header(); ?>
 						<div class="dbw-feature-item">
 							<span class="dbw-meta-label">Wohnfläche</span><br>
 							<span class="dbw-meta-value">
-								<?php echo esc_html(number_format_i18n((float) $area, 2)); ?> m²
+								<?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($area, 'flaeche')); ?> m²
 							</span>
 						</div>
 						<?php
@@ -256,7 +256,7 @@ get_header(); ?>
 						<div class="dbw-feature-item">
 							<span class="dbw-meta-label">Zimmer</span><br>
 							<span class="dbw-meta-value">
-								<?php echo esc_html($rooms); ?>
+								<?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer')); ?>
 							</span>
 						</div>
 						<?php
@@ -266,7 +266,7 @@ get_header(); ?>
 						<div class="dbw-feature-item">
 							<span class="dbw-meta-label">Grundstück</span><br>
 							<span class="dbw-meta-value">
-								<?php echo esc_html(number_format_i18n((float) $land_area, 2)); ?> m²
+								<?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($land_area, 'flaeche')); ?> m²
 							</span>
 						</div>
 						<?php
@@ -276,7 +276,7 @@ get_header(); ?>
 						<div class="dbw-feature-item">
 							<span class="dbw-meta-label">Nutzfläche</span><br>
 							<span class="dbw-meta-value">
-								<?php echo esc_html(number_format_i18n((float) $use_area, 2)); ?> m²
+								<?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($use_area, 'flaeche')); ?> m²
 							</span>
 						</div>
 						<?php
@@ -436,7 +436,7 @@ get_header(); ?>
 							<li
 								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 								<span>Wohnfläche</span>
-								<strong>ca. <?php echo esc_html(number_format_i18n((float) $area, 2)); ?> m²</strong>
+								<strong>ca. <?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($area, 'flaeche')); ?> m²</strong>
 							</li>
 						<?php endif; ?>
 
@@ -444,7 +444,7 @@ get_header(); ?>
 							<li
 								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 								<span>Anzahl Zimmer</span>
-								<strong><?php echo esc_html($rooms); ?></strong>
+								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer')); ?></strong>
 							</li>
 						<?php endif; ?>
 
@@ -496,13 +496,13 @@ get_header(); ?>
 							<li
 								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 								<span>Kaufpreis</span>
-								<strong><?php echo esc_html(number_format_i18n((float) $price_kauf, 0)); ?> €</strong>
+								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_kauf, 'preis')); ?> €</strong>
 							</li>
 							<?php if ($hausgeld > 0): ?>
 								<li
 									style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 									<span>Hausgeld</span>
-									<strong><?php echo esc_html(number_format_i18n((float) $hausgeld, 2)); ?> €</strong>
+									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis')); ?> €</strong>
 								</li>
 							<?php endif; ?>
 							<?php if ($provision): ?>
@@ -524,20 +524,20 @@ get_header(); ?>
 							<li
 								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 								<span>Kaltmiete</span>
-								<strong><?php echo esc_html(number_format_i18n((float) $price_miete, 2)); ?> €</strong>
+								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_miete, 'preis')); ?> €</strong>
 							</li>
 							<?php if ($nebenkosten > 0): ?>
 								<li
 									style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 									<span>Nebenkosten</span>
-									<strong><?php echo esc_html(number_format_i18n((float) $nebenkosten, 2)); ?> €</strong>
+									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($nebenkosten, 'preis')); ?> €</strong>
 								</li>
 							<?php endif; ?>
 							<?php if ($price_warm > 0): ?>
 								<li
 									style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
 									<span>Warmmiete</span>
-									<strong><?php echo esc_html(number_format_i18n((float) $price_warm, 2)); ?> €</strong>
+									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_warm, 'preis')); ?> €</strong>
 								</li>
 							<?php endif; ?>
 
@@ -736,15 +736,15 @@ get_header(); ?>
 									style="display: flex; justify-content: space-between; border-top: 1px solid #f0f0f0; padding-top: 1rem; margin-top: auto;">
 									<div style="display: flex; gap: 1rem; color: #555; font-size: 0.95rem;">
 										<?php if ($sim_area): ?>
-											<span title="Wohnfläche"><strong><?php echo esc_html($sim_area); ?></strong> m²</span>
+											<span title="Wohnfläche"><strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($sim_area, 'flaeche')); ?></strong> m²</span>
 										<?php endif; ?>
 										<?php if ($sim_rooms): ?>
-											<span title="Zimmer"><strong><?php echo esc_html($sim_rooms); ?></strong> Zi.</span>
+											<span title="Zimmer"><strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($sim_rooms, 'zimmer')); ?></strong> Zi.</span>
 										<?php endif; ?>
 									</div>
 									<?php if ($sim_price): ?>
 										<strong
-											style="color: var(--dbw-primary); font-size: 1.1rem;"><?php echo esc_html(number_format_i18n((float) $sim_price, 0)); ?>
+											style="color: var(--dbw-primary); font-size: 1.1rem;"><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($sim_price, 'preis')); ?>
 											€</strong>
 									<?php endif; ?>
 								</div>

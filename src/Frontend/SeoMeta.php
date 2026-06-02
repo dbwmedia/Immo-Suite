@@ -42,15 +42,15 @@ class SeoMeta
             $parts[] = $city;
         }
         if ($area) {
-            $parts[] = $area . ' m²';
+            $parts[] = \DBW\ImmoSuite\dbw_format_number($area, 'flaeche') . ' m²';
         }
         if ($rooms) {
-            $parts[] = $rooms . ' Zimmer';
+            $parts[] = \DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer') . ' Zimmer';
         }
         if ($kaufpreis && (float) $kaufpreis > 0) {
-            $parts[] = number_format_i18n((float) $kaufpreis, 0) . ' €';
+            $parts[] = \DBW\ImmoSuite\dbw_format_number($kaufpreis, 'preis') . ' €';
         } elseif ($kaltmiete && (float) $kaltmiete > 0) {
-            $parts[] = number_format_i18n((float) $kaltmiete, 0) . ' € Miete';
+            $parts[] = \DBW\ImmoSuite\dbw_format_number($kaltmiete, 'preis') . ' € Miete';
         }
 
         $description = $title;
