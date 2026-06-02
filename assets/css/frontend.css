@@ -1514,8 +1514,9 @@
 }
 
 #dbw-immo-suite .dbw-cta__icon {
-	font-size: 1.2rem;
-	line-height: 1;
+	width: 20px;
+	height: 20px;
+	flex-shrink: 0;
 }
 
 #dbw-immo-suite .dbw-phone-link {
@@ -1685,7 +1686,7 @@
 }
 
 .dbw-step__content {
-	padding: 20px 24px 8px;
+	padding: 24px 28px 12px;
 	overflow-y: auto;
 	flex: 1;
 }
@@ -1708,17 +1709,24 @@
 	gap: 4px;
 	background: none;
 	border: none;
-	color: #888;
+	color: #999;
 	cursor: pointer;
-	padding: 0;
-	margin-bottom: 16px;
+	padding: 4px 0;
+	margin-bottom: 12px;
 	font-size: 0.85rem;
 	font-family: inherit;
 	transition: color 0.15s;
+	outline: none;
 }
 
 .dbw-step__back:hover {
-	color: var(--dbw-primary);
+	color: var(--dbw-text);
+}
+
+.dbw-step__back:focus-visible {
+	outline: 2px solid var(--dbw-accent);
+	outline-offset: 2px;
+	border-radius: 4px;
 }
 
 /* Body (legacy compat) */
@@ -1747,7 +1755,7 @@
 
 .dbw-field__label {
 	display: block;
-	margin-bottom: 10px;
+	margin-bottom: 14px;
 }
 
 .dbw-field__label > span {
@@ -1757,25 +1765,28 @@
 	margin-bottom: 4px;
 }
 
-.dbw-field input[type="text"],
-.dbw-field input[type="email"],
-.dbw-field input[type="tel"],
-.dbw-field input[type="date"],
-.dbw-field textarea,
-.dbw-field select {
-	width: 100%;
-	padding: 10px 12px;
+.dbw-modal .dbw-input,
+.dbw-modal input[type="text"],
+.dbw-modal input[type="email"],
+.dbw-modal input[type="tel"],
+.dbw-modal input[type="date"],
+.dbw-modal textarea,
+.dbw-modal select {
+	width: 100% !important;
+	max-width: 100% !important;
+	padding: 11px 14px;
 	border: 1.5px solid #ddd;
-	border-radius: 8px;
+	border-radius: 10px;
 	font-size: 0.95rem;
 	font-family: inherit;
-	transition: border-color 0.15s;
+	transition: border-color 0.15s, box-shadow 0.15s;
 	background: #fff;
+	box-sizing: border-box;
 }
 
-.dbw-field input:focus,
-.dbw-field textarea:focus,
-.dbw-field select:focus {
+.dbw-modal input:focus,
+.dbw-modal textarea:focus,
+.dbw-modal select:focus {
 	outline: none;
 	border-color: var(--dbw-accent, #3498db);
 	box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
@@ -1941,7 +1952,7 @@
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	padding: 16px 24px;
+	padding: 16px 28px;
 	border-top: 1px solid var(--dbw-border-light);
 	background: #fafafa;
 	position: sticky;
