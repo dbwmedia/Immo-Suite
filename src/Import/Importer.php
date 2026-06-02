@@ -46,7 +46,8 @@ class Importer
             $options = get_option('dbw_immo_suite_settings');
             $xml_path = isset($options['xml_path']) ? $options['xml_path'] : '';
 
-            // Path Logic (same as before)
+            // Path Logic
+            $xml_path_raw = $xml_path;
             if (!empty($xml_path) && is_dir($xml_path)) {
                 $xml_path = trailingslashit($xml_path);
             }
@@ -58,12 +59,14 @@ class Importer
                 $xml_path = $upload_dir['basedir'] . '/openimmo/';
             }
             else {
-                throw new \Exception(sprintf('Verzeichnis "%s" nicht gefunden.', $xml_path));
+                throw new \Exception(sprintf('Verzeichnis "%s" nicht gefunden (konfiguriert: "%s").', $xml_path, $xml_path_raw));
             }
 
             if (!is_dir($xml_path)) {
                 throw new \Exception('Kein gültiges Import-Verzeichnis: ' . $xml_path);
             }
+
+            $this->log_debug('Import-Pfad aufgelöst: ' . $xml_path . ' (konfiguriert: ' . $xml_path_raw . ')');
 
             $stats = array(
                 'created' => 0,
@@ -73,8 +76,35 @@ class Importer
 
             $xmls_processed = 0;
 
-            // ZIP Processing
+            // Verify glob() works on this path (catches open_basedir / permission issues)
             $zips = glob($xml_path . '*.zip');
+            if ($zips === false) {
+                $this->log_debug('glob() fehlgeschlagen für: ' . $xml_path . '*.zip — Berechtigungsproblem oder open_basedir Restriction.');
+                $this->log_debug('open_basedir: ' . (ini_get('open_basedir') ?: '(nicht gesetzt)'));
+                $this->log_debug('is_readable: ' . (is_readable($xml_path) ? 'ja' : 'nein'));
+
+                // Fallback: try uploads dir
+                $upload_dir = wp_upload_dir();
+                $fallback = trailingslashit($upload_dir['basedir']) . 'openimmo/';
+                if ($fallback !== $xml_path && is_dir($fallback)) {
+                    $fallback_test = glob($fallback . '*.zip');
+                    if ($fallback_test !== false) {
+                        $this->log_debug('Fallback auf Uploads-Verzeichnis: ' . $fallback);
+                        $xml_path = $fallback;
+                        $zips = $fallback_test;
+                    }
+                }
+
+                if ($zips === false) {
+                    throw new \Exception(sprintf(
+                        'Verzeichnis "%s" nicht lesbar (glob fehlgeschlagen). Ursache: Dateiberechtigungen oder PHP open_basedir (%s). Bitte den Uploads-Pfad verwenden.',
+                        $xml_path,
+                        ini_get('open_basedir') ?: 'nicht gesetzt'
+                    ));
+                }
+            }
+
+            // ZIP Processing
             if (!empty($zips)) {
                 foreach ($zips as $zip_file) {
                     $temp_dir = $xml_path . 'tmp_' . uniqid() . '/';
@@ -863,6 +893,7 @@ class Importer
             // 1. Locate XML Path
             $options = get_option('dbw_immo_suite_settings');
             $xml_path = isset($options['xml_path']) ? $options['xml_path'] : '';
+            $xml_path_raw = $xml_path;
             if (!empty($xml_path) && is_dir($xml_path)) {
                 $xml_path = trailingslashit($xml_path);
             }
@@ -874,14 +905,39 @@ class Importer
                 $xml_path = $upload_dir['basedir'] . '/openimmo/';
             }
             else {
-                wp_send_json_error('Pfad nicht gefunden.');
+                wp_send_json_error('Pfad nicht gefunden: ' . $xml_path);
             }
 
             if (!is_dir($xml_path))
                 wp_send_json_error('Verzeichnis existiert nicht: ' . $xml_path);
 
+            $this->log_debug('AJAX Import-Pfad aufgelöst: ' . $xml_path . ' (konfiguriert: ' . $xml_path_raw . ')');
+
             // 2. Extract ZIPs & Check Hashes
             $zips = glob($xml_path . '*.zip');
+
+            if ($zips === false) {
+                $this->log_debug('glob() fehlgeschlagen für: ' . $xml_path . ' — open_basedir: ' . (ini_get('open_basedir') ?: '(nicht gesetzt)'));
+
+                // Fallback: try uploads dir
+                $upload_dir = isset($upload_dir) ? $upload_dir : wp_upload_dir();
+                $fallback = trailingslashit($upload_dir['basedir']) . 'openimmo/';
+                if ($fallback !== $xml_path && is_dir($fallback)) {
+                    $fallback_test = glob($fallback . '*.zip');
+                    if ($fallback_test !== false) {
+                        $this->log_debug('Fallback auf Uploads-Verzeichnis: ' . $fallback);
+                        $xml_path = $fallback;
+                        $zips = $fallback_test;
+                    }
+                }
+
+                if ($zips === false) {
+                    wp_send_json_error(sprintf(
+                        'Verzeichnis "%s" nicht lesbar (Berechtigungsproblem oder PHP open_basedir). Bitte den Uploads-Pfad in den Einstellungen wählen.',
+                        $xml_path
+                    ));
+                }
+            }
             $active_zips = array();
 
             if (!empty($zips)) {
@@ -976,6 +1032,26 @@ class Importer
                 ));
             }
 
+            // Initialize progress transient for live polling
+            $total_properties = 0;
+            $file_names = array();
+            foreach ($xml_files_data as $fd) {
+                $total_properties += $fd['count'];
+                $file_names[] = basename($fd['file']);
+            }
+            set_transient('dbw_immo_import_progress', array(
+                'status'       => 'running',
+                'total_files'  => count($xml_files_data),
+                'total'        => $total_properties,
+                'processed'    => 0,
+                'created'      => 0,
+                'updated'      => 0,
+                'errors'       => 0,
+                'current_file' => '',
+                'file_names'   => $file_names,
+                'started'      => time(),
+            ), 3600);
+
             wp_send_json_success(array(
                 'files' => $xml_files_data,
                 'message' => 'Dateien analysiert. Starte Prozess...'
@@ -985,6 +1061,23 @@ class Importer
         catch (\Throwable $e) {
             wp_send_json_error('Fehler bei Vorbereitung: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * AJAX: Poll import progress (called every 2s from dashboard).
+     */
+    public function ajax_import_progress()
+    {
+        check_ajax_referer('dbw_immo_import_nonce', 'nonce');
+        if (!current_user_can('manage_options'))
+            wp_send_json_error('Keine Berechtigung');
+
+        $progress = get_transient('dbw_immo_import_progress');
+        if (!$progress) {
+            wp_send_json_success(array('status' => 'idle'));
+        }
+
+        wp_send_json_success($progress);
     }
 
     /**
@@ -1017,6 +1110,17 @@ class Importer
             $stats = array('created' => 0, 'updated' => 0, 'errors' => 0);
 
             $this->import_property($node, $stats);
+
+            // Update progress transient for live polling
+            $progress = get_transient('dbw_immo_import_progress');
+            if (is_array($progress)) {
+                $progress['processed']++;
+                $progress['current_file'] = basename($file);
+                $progress['created']  += $stats['created'];
+                $progress['updated']  += $stats['updated'];
+                $progress['errors']   += $stats['errors'];
+                set_transient('dbw_immo_import_progress', $progress, 3600);
+            }
 
             if ($stats['errors'] > 0) {
                 wp_send_json_error('Fehler beim Import der Immobilie Index ' . $index);
@@ -1083,9 +1187,23 @@ class Importer
             }
             delete_transient('dbw_immo_batch_processed_ids');
 
+            // Mark progress as done so polling stops
+            $progress = get_transient('dbw_immo_import_progress');
+            if (is_array($progress)) {
+                $progress['status'] = 'done';
+                set_transient('dbw_immo_import_progress', $progress, 60);
+            }
+
             wp_send_json_success('Import und Cleanup erfolgreich abgeschlossen.');
         }
         catch (\Throwable $e) {
+            // Mark progress as error
+            $progress = get_transient('dbw_immo_import_progress');
+            if (is_array($progress)) {
+                $progress['status'] = 'error';
+                $progress['error_message'] = $e->getMessage();
+                set_transient('dbw_immo_import_progress', $progress, 60);
+            }
             wp_send_json_error('Fehler bei Cleanup: ' . $e->getMessage());
         }
     }

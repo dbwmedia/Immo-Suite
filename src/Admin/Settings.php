@@ -634,18 +634,69 @@ class Settings
 		}
 
 		// Check for XML/ZIP files
-		$zips = glob(trailingslashit($resolved) . '*.zip');
-		$xmls = glob(trailingslashit($resolved) . '*.xml');
+		$dir = trailingslashit($resolved);
+		$zips = glob($dir . '*.zip');
+		$xmls = glob($dir . '*.xml');
+
+		// glob() returns false on error (permissions, open_basedir)
+		if ($zips === false || $xmls === false) {
+			$reason = $this->diagnose_glob_failure($dir);
+			wp_send_json_error(array(
+				'message' => sprintf('Verzeichnis existiert (%s), aber ist nicht lesbar. %s', $resolved, $reason),
+			));
+		}
+
 		$file_count = count($zips) + count($xmls);
 
 		$msg = sprintf('Verzeichnis existiert (%s)', $resolved);
 		if ($file_count > 0) {
 			$msg .= sprintf(' — %d Datei(en) gefunden (%d ZIP, %d XML)', $file_count, count($zips), count($xmls));
 		} else {
-			$msg .= ' — Noch keine Import-Dateien vorhanden.';
+			// Hint: maybe files exist but glob can't see them
+			if (!is_readable($dir)) {
+				$msg .= ' — Verzeichnis nicht lesbar (Berechtigungsproblem). Bitte Dateiberechtigungen prüfen oder den Uploads-Pfad verwenden.';
+			} else {
+				$msg .= ' — Noch keine Import-Dateien vorhanden.';
+			}
 		}
 
 		wp_send_json_success(array('message' => $msg));
+	}
+
+	/**
+	 * Diagnose why glob() failed on a directory.
+	 */
+	private function diagnose_glob_failure($dir)
+	{
+		$hints = array();
+
+		if (!is_readable($dir)) {
+			$hints[] = 'Verzeichnis ist nicht lesbar (Dateiberechtigungen prüfen).';
+		}
+
+		$open_basedir = ini_get('open_basedir');
+		if (!empty($open_basedir)) {
+			$hints[] = sprintf('PHP open_basedir ist aktiv: %s', $open_basedir);
+			$allowed = explode(PATH_SEPARATOR, $open_basedir);
+			$inside = false;
+			foreach ($allowed as $base) {
+				if (!empty($base) && strpos($dir, rtrim($base, '/')) === 0) {
+					$inside = true;
+					break;
+				}
+			}
+			if (!$inside) {
+				$hints[] = 'Das Verzeichnis liegt AUSSERHALB der erlaubten open_basedir Pfade!';
+			}
+		}
+
+		$upload_dir = wp_upload_dir();
+		$fallback = trailingslashit($upload_dir['basedir']) . 'openimmo/';
+		if ($fallback !== $dir) {
+			$hints[] = sprintf('Empfehlung: Uploads-Pfad verwenden (%s) — dieser ist garantiert erreichbar.', $fallback);
+		}
+
+		return implode(' ', $hints) ?: 'Ursache unbekannt.';
 	}
 
 	/**
