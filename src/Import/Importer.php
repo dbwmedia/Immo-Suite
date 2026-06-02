@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Import;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Handles OpenImmo XML Import

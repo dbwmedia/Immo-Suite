@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\PostTypes;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Property (Immobilie) Custom Post Type

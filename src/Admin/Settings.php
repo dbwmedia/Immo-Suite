@@ -1,7 +1,5 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Admin;
 
 /**

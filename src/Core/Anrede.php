@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Core;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Global Du/Sie address mode helper.

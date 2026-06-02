@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\blocks;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * References Block Handler

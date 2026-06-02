@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Frontend;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Handles AJAX contact form submissions (both legacy inline and new multi-step modal).

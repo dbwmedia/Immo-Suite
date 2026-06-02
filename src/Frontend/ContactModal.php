@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Frontend;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Multi-step contact modal with Typeform-style UX.

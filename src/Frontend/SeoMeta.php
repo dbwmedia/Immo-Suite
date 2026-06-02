@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Frontend;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Outputs Open Graph and basic SEO meta tags for property pages.

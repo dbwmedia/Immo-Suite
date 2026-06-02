@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Taxonomies;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Taxonomy: Vermarktungsart (Kauf, Miete, etc.)

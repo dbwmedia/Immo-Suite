@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) { exit; }
-
 namespace DBW\ImmoSuite\Admin;
+
+if (!defined('ABSPATH')) { exit; }
 
 /**
  * Handles Custom Meta Boxes for Property Details
