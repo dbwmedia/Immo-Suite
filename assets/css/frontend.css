@@ -10,7 +10,11 @@
 	--dbw-white: #ffffff;
 	--dbw-radius: 8px;
 	--dbw-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	--dbw-shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.1);
 	--dbw-transition: all 0.3s ease;
+	--dbw-border: #e0e0e0;
+	--dbw-border-light: #f0f2f5;
+	--dbw-bg-muted: #f0f2f5;
 }
 
 /* =========================================
@@ -27,6 +31,16 @@
 	box-sizing: border-box;
 }
 
+/* Accessibility: visible focus for keyboard navigation */
+#dbw-immo-suite a:focus-visible,
+#dbw-immo-suite button:focus-visible,
+#dbw-immo-suite input:focus-visible,
+#dbw-immo-suite select:focus-visible,
+#dbw-immo-suite textarea:focus-visible {
+	outline: 2px solid var(--dbw-accent);
+	outline-offset: 2px;
+}
+
 /* Overriding Theme Generics */
 #dbw-immo-suite input[type="text"],
 #dbw-immo-suite input[type="search"],
@@ -34,7 +48,7 @@
 #dbw-immo-suite input[type="email"],
 #dbw-immo-suite select,
 #dbw-immo-suite textarea {
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--dbw-border);
 	/* Restore our border */
 	border-radius: var(--dbw-radius);
 	/* Restore our radius */
@@ -110,7 +124,7 @@
 
 #dbw-immo-suite .dbw-property-card:hover {
 	transform: translateY(-5px);
-	box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--dbw-shadow-hover);
 }
 
 #dbw-immo-suite .dbw-property-image {
@@ -301,7 +315,7 @@
 #dbw-immo-suite .dbw-meta-icon {
 	width: 36px;
 	height: 36px;
-	background: #f0f2f5;
+	background: var(--dbw-bg-muted);
 	border-radius: 8px;
 	/* Softer shape */
 	display: flex;
@@ -313,7 +327,7 @@
 }
 
 #dbw-immo-suite .dbw-property-card:hover .dbw-meta-icon {
-	background: #f0f2f5;
+	background: var(--dbw-bg-muted);
 	color: var(--dbw-primary);
 }
 
@@ -541,7 +555,7 @@
 	padding: 2rem;
 	border-radius: var(--dbw-radius);
 	box-shadow: var(--dbw-shadow);
-	border: 1px solid #eee;
+	border: 1px solid var(--dbw-border-light);
 }
 
 @media (max-width: 768px) {
@@ -568,7 +582,7 @@
 	background: #fff;
 	border-radius: var(--dbw-radius);
 	margin-bottom: 2rem;
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--dbw-border);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	overflow: visible;
 	position: relative;
@@ -606,7 +620,7 @@
 
 	#dbw-immo-suite .dbw-toolbar-item {
 		flex-basis: 100%;
-		border-bottom: 1px solid #eee;
+		border-bottom: 1px solid var(--dbw-border-light);
 		padding-bottom: 0.5rem;
 		margin-bottom: 0.5rem;
 	}
@@ -619,7 +633,7 @@
 
 /* Expanded state needs bottom border on toolbar if content is visible */
 #dbw-immo-suite .is-expanded .dbw-filter-toolbar {
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--dbw-border-light);
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
 }
@@ -837,7 +851,7 @@
 #dbw-immo-suite .dbw-filter-group input {
 	width: 100%;
 	padding: 12px;
-	border: 1px solid #e0e0e0;
+	border: 1px solid var(--dbw-border);
 	border-radius: 6px;
 	font-size: 0.95rem;
 	background: #fff;
@@ -879,7 +893,7 @@
 	align-items: center;
 	margin-bottom: 2rem;
 	padding-bottom: 1rem;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--dbw-border-light);
 }
 
 #dbw-immo-suite .dbw-result-count {
@@ -988,7 +1002,7 @@
 #dbw-immo-suite .dbw-property-grid.is-list-view .dbw-card-body {
 	width: 65%;
 	/* Main Content Left */
-	border-right: 1px solid #eee;
+	border-right: 1px solid var(--dbw-border-light);
 	/* Divider */
 	padding: 2rem;
 }
@@ -1052,7 +1066,7 @@
 
 	#dbw-immo-suite .dbw-property-grid.is-list-view .dbw-card-footer {
 		width: 100%;
-		border-top: 1px solid #eee;
+		border-top: 1px solid var(--dbw-border-light);
 		flex-direction: row;
 		justify-content: space-between;
 		align-items: center;
@@ -1093,7 +1107,7 @@
 	height: 40px;
 	border-radius: 50%;
 	background: white;
-	border: 1px solid #eee;
+	border: 1px solid var(--dbw-border-light);
 	color: var(--dbw-text);
 	text-decoration: none;
 	font-weight: 600;
@@ -1235,7 +1249,7 @@
 #dbw-immo-suite .dbw-infra-item {
 	display: flex;
 	justify-content: space-between;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--dbw-border-light);
 	padding: 5px 0;
 }
 
@@ -1243,7 +1257,7 @@
    SINGLE: Feature Badges
    ========================================= */
 #dbw-immo-suite .dbw-feature-badge {
-	background: #f0f2f5;
+	background: var(--dbw-bg-muted);
 	color: var(--dbw-text);
 	padding: 6px 16px;
 	border-radius: 50px;
@@ -1478,7 +1492,7 @@
 	align-items: center;
 	gap: 12px;
 	padding: 20px 24px;
-	border-bottom: 1px solid #eee;
+	border-bottom: 1px solid var(--dbw-border-light);
 	position: relative;
 }
 
@@ -1718,7 +1732,7 @@
 	align-items: center;
 	gap: 16px;
 	padding: 16px 24px;
-	border-top: 1px solid #eee;
+	border-top: 1px solid var(--dbw-border-light);
 	background: #fafafa;
 	position: sticky;
 	bottom: 0;
