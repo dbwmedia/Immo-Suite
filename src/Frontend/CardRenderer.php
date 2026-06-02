@@ -79,33 +79,27 @@ class CardRenderer
 
         // Image — exclude contact person portrait
         $contact_img_id = $m('kontaktperson_bild_id');
-        $has_image = false;
-        $image_style = '';
+        $image_id = false;
         $thumb_id = get_post_thumbnail_id($post_id);
 
         if ($thumb_id && (int) $thumb_id !== (int) $contact_img_id) {
-            $has_image = true;
-            $image_style = 'background-image: url(' . wp_get_attachment_image_url($thumb_id, 'medium-large') . ');';
-            if ($use_grayscale) {
-                $image_style .= ' filter: grayscale(100%);';
-            }
+            $image_id = $thumb_id;
         }
 
-        if (!$has_image) {
+        if (!$image_id) {
             // Fallback: first attached property image (not contact portrait)
             $attached = get_attached_media('image', $post_id);
             foreach ($attached as $att) {
                 if ($contact_img_id && (int) $att->ID === (int) $contact_img_id) {
                     continue;
                 }
-                $has_image = true;
-                $image_style = 'background-image: url(' . wp_get_attachment_image_url($att->ID, 'medium-large') . ');';
-                if ($use_grayscale) {
-                    $image_style .= ' filter: grayscale(100%);';
-                }
+                $image_id = $att->ID;
                 break;
             }
         }
+
+        $has_image = (bool) $image_id;
+        $grayscale_class = $use_grayscale ? ' dbw-grayscale' : '';
 
         // Card classes
         $card_classes = 'dbw-property-card';
@@ -115,8 +109,15 @@ class CardRenderer
 
         ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class($card_classes); ?>>
-            <a href="<?php the_permalink(); ?>" class="dbw-property-image<?php echo $has_image ? '' : ' dbw-property-image--placeholder'; ?>" style="<?php echo $image_style; ?>">
-                <?php if (!$has_image) : ?>
+            <a href="<?php the_permalink(); ?>" class="dbw-property-image<?php echo $has_image ? '' : ' dbw-property-image--placeholder'; ?>">
+                <?php if ($has_image) : ?>
+                    <?php echo wp_get_attachment_image($image_id, 'medium_large', false, array(
+                        'class' => 'dbw-card-img' . $grayscale_class,
+                        'loading' => 'lazy',
+                        'decoding' => 'async',
+                        'sizes' => '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
+                    )); ?>
+                <?php else : ?>
                     <div class="dbw-placeholder-content">
                         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         <span><?php _e('Bilder folgen demnächst', 'dbw-immo-suite'); ?></span>

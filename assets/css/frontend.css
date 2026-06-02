@@ -115,13 +115,27 @@
 
 #dbw-immo-suite .dbw-property-image {
 	height: 280px;
-	/* Taller image */
 	background-color: var(--dbw-light);
-	background-size: cover;
-	background-position: center;
 	position: relative;
 	display: block;
 	text-decoration: none;
+	overflow: hidden;
+}
+
+#dbw-immo-suite .dbw-property-image .dbw-card-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center;
+	transition: transform 0.4s ease;
+}
+
+#dbw-immo-suite .dbw-property-card:hover .dbw-card-img {
+	transform: scale(1.04);
+}
+
+#dbw-immo-suite .dbw-card-img.dbw-grayscale {
+	filter: grayscale(100%);
 }
 
 #dbw-immo-suite .dbw-property-image--placeholder {

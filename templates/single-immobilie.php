@@ -103,11 +103,22 @@ get_header(); ?>
 			$full_url = wp_get_attachment_image_url($att_id, 'full');
 			$alt = get_post_meta($att_id, '_wp_attachment_image_alt', true);
 
+			// Get srcset data for responsive images
+			$srcset = wp_get_attachment_image_srcset($att_id, 'large');
+			$sizes = wp_get_attachment_image_sizes($att_id, 'large');
+			$img_meta = wp_get_attachment_metadata($att_id);
+			$img_width = isset($img_meta['width']) ? $img_meta['width'] : '';
+			$img_height = isset($img_meta['height']) ? $img_meta['height'] : '';
+
 			$item = array(
 				'id' => $att_id,
 				'url' => $img_url,
 				'full' => $full_url,
-				'alt' => $alt
+				'alt' => $alt,
+				'srcset' => $srcset,
+				'sizes' => $sizes,
+				'width' => $img_width,
+				'height' => $img_height,
 			);
 
 			if ($group === 'GRUNDRISS') {
@@ -214,8 +225,12 @@ get_header(); ?>
 					<?php foreach ($gallery_images as $index => $img): ?>
 						<div class="dbw-gallery-slide" id="slide-<?php echo $index; ?>"
 							onclick="dbwLightbox.open('gallery', <?php echo $index; ?>)">
-							<img src="<?php echo esc_url($img['full']); ?>" alt="<?php echo esc_attr($img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1)); ?>"
-								<?php echo ($index > 0) ? 'loading="lazy"' : ''; ?>>
+							<img src="<?php echo esc_url($img['url']); ?>"
+								alt="<?php echo esc_attr($img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1)); ?>"
+								<?php if ($img['srcset']): ?>srcset="<?php echo esc_attr($img['srcset']); ?>"<?php endif; ?>
+								sizes="(max-width: 768px) 100vw, 800px"
+								<?php if ($img['width'] && $img['height']): ?>width="<?php echo esc_attr($img['width']); ?>" height="<?php echo esc_attr($img['height']); ?>"<?php endif; ?>
+								<?php echo ($index > 0) ? 'loading="lazy" decoding="async"' : 'fetchpriority="high"'; ?>>
 							<?php if ($img['alt']): ?>
 								<div
 									style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 20px; font-size: 0.9rem;">
@@ -236,7 +251,11 @@ get_header(); ?>
 				<div class="dbw-gallery-thumbs">
 					<?php foreach ($gallery_images as $index => $img): ?>
 						<div class="dbw-gallery-thumb" onclick="document.getElementById('slide-<?php echo $index; ?>').scrollIntoView({behavior: 'smooth', block: 'nearest'})">
-							<img src="<?php echo esc_url($img['url']); ?>" loading="lazy" alt="<?php echo esc_attr($img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1)); ?>">
+							<?php echo wp_get_attachment_image($img['id'], 'thumbnail', false, array(
+								'loading' => 'lazy',
+								'decoding' => 'async',
+								'alt' => $img['alt'] ?: get_the_title() . ' — Bild ' . ($index + 1),
+							)); ?>
 						</div>
 						<?php
 					endforeach; ?>
