@@ -105,21 +105,16 @@
 }
 
 /* Property Card */
-/* Property Card */
 #dbw-immo-suite .dbw-property-card {
 	background: var(--dbw-white);
 	border-radius: 12px;
-	/* More rounded */
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-	/* Softer shadow */
 	overflow: hidden;
-	transition: all 0.3s ease;
+	transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.5s ease;
 	border: 1px solid rgba(0, 0, 0, 0.05);
-	/* Very subtle border */
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	/* Uniform height */
 }
 
 #dbw-immo-suite .dbw-property-card:hover {
@@ -127,13 +122,62 @@
 	box-shadow: var(--dbw-shadow-hover);
 }
 
+/* Entrance Animation */
+@keyframes dbw-card-enter {
+	from {
+		opacity: 0;
+		transform: translateY(24px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+#dbw-immo-suite .dbw-property-card {
+	opacity: 0;
+}
+
+#dbw-immo-suite .dbw-property-card.is-visible {
+	animation: dbw-card-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Stagger delay for cards (set via JS inline style --delay) */
+#dbw-immo-suite .dbw-property-card.is-visible {
+	animation-delay: var(--stagger, 0ms);
+}
+
+/* Skip animation if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	#dbw-immo-suite .dbw-property-card {
+		opacity: 1;
+	}
+	#dbw-immo-suite .dbw-property-card.is-visible {
+		animation: none;
+	}
+}
+
+/* Shimmer effect for image loading placeholder */
+@keyframes dbw-shimmer {
+	0% { background-position: -400px 0; }
+	100% { background-position: 400px 0; }
+}
+
 #dbw-immo-suite .dbw-property-image {
 	height: 280px;
-	background-color: var(--dbw-light);
+	background: linear-gradient(90deg, var(--dbw-light) 25%, #e8ecef 50%, var(--dbw-light) 75%);
+	background-size: 800px 100%;
+	animation: dbw-shimmer 1.5s infinite linear;
 	position: relative;
 	display: block;
 	text-decoration: none;
 	overflow: hidden;
+}
+
+/* Stop shimmer once image has loaded */
+#dbw-immo-suite .dbw-property-image:has(.dbw-card-img) {
+	animation: none;
+	background: var(--dbw-light);
 }
 
 #dbw-immo-suite .dbw-property-image .dbw-card-img {
@@ -526,8 +570,34 @@
 	display: block;
 }
 
+/* Section Entrance Animation (Single Property Page) */
+@keyframes dbw-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
 #dbw-immo-suite .dbw-section {
 	margin-bottom: 3rem;
+	opacity: 0;
+}
+
+#dbw-immo-suite .dbw-section.is-visible {
+	animation: dbw-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#dbw-immo-suite .dbw-section {
+		opacity: 1;
+	}
+	#dbw-immo-suite .dbw-section.is-visible {
+		animation: none;
+	}
 }
 
 #dbw-immo-suite .dbw-section-title {
@@ -808,12 +878,22 @@
 
 /* 2. Collapsible Content (Advanced Filters) */
 #dbw-immo-suite .dbw-filter-content {
-	display: none;
-	/* Hidden by default */
 	background: #fdfdfd;
-	padding: 1.5rem;
+	padding: 0 1.5rem;
 	border-bottom-left-radius: var(--dbw-radius);
 	border-bottom-right-radius: var(--dbw-radius);
+	overflow: hidden;
+	max-height: 0;
+	opacity: 0;
+	transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+	            opacity 0.25s ease,
+	            padding 0.35s ease;
+}
+
+#dbw-immo-suite .dbw-filter-container.is-expanded .dbw-filter-content {
+	max-height: 400px;
+	opacity: 1;
+	padding: 1.5rem;
 }
 
 #dbw-immo-suite .dbw-filter-grid {
