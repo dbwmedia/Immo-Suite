@@ -3,7 +3,7 @@
  * Plugin Name: dbw Immo Suite
  * Plugin URI: https://dbw-media.de
  * Description: Die Brücke zwischen Maklersoftware und moderner Website. dbw Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
- * Version: 1.4.0
+ * Version: 1.8.0
  * Author: Dennis Buchwald – dbw media
  * Author URI: https://dbw-media.de
  * Text Domain: dbw-immo-suite
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define Constants
-define('DBW_IMMO_SUITE_VERSION', '1.4.0');
+define('DBW_IMMO_SUITE_VERSION', '1.8.0');
 define('DBW_IMMO_SUITE_PATH', plugin_dir_path(__FILE__));
 define('DBW_IMMO_SUITE_URL', plugin_dir_url(__FILE__));
 

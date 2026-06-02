@@ -39,9 +39,9 @@ class Importer
 
         try {
             // Increase limits
-            @set_time_limit(600);
-            @ini_set('max_execution_time', 600);
-            @ini_set('memory_limit', '2048M');
+            if (function_exists('set_time_limit')) { set_time_limit(600); }
+            ini_set('max_execution_time', '600');
+            wp_raise_memory_limit('admin');
 
             $options = get_option('dbw_immo_suite_settings');
             $xml_path = isset($options['xml_path']) ? $options['xml_path'] : '';
@@ -858,9 +858,11 @@ class Importer
         copy($real_full, $tmp_file);
         $file_array['tmp_name'] = $tmp_file;
 
-        require_once(ABSPATH . 'wp-admin/includes/image.php');
-        require_once(ABSPATH . 'wp-admin/includes/file.php');
-        require_once(ABSPATH . 'wp-admin/includes/media.php');
+        if (!function_exists('media_handle_sideload')) {
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            require_once(ABSPATH . 'wp-admin/includes/file.php');
+            require_once(ABSPATH . 'wp-admin/includes/media.php');
+        }
 
         $att_id = media_handle_sideload($file_array, $post_id);
 
@@ -905,7 +907,7 @@ class Importer
             check_ajax_referer('dbw_immo_import_nonce', 'nonce');
             if (!current_user_can('manage_options'))
                 wp_send_json_error('Keine Berechtigung');
-            @set_time_limit(600);
+            if (function_exists('set_time_limit')) { set_time_limit(600); }
 
             // 1. Locate XML Path
             $options = get_option('dbw_immo_suite_settings');
@@ -1105,8 +1107,8 @@ class Importer
             check_ajax_referer('dbw_immo_import_nonce', 'nonce');
             if (!current_user_can('manage_options'))
                 wp_send_json_error('Keine Berechtigung');
-            @set_time_limit(300); // 5 min per batch
-            @ini_set('memory_limit', '2048M');
+            if (function_exists('set_time_limit')) { set_time_limit(300); }
+            wp_raise_memory_limit('admin');
 
             $file = isset($_POST['file']) ? sanitize_text_field(wp_unslash($_POST['file'])) : '';
             $index = isset($_POST['index']) ? intval($_POST['index']) : 0;
