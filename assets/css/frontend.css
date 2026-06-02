@@ -1384,6 +1384,19 @@
 	line-height: 1;
 }
 
+#dbw-immo-suite .dbw-phone-link {
+	color: inherit;
+	text-decoration: none;
+}
+
+@media (max-width: 768px) {
+	#dbw-immo-suite .dbw-phone-link {
+		text-decoration: underline;
+		text-decoration-style: dotted;
+		text-underline-offset: 3px;
+	}
+}
+
 .dbw-cta-phone {
 	display: block;
 	text-align: center;

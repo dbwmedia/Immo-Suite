@@ -568,10 +568,10 @@ get_header(); ?>
 									<?php echo esc_html($contact_firstname . ' ' . $contact_name); ?>
 								</div>
 								<?php if ($contact_tel): ?>
-									<div style="font-size: 0.9rem; color: #666;"><a href="tel:<?php echo esc_attr($contact_tel); ?>"
-											style="text-decoration:none; color:inherit;">
-											<?php echo esc_html($contact_tel); ?>
-										</a></div>
+									<?php $phone = \DBW\ImmoSuite\dbw_format_phone($contact_tel); ?>
+									<div style="font-size: 0.9rem; color: #666;">
+										<a href="tel:<?php echo esc_attr($phone['tel']); ?>" class="dbw-phone-link"><?php echo esc_html($phone['display']); ?></a>
+									</div>
 									<?php
 								endif; ?>
 							</div>

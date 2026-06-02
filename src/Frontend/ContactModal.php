@@ -29,10 +29,11 @@ class ContactModal
                 <span class="dbw-cta__icon" aria-hidden="true">&#x1F4C5;</span>
                 <span class="dbw-cta__text"><?php esc_html_e('Immobilie anfragen', 'dbw-immo-suite'); ?></span>
             </button>
-            <?php if ($contact_tel): ?>
-                <a href="tel:<?php echo esc_attr(preg_replace('/[^+0-9]/', '', $contact_tel)); ?>"
-                   class="dbw-cta-phone">
-                    <?php esc_html_e('oder direkt anrufen', 'dbw-immo-suite'); ?>
+            <?php if ($contact_tel):
+                $phone = \DBW\ImmoSuite\dbw_format_phone($contact_tel);
+            ?>
+                <a href="tel:<?php echo esc_attr($phone['tel']); ?>" class="dbw-phone-link dbw-cta-phone">
+                    <?php echo esc_html($phone['display']); ?>
                 </a>
             <?php endif; ?>
         </div>
@@ -222,9 +223,11 @@ class ContactModal
                         <button type="submit" class="dbw-btn dbw-btn--primary">
                             <?php esc_html_e('Anfrage absenden', 'dbw-immo-suite'); ?>
                         </button>
-                        <?php if ($contact_tel): ?>
-                            <a href="tel:<?php echo esc_attr(preg_replace('/[^+0-9]/', '', $contact_tel)); ?>" class="dbw-phone-fallback">
-                                <?php esc_html_e('oder direkt anrufen', 'dbw-immo-suite'); ?>
+                        <?php if ($contact_tel):
+                            $phone_modal = \DBW\ImmoSuite\dbw_format_phone($contact_tel);
+                        ?>
+                            <a href="tel:<?php echo esc_attr($phone_modal['tel']); ?>" class="dbw-phone-link dbw-phone-fallback">
+                                <?php echo esc_html($phone_modal['display']); ?>
                             </a>
                         <?php endif; ?>
                     </div>
@@ -263,8 +266,10 @@ class ContactModal
                                     <?php endif; ?>
                                     <div>
                                         <strong><?php echo esc_html($contact_name); ?></strong>
-                                        <?php if ($contact_tel): ?>
-                                            <a href="tel:<?php echo esc_attr(preg_replace('/[^+0-9]/', '', $contact_tel)); ?>">&#x1F4DE; <?php echo esc_html($contact_tel); ?></a>
+                                        <?php if ($contact_tel):
+                                            $phone_success = \DBW\ImmoSuite\dbw_format_phone($contact_tel);
+                                        ?>
+                                            <a href="tel:<?php echo esc_attr($phone_success['tel']); ?>" class="dbw-phone-link">&#x1F4DE; <?php echo esc_html($phone_success['display']); ?></a>
                                         <?php endif; ?>
                                         <?php if ($contact_email): ?>
                                             <a href="mailto:<?php echo esc_attr($contact_email); ?>">&#x1F4E7; <?php echo esc_html($contact_email); ?></a>

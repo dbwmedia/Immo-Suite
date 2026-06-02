@@ -112,6 +112,50 @@ function dbw_format_number($value, $type = 'flaeche')
 	}
 }
 
+/**
+ * Format a phone number for display.
+ * Normalizes 0049/+49 prefix, inserts spaces after country code and area/mobile prefix.
+ *
+ * @param string $raw Raw phone number from OpenImmo.
+ * @return array{display: string, tel: string} Display string and tel: URI value.
+ */
+function dbw_format_phone($raw)
+{
+	// Strip all non-digit/plus characters
+	$digits = preg_replace('/[^0-9+]/', '', $raw);
+
+	// Normalize 0049 → +49
+	if (strpos($digits, '0049') === 0) {
+		$digits = '+49' . substr($digits, 4);
+	}
+	// Normalize 49... (without plus, but clearly international)
+	if (strpos($digits, '49') === 0 && strlen($digits) > 10) {
+		$digits = '+49' . substr($digits, 2);
+	}
+	// Normalize domestic 0... → +49...
+	if (strpos($digits, '0') === 0 && strpos($digits, '+') === false) {
+		$digits = '+49' . substr($digits, 1);
+	}
+
+	$tel = $digits; // clean for tel: href
+
+	// Format display: +49 XXX XXXXXXXX
+	$display = $digits;
+	if (strpos($digits, '+49') === 0) {
+		$national = substr($digits, 3);
+		// Mobile prefixes: 15x, 16x, 17x (3 digits), then rest
+		if (preg_match('/^(1[5-7]\d)(\d+)$/', $national, $m)) {
+			$display = '+49 ' . $m[1] . ' ' . $m[2];
+		}
+		// Landline: variable length area code — use first 2-5 digits as area code
+		elseif (preg_match('/^(\d{2,5})(\d{4,})$/', $national, $m)) {
+			$display = '+49 ' . $m[1] . ' ' . $m[2];
+		}
+	}
+
+	return array('display' => $display, 'tel' => $tel);
+}
+
 // Initialize Plugin
 function run_dbw_immo_suite()
 {
