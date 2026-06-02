@@ -148,22 +148,7 @@ get_header(); ?>
 
 		<!-- Gallery Slider -->
 		<?php if (!empty($gallery_images) && get_theme_mod('dbw_immo_single_show_gallery', true)): ?>
-			<style>
-				.dbw-gallery-btn {
-					background: rgba(255, 255, 255, 0.95);
-					backdrop-filter: blur(4px);
-					transition: all 0.3s ease;
-					color: #333;
-				}
-
-				.dbw-gallery-btn:hover {
-					background: #ffffff;
-					transform: scale(1.05);
-					box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-					color: var(--dbw-primary);
-				}
-			</style>
-			<div class="dbw-gallery-wrapper" style="position: relative; margin-bottom: 2rem;">
+			<div class="dbw-gallery-wrapper">
 
 				<!-- Floating Buttons - Top Left -->
 				<a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-gallery-btn"
@@ -743,84 +728,10 @@ get_header(); ?>
 </div>
 
 <script>
-	(function () {
-		// Image datasets
-		var galleryImages = [
-			<?php if (!empty($gallery_images)): ?>
-					<?php foreach ($gallery_images as $gi): ?>
-								<?php echo json_encode($gi['full']); ?>,
-				<?php endforeach; ?>
-		<?php endif; ?>
-		];
-		var floorplanImages = [
-			<?php if (!empty($floor_plans)): ?>
-					<?php foreach ($floor_plans as $fpi): ?>
-								<?php echo json_encode($fpi['full']); ?>,
-				<?php endforeach; ?>
-		<?php endif; ?>
-		];
-
-		var overlay = document.getElementById('dbwLightboxOverlay');
-		var lbImage = document.getElementById('dbwLbImage');
-		var lbCounter = document.getElementById('dbwLbCounter');
-		var currentSet = [];
-		var currentIdx = 0;
-
-		window.dbwLightbox = {
-			open: function (type, index) {
-				currentSet = (type === 'gallery') ? galleryImages : floorplanImages;
-				currentIdx = index || 0;
-				this.show();
-				overlay.style.display = 'flex';
-				document.body.style.overflow = 'hidden';
-			},
-			close: function () {
-				overlay.style.display = 'none';
-				document.body.style.overflow = '';
-			},
-			prev: function () {
-				currentIdx = (currentIdx - 1 + currentSet.length) % currentSet.length;
-				this.show();
-			},
-			next: function () {
-				currentIdx = (currentIdx + 1) % currentSet.length;
-				this.show();
-			},
-			show: function () {
-				lbImage.style.opacity = '0';
-				setTimeout(function () {
-					lbImage.src = currentSet[currentIdx];
-					lbImage.onload = function () { lbImage.style.opacity = '1'; };
-					lbCounter.textContent = (currentIdx + 1) + ' / ' + currentSet.length;
-				}, 120);
-			}
-		};
-
-		// Keyboard
-		document.addEventListener('keydown', function (e) {
-			if (overlay.style.display !== 'flex') return;
-			if (e.key === 'Escape') dbwLightbox.close();
-			if (e.key === 'ArrowLeft') dbwLightbox.prev();
-			if (e.key === 'ArrowRight') dbwLightbox.next();
-		});
-
-		// Click on backdrop to close
-		overlay.addEventListener('click', function (e) {
-			if (e.target === overlay) dbwLightbox.close();
-		});
-
-		// Touch Swipe
-		var startX = 0;
-		overlay.addEventListener('touchstart', function (e) {
-			startX = e.changedTouches[0].screenX;
-		}, { passive: true });
-		overlay.addEventListener('touchend', function (e) {
-			var diff = e.changedTouches[0].screenX - startX;
-			if (Math.abs(diff) > 50) {
-				if (diff > 0) dbwLightbox.prev(); else dbwLightbox.next();
-			}
-		}, { passive: true });
-	})();
+	window.dbwLightboxData = {
+		gallery: <?php echo wp_json_encode(array_map(function($gi) { return $gi['full']; }, $gallery_images)); ?>,
+		floorplans: <?php echo wp_json_encode(array_map(function($fpi) { return $fpi['full']; }, $floor_plans)); ?>
+	};
 </script>
 
 <?php

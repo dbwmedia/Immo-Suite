@@ -1111,8 +1111,24 @@
    SINGLE: Gallery Slider
    ========================================= */
 #dbw-immo-suite .dbw-gallery-wrapper {
+	position: relative;
+	margin-bottom: 2rem;
 	max-width: 100%;
 	overflow: hidden;
+}
+
+#dbw-immo-suite .dbw-gallery-btn {
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(4px);
+	transition: all 0.3s ease;
+	color: #333;
+}
+
+#dbw-immo-suite .dbw-gallery-btn:hover {
+	background: #ffffff;
+	transform: scale(1.05);
+	box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+	color: var(--dbw-primary);
 }
 
 #dbw-immo-suite .dbw-gallery-slider {
@@ -1987,6 +2003,25 @@
 	#dbw-immo-suite .dbw-infra-list {
 		grid-template-columns: 1fr;
 	}
+}
+
+/* =========================================
+   SINGLE: Similar Properties
+   ========================================= */
+#dbw-immo-suite .dbw-similar-properties {
+	margin: 4rem auto 2rem;
+	padding-top: 3rem;
+}
+
+#dbw-immo-suite .dbw-similar-properties .dbw-section-title {
+	margin-bottom: 2rem;
+	font-size: 1.5rem;
+}
+
+#dbw-immo-suite .dbw-similar-properties .dbw-property-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 2rem;
 }
 
 /* ==========================================================================
