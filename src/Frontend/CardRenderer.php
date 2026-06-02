@@ -68,25 +68,33 @@ class CardRenderer
             $tag_data = Filter::get_status_label($post_id);
         }
 
-        // Image
+        // Image — exclude contact person portrait
+        $contact_img_id = get_post_meta($post_id, 'kontaktperson_bild_id', true);
         $has_image = false;
         $image_style = '';
-        if (has_post_thumbnail()) {
+        $thumb_id = get_post_thumbnail_id($post_id);
+
+        if ($thumb_id && (int) $thumb_id !== (int) $contact_img_id) {
             $has_image = true;
-            $image_style = 'background-image: url(' . get_the_post_thumbnail_url($post_id, 'medium-large') . ');';
+            $image_style = 'background-image: url(' . wp_get_attachment_image_url($thumb_id, 'medium-large') . ');';
             if ($is_inactive) {
                 $image_style .= ' filter: grayscale(100%);';
             }
-        } else {
-            // Try first attached image as fallback
+        }
+
+        if (!$has_image) {
+            // Fallback: first attached property image (not contact portrait)
             $attached = get_attached_media('image', $post_id);
-            if (!empty($attached)) {
-                $first = reset($attached);
+            foreach ($attached as $att) {
+                if ($contact_img_id && (int) $att->ID === (int) $contact_img_id) {
+                    continue;
+                }
                 $has_image = true;
-                $image_style = 'background-image: url(' . wp_get_attachment_image_url($first->ID, 'medium-large') . ');';
+                $image_style = 'background-image: url(' . wp_get_attachment_image_url($att->ID, 'medium-large') . ');';
                 if ($is_inactive) {
                     $image_style .= ' filter: grayscale(100%);';
                 }
+                break;
             }
         }
 
