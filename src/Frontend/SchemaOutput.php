@@ -33,26 +33,37 @@ class SchemaOutput
         global $post;
         $id = $post->ID;
 
-        $price_kauf  = (float) get_post_meta($id, 'kaufpreis', true);
-        $price_miete = (float) get_post_meta($id, 'kaltmiete', true);
-        $area        = (float) get_post_meta($id, 'wohnflaeche', true);
-        $rooms       = (float) get_post_meta($id, 'anzahl_zimmer', true);
-        $bedrooms    = (int) get_post_meta($id, 'anzahl_schlafzimmer', true);
-        $bathrooms   = (int) get_post_meta($id, 'anzahl_badezimmer', true);
-        $year_built  = get_post_meta($id, 'energiepass_baujahr', true);
-        $energy_class = get_post_meta($id, 'energiepass_wertklasse', true);
-        $energy_value = (float) get_post_meta($id, 'energiepass_endenergie', true);
-        $street      = get_post_meta($id, 'strasse', true);
-        $house_num   = get_post_meta($id, 'hausnummer', true);
-        $zip         = get_post_meta($id, 'plz', true);
-        $city        = get_post_meta($id, 'ort', true);
-        $lat         = (float) get_post_meta($id, 'geo_breite', true);
-        $lng         = (float) get_post_meta($id, 'geo_laenge', true);
-        $status      = get_post_meta($id, '_dbw_immo_status', true) ?: 'aktiv';
+        // Use cached meta (already primed by single-immobilie.php)
+        $all_meta = get_post_custom($id);
+        $m = function($key) use ($all_meta) {
+            return isset($all_meta[$key][0]) ? $all_meta[$key][0] : '';
+        };
+
+        $price_kauf  = (float) $m('kaufpreis');
+        $price_miete = (float) $m('kaltmiete');
+        $area        = (float) $m('wohnflaeche');
+        $rooms       = (float) $m('anzahl_zimmer');
+        $bedrooms    = (int) $m('anzahl_schlafzimmer');
+        $bathrooms   = (int) $m('anzahl_badezimmer');
+        $year_built  = $m('energiepass_baujahr');
+        $energy_class = $m('energiepass_wertklasse');
+        $energy_value = (float) $m('energiepass_endenergie');
+        $street      = $m('strasse');
+        $house_num   = $m('hausnummer');
+        $zip         = $m('plz');
+        $city        = $m('ort');
+        $lat         = (float) $m('geo_breite');
+        $lng         = (float) $m('geo_laenge');
+        $status      = $m('_dbw_immo_status') ?: 'aktiv';
         $features    = get_post_meta($id, '_dbw_immo_features', true);
         if (!is_array($features)) {
             $features = array();
         }
+
+        // Contact person for agent property
+        $contact_name = trim($m('kontaktperson_vorname') . ' ' . $m('kontaktperson_name'));
+        $contact_email = $m('kontaktperson_email');
+        $contact_tel   = $m('kontaktperson_tel');
 
         // Determine rent vs. buy from taxonomy
         $vermarktung_terms = wp_get_post_terms($id, 'vermarktungsart', array('fields' => 'names'));
@@ -174,6 +185,28 @@ class SchemaOutput
         }
 
         $schema['about'] = $accommodation;
+
+        // Add agent (contact person or org fallback)
+        if ($contact_name) {
+            $agent = array_filter(array(
+                '@type'     => 'RealEstateAgent',
+                'name'      => $contact_name,
+                'email'     => $contact_email ?: null,
+                'telephone' => $contact_tel ?: null,
+            ));
+            $schema['agent'] = $agent;
+        } else {
+            // Fall back to org-level agent
+            $settings = get_option('dbw_immo_suite_settings', array());
+            if (!empty($settings['org_name'])) {
+                $schema['agent'] = array_filter(array(
+                    '@type'     => 'RealEstateAgent',
+                    'name'      => $settings['org_name'],
+                    'url'       => !empty($settings['org_url']) ? $settings['org_url'] : home_url('/'),
+                    'telephone' => !empty($settings['org_phone']) ? $settings['org_phone'] : null,
+                ));
+            }
+        }
 
         $this->output_json_ld($schema);
     }

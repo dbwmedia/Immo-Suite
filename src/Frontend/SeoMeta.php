@@ -13,6 +13,7 @@ class SeoMeta
     {
         add_action('wp_head', array($this, 'output_meta_tags'), 1);
         add_action('wp_head', array($this, 'output_canonical_archive'), 1);
+        add_action('wp_head', array($this, 'output_robots_noindex'), 1);
     }
 
     public function output_meta_tags()
@@ -91,6 +92,25 @@ class SeoMeta
         echo '<meta name="twitter:title" content="' . esc_attr($title) . '">' . "\n";
         echo '<meta name="twitter:description" content="' . esc_attr($description) . '">' . "\n";
         echo "<!-- /DBW Immo Suite SEO -->\n\n";
+    }
+
+    /**
+     * Output noindex for sold/reference properties to avoid indexing stale listings.
+     */
+    public function output_robots_noindex()
+    {
+        if (!is_singular('immobilie')) {
+            return;
+        }
+
+        if (defined('WPSEO_VERSION') || defined('RANK_MATH_VERSION') || defined('FLAVOR_SEO_VERSION')) {
+            return;
+        }
+
+        $status = get_post_meta(get_the_ID(), '_dbw_immo_status', true);
+        if (in_array($status, array('verkauft', 'referenz'), true)) {
+            echo '<meta name="robots" content="noindex, follow">' . "\n";
+        }
     }
 
     /**
