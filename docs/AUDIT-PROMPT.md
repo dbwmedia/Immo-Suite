@@ -4,7 +4,7 @@ Diesen Prompt in einem neuen Chat verwenden, um das Plugin unabhaengig pruefen z
 
 ---
 
-Fuehre ein vollstaendiges Security-, Performance-, Accessibility-, Code-Quality- und SEO-Audit des WordPress-Plugins "dbw Immo Suite" durch. Das Plugin importiert OpenImmo-XML-Daten von Immobilien-Maklersoftware, speichert sie als Custom Post Type "immobilie" und rendert sie im Frontend mit Archiv-/Einzelansicht, Kontaktformular-Modal und Gutenberg-Bloecken.
+Fuehre ein vollstaendiges Security-, Performance-, Accessibility-, Code-Quality-, SEO- und DSGVO/Datenschutz-Audit des WordPress-Plugins "dbw Immo Suite" durch. Das Plugin importiert OpenImmo-XML-Daten von Immobilien-Maklersoftware, speichert sie als Custom Post Type "immobilie" und rendert sie im Frontend mit Archiv-/Einzelansicht, Kontaktformular-Modal und Gutenberg-Bloecken.
 
 Pruefe jeden der folgenden Bereiche und bewerte ihn auf einer Skala von 1-10. Liste alle Findings mit Datei:Zeilennummer und Severity (Kritisch/Hoch/Mittel/Niedrig).
 
@@ -34,7 +34,7 @@ Pruefe jeden der folgenden Bereiche und bewerte ihn auf einer Skala von 1-10. Li
 - Focus-Management: Lightbox und Modal — Focus-Trap, Focus-Return beim Schliessen?
 - aria-labels auf allen Icon-Buttons?
 - prefers-reduced-motion auf allen Animationen?
-- Farbkontraste (pruefe CSS-Farbwerte)
+- Farbkontraste (pruefe CSS-Farbwerte gegen WCAG AA 4.5:1)
 - Keyboard-Navigation: Gallery, Filter, Modal, Lightbox
 
 **Code Quality:**
@@ -52,5 +52,20 @@ Pruefe jeden der folgenden Bereiche und bewerte ihn auf einer Skala von 1-10. Li
 - Sitemap: Werden noindex-Seiten (verkauft/referenz) aus der Sitemap gefiltert?
 - Open Graph: og:image Dimensionen, og:locale, twitter:card Fallback
 - robots meta fuer verkaufte Objekte
+
+**DSGVO / Datenschutz:**
+- Werden personenbezogene Daten verarbeitet? Wo und welche? (Kontaktformular: Name, E-Mail, Telefon, IP-Adresse)
+- Wird eine Einwilligung (Consent) eingeholt bevor personenbezogene Daten verarbeitet werden? (Datenschutz-Checkbox)
+- Werden personenbezogene Daten gespeichert? Wenn ja: Wo, wie lange, und gibt es eine Loeschmoeglichkeit?
+- E-Mail-Versand: Werden personenbezogene Daten per wp_mail() versendet? Ist das im Datenschutzhinweis dokumentierbar?
+- Rate-Limiting: Werden IP-Adressen oder E-Mail-Hashes in Transients gespeichert? Wie lange? Ist das DSGVO-konform?
+- Externe Ressourcen: Werden externe CDNs geladen (Leaflet, Google Fonts, unpkg.com)? Jede externe Ressource uebertraegt die IP des Besuchers an Dritte — das erfordert Einwilligung oder Rechtsgrundlage.
+- OpenStreetMap Tiles: Die Karte laedt Tiles von tile.openstreetmap.org — uebertraegt IP-Adresse. Ist ein Consent-Layer oder Platzhalter ("Karte laden") implementiert?
+- Cookies / localStorage: Wird localStorage fuer Favoriten oder View-Preference genutzt? Sind das technisch notwendige Speicherungen (kein Consent noetig) oder Tracking?
+- Log-Dateien: Enthalten die Import-Logs personenbezogene Daten? (Dateinamen mit Kundennummern etc.)
+- WhatsApp-Links: Wird bei WhatsApp-Buttons die Telefonnummer des Kontakts an wa.me uebertragen? Datenschutzrechtliche Einordnung.
+- Kontaktperson-Daten: Sind Maklerdaten (Name, Telefon, E-Mail, Foto) auf der Website oeffentlich — ist das durch Arbeitsvertrag/Einwilligung gedeckt? (Plugin-Ebene: Hinweis in Doku genuegend)
+- Gibt es einen wp_privacy_personal_data_exporter und wp_privacy_personal_data_eraser Hook? (DSGVO-Auskunfts- und Loeschrecht)
+- Empfehlungen: Welche Massnahmen sollten ergriffen werden um DSGVO-Konformitaet sicherzustellen? (Consent-Layer, Datenschutzhinweise, Datenminimierung, Aufbewahrungsfristen)
 
 Gib am Ende eine priorisierte Top-10-Liste der wichtigsten Verbesserungen.
