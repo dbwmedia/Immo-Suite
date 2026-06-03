@@ -174,9 +174,13 @@ src/
     Filter.php              # Filterleiste + Query-Modifikation + Sortierung
     TemplateLoader.php      # Theme/Plugin Template-Fallback
     Shortcode.php           # [dbw_immo_grid] + [dbw_immo_references]
-    EnergyRenderer.php      # Energieausweis-Skala + Archiv-Flag
+    EnergyRenderer.php      # Energieausweis-Skala + Energiekosten-Rechner
     ContactForm.php         # AJAX-Kontaktformular
+    ContactModal.php        # Multi-Step Contact Modal (Typeform-Style)
     FinanceCalculator.php   # Kaufnebenkosten- & Finanzierungsrechner
+    InfrastructureScore.php # Walk-Score-artiger Standort-Score (SVG Ring + Bars)
+    PriceComparison.php     # Preis-pro-qm mit Bestandsvergleich
+    WhatsAppButton.php      # WhatsApp-Kontaktbutton (Sidebar + Floating)
     PdfExpose.php           # Standalone Expose-Seite (Print/PDF)
     SeoMeta.php             # Open Graph + Twitter Card Tags + Canonical
     SchemaOutput.php        # Schema.org JSON-LD (RealEstateListing, BreadcrumbList, RealEstateAgent)
@@ -198,12 +202,17 @@ assets/
   js/lightbox.js            # Gallery Lightbox mit Focus-Trap
   js/contact-modal.js       # Multi-Step Contact Modal
   js/finance-calculator.js  # Kaufnebenkosten- & Finanzierungsrechner
+  js/infra-score.js         # Infrastruktur-Score Animation (IntersectionObserver)
   js/admin.js               # Import-AJAX mit Nonce
 docs/
   AUDIT-PROMPT.md           # Wiederverwendbarer Audit-Prompt
   TODO.md                   # Bekannte Altlasten + Feature-Roadmap
   PROMPT-KAUFNEBENKOSTEN.md # Prompt fuer Finanzierungsrechner
   PROMPT-PDF-EXPOSE.md      # Prompt fuer PDF-Expose-Generator
+  PROMPT-ENERGIEKOSTEN.md   # Prompt fuer Energiekosten-Rechner
+  PROMPT-INFRASTRUKTUR-SCORE.md # Prompt fuer Infrastruktur-Score
+  PROMPT-WHATSAPP-BUTTON.md # Prompt fuer WhatsApp-Button
+  PROMPT-PREIS-PRO-QM.md    # Prompt fuer Preis-pro-qm-Vergleich
 languages/
   dbw-immo-suite.pot        # Uebersetzungsvorlage
 ```
