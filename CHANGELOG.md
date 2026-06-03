@@ -7,6 +7,22 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.12.1] — 2026-06-03
+
+DSGVO-Konformitaet und kritische Bugfixes aus dem Audit.
+
+### DSGVO / Datenschutz
+- **Leaflet lokal gebuendelt** — CSS, JS und Marker-Images in `assets/vendor/leaflet/` statt vom externen CDN (unpkg.com). Keine IP-Uebertragung an Dritte mehr beim Laden der Library.
+- **Karten-Consent-Platzhalter** — OpenStreetMap-Karte laedt nicht mehr automatisch. Stattdessen "Karte laden"-Platzhalter mit Hinweis "Dabei werden Daten an OpenStreetMap uebertragen." Karte wird erst nach explizitem Klick initialisiert.
+- **Borlabs Cookie Integration** — `data-borlabs-cookie-type` und `data-borlabs-cookie-id="openstreetmap"` Attribute auf dem Platzhalter. Automatische Karten-Initialisierung wenn Consent bereits ueber Borlabs erteilt wurde. Event-Listener fuer nachtraegliche Einwilligung (`borlabs-cookie-consent-saved`).
+
+### Behoben
+- **Privacy-Link im Kontakt-Modal** — `esc_html__()` escaped die `<a>`-Tags des Datenschutz-Links weg, sodass der Link nicht klickbar war. Gefixt: `__()` mit separatem `esc_url()` auf dem href-Attribut.
+- **Undefinierte Variable `$xml_path_raw`** — PHP Notice im Importer-Log behoben (Variable wurde nach Refactoring auf `resolve_import_path()` nicht entfernt).
+- **ABSPATH-Guard** in `Settings.php` ergaenzt (einzige Datei die ihn noch nicht hatte).
+
+---
+
 ## [1.12.0] — 2026-06-03
 
 Zwei neue Features: WhatsApp-Kontakt-Button als zusaetzlicher Kommunikationskanal und Preis-pro-Quadratmeter-Vergleich mit Durchschnittswerten pro Standort.
