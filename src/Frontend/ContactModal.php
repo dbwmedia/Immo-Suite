@@ -37,13 +37,6 @@ class ContactModal
                 WhatsAppButton::render_cta_button($post_id);
             }
             ?>
-            <?php if ($contact_tel):
-                $phone = \DBW\ImmoSuite\dbw_format_phone($contact_tel);
-            ?>
-                <a href="tel:<?php echo esc_attr($phone['tel']); ?>" class="dbw-phone-link dbw-cta-phone">
-                    <?php echo esc_html($phone['display']); ?>
-                </a>
-            <?php endif; ?>
         </div>
         <?php
     }
