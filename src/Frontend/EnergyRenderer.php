@@ -256,28 +256,19 @@ class EnergyRenderer
         $jahreskosten = $jahresverbrauch * $price_kwh;
         $monatskosten = $jahreskosten / 12;
 
-        // Comparison: average ~100 kWh/m²a
+        // Comparison: average ~100 kWh/m²a — only show when positive (below average)
         $avg_jahreskosten = 100 * $wohnflaeche * $price_kwh;
         $diff_percent = $avg_jahreskosten > 0
             ? round((($jahreskosten - $avg_jahreskosten) / $avg_jahreskosten) * 100)
             : 0;
 
-        if ($diff_percent < -5) {
-            $compare_class = 'dbw-ecost-below';
-            $compare_text = sprintf(
-                __('%d %% unter dem Durchschnitt fuer diese Groesse', 'dbw-immo-suite'),
+        $show_positive_hint = ($diff_percent < -5);
+        $positive_text = $show_positive_hint
+            ? sprintf(
+                __('Unterdurchschnittliche Heizkosten — %d %% unter dem Durchschnitt fuer diese Groesse', 'dbw-immo-suite'),
                 abs($diff_percent)
-            );
-        } elseif ($diff_percent > 5) {
-            $compare_class = 'dbw-ecost-above';
-            $compare_text = sprintf(
-                __('%d %% ueber dem Durchschnitt fuer diese Groesse', 'dbw-immo-suite'),
-                abs($diff_percent)
-            );
-        } else {
-            $compare_class = 'dbw-ecost-avg';
-            $compare_text = __('Im Durchschnitt fuer diese Groesse', 'dbw-immo-suite');
-        }
+            )
+            : '';
 
         $solar_hint = ($source_key === 'solar');
 
@@ -322,13 +313,10 @@ class EnergyRenderer
                 <div class="dbw-ecost-solar-hint">
                     <?php esc_html_e('Primaerenergie durch Solaranlage — keine laufenden Heizkosten.', 'dbw-immo-suite'); ?>
                 </div>
-            <?php else: ?>
-                <div class="dbw-ecost-compare <?php echo esc_attr($compare_class); ?>">
-                    <div class="dbw-ecost-compare-bar">
-                        <div class="dbw-ecost-compare-fill" style="width:<?php echo esc_attr(min(100, max(5, 50 + $diff_percent / 2))); ?>%;"></div>
-                        <div class="dbw-ecost-compare-marker"></div>
-                    </div>
-                    <span class="dbw-ecost-compare-text"><?php echo esc_html($compare_text); ?></span>
+            <?php elseif ($show_positive_hint): ?>
+                <div class="dbw-ecost-positive-hint">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <span><?php echo esc_html($positive_text); ?></span>
                 </div>
             <?php endif; ?>
 
@@ -375,15 +363,14 @@ class EnergyRenderer
 
                 var avgJk = 100 * wohnflaeche * price;
                 var diff = avgJk > 0 ? Math.round(((jk - avgJk) / avgJk) * 100) : 0;
-                var compare = box.querySelector('.dbw-ecost-compare');
-                if (compare) {
-                    var barFill = compare.querySelector('.dbw-ecost-compare-fill');
-                    var text = compare.querySelector('.dbw-ecost-compare-text');
-                    barFill.style.width = Math.min(100, Math.max(5, 50 + diff / 2)) + '%';
-                    compare.className = 'dbw-ecost-compare ' + (diff < -5 ? 'dbw-ecost-below' : diff > 5 ? 'dbw-ecost-above' : 'dbw-ecost-avg');
-                    if (diff < -5) text.textContent = Math.abs(diff) + ' % unter dem Durchschnitt fuer diese Groesse';
-                    else if (diff > 5) text.textContent = Math.abs(diff) + ' % ueber dem Durchschnitt fuer diese Groesse';
-                    else text.textContent = 'Im Durchschnitt fuer diese Groesse';
+                var hint = box.querySelector('.dbw-ecost-positive-hint');
+                if (hint) {
+                    if (diff < -5) {
+                        hint.style.display = '';
+                        hint.querySelector('span').textContent = 'Unterdurchschnittliche Heizkosten \u2014 ' + Math.abs(diff) + ' % unter dem Durchschnitt fuer diese Groesse';
+                    } else {
+                        hint.style.display = 'none';
+                    }
                 }
             }
 

@@ -1558,67 +1558,23 @@
 	color: var(--dbw-gray, #666);
 }
 
-/* Comparison bar */
-#dbw-immo-suite .dbw-ecost-compare {
+/* Positive hint (only shown when below average — never negative framing) */
+#dbw-immo-suite .dbw-ecost-positive-hint {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	margin-top: 1rem;
 	padding: 0.75rem 1rem;
-	background: var(--dbw-bg-muted, #f0f2f5);
+	background: #e8f5e9;
 	border-radius: var(--dbw-radius, 8px);
-}
-
-#dbw-immo-suite .dbw-ecost-compare-bar {
-	height: 6px;
-	border-radius: 3px;
-	background: var(--dbw-border, #e0e0e0);
-	position: relative;
-	overflow: hidden;
-	margin-bottom: 0.5rem;
-}
-
-#dbw-immo-suite .dbw-ecost-compare-fill {
-	height: 100%;
-	border-radius: 3px;
-	transition: width 0.3s ease, background-color 0.3s ease;
-}
-
-#dbw-immo-suite .dbw-ecost-compare-marker {
-	position: absolute;
-	top: -2px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 2px;
-	height: 10px;
-	background: var(--dbw-gray, #666);
-	border-radius: 1px;
-}
-
-#dbw-immo-suite .dbw-ecost-below .dbw-ecost-compare-fill {
-	background: #2ecc71;
-}
-
-#dbw-immo-suite .dbw-ecost-avg .dbw-ecost-compare-fill {
-	background: #f39c12;
-}
-
-#dbw-immo-suite .dbw-ecost-above .dbw-ecost-compare-fill {
-	background: #e74c3c;
-}
-
-#dbw-immo-suite .dbw-ecost-compare-text {
-	font-size: 0.82rem;
+	font-size: 0.85rem;
 	font-weight: 600;
+	color: #2e7d32;
 }
 
-#dbw-immo-suite .dbw-ecost-below .dbw-ecost-compare-text {
-	color: #27ae60;
-}
-
-#dbw-immo-suite .dbw-ecost-avg .dbw-ecost-compare-text {
-	color: #e67e22;
-}
-
-#dbw-immo-suite .dbw-ecost-above .dbw-ecost-compare-text {
-	color: #c0392b;
+#dbw-immo-suite .dbw-ecost-positive-hint svg {
+	flex-shrink: 0;
+	color: #2e7d32;
 }
 
 #dbw-immo-suite .dbw-ecost-solar-hint {
@@ -1674,13 +1630,6 @@
 
 	#dbw-immo-suite .dbw-ecost-detail-row {
 		font-size: 0.82rem;
-	}
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-	#dbw-immo-suite .dbw-ecost-compare-fill {
-		transition: none;
 	}
 }
 
@@ -1787,6 +1736,110 @@
 
 .dbw-cta-phone:hover {
 	color: var(--dbw-accent, #3498db);
+	text-decoration: underline;
+}
+
+/* =========================================
+   WhatsApp Button
+   ========================================= */
+#dbw-immo-suite .dbw-cta--whatsapp {
+	background: #25D366;
+	color: #fff;
+	box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+}
+
+#dbw-immo-suite .dbw-cta--whatsapp:hover {
+	background: #1DA851;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+#dbw-immo-suite .dbw-cta--icon-only {
+	flex: 0 0 auto;
+	width: 44px;
+	padding: 10px;
+}
+
+/* Floating Button */
+.dbw-whatsapp-floating {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 9998;
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	background: #25D366;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+	text-decoration: none;
+	animation: dbw-wa-entrance 0.4s ease-out 1s both;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dbw-whatsapp-floating:hover {
+	transform: scale(1.08);
+	box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+	color: #fff;
+}
+
+.dbw-whatsapp-floating::after {
+	content: '';
+	position: absolute;
+	inset: -4px;
+	border-radius: 50%;
+	border: 2px solid rgba(37, 211, 102, 0.4);
+	animation: dbw-wa-pulse 2s ease-out infinite;
+}
+
+@keyframes dbw-wa-entrance {
+	from { transform: scale(0); opacity: 0; }
+	to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes dbw-wa-pulse {
+	0% { transform: scale(1); opacity: 0.6; }
+	100% { transform: scale(1.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dbw-whatsapp-floating {
+		animation: none;
+	}
+	.dbw-whatsapp-floating::after {
+		animation: none;
+		display: none;
+	}
+}
+
+/* Hide floating button when modal is open */
+body:has(dialog[open]) .dbw-whatsapp-floating {
+	display: none;
+}
+
+/* Mobile: shift above sticky bar */
+@media (max-width: 768px) {
+	.dbw-whatsapp-floating {
+		bottom: 80px;
+	}
+}
+
+/* Success screen link */
+.dbw-whatsapp-success-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: #25D366;
+	font-size: 0.9rem;
+	font-weight: 600;
+	text-decoration: none;
+	margin-top: 6px;
+}
+
+.dbw-whatsapp-success-link:hover {
 	text-decoration: underline;
 }
 
@@ -2781,6 +2834,7 @@
 	.dbw-cta-stack,
 	.dbw-modal,
 	.dbw-sticky-cta-bar,
+	.dbw-whatsapp-floating,
 	.dbw-similar-properties,
 	#dbw-map, .leaflet-container,
 	#dbwLightboxOverlay,
