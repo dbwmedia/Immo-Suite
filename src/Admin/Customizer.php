@@ -92,6 +92,19 @@ class Customizer
             ),
         ));
 
+        // Spacing
+        $wp_customize->add_setting('dbw_immo_archive_top_spacing', array(
+            'default' => 6,
+            'sanitize_callback' => 'absint',
+        ));
+        $wp_customize->add_control('dbw_immo_archive_top_spacing', array(
+            'label' => __('Abstand nach oben (rem)', 'dbw-immo-suite'),
+            'description' => __('Abstand zwischen Header/Navigation und Inhalt auf der Archivseite.', 'dbw-immo-suite'),
+            'section' => 'dbw_immo_archive_section',
+            'type' => 'number',
+            'input_attrs' => array('min' => 0, 'max' => 20, 'step' => 1),
+        ));
+
         // Toggles
         $this->add_toggle_setting($wp_customize, 'dbw_immo_archive_show_year', true, __('Baujahr anzeigen', 'dbw-immo-suite'), 'dbw_immo_archive_section');
         $this->add_toggle_setting($wp_customize, 'dbw_immo_archive_show_area', true, __('Wohnfläche anzeigen', 'dbw-immo-suite'), 'dbw_immo_archive_section');
@@ -106,6 +119,19 @@ class Customizer
             'title' => __('Detailansicht', 'dbw-immo-suite'),
             'panel' => 'dbw_immo_panel',
             'priority' => 30,
+        ));
+
+        // Spacing
+        $wp_customize->add_setting('dbw_immo_single_top_spacing', array(
+            'default' => 2,
+            'sanitize_callback' => 'absint',
+        ));
+        $wp_customize->add_control('dbw_immo_single_top_spacing', array(
+            'label' => __('Abstand nach oben (rem)', 'dbw-immo-suite'),
+            'description' => __('Abstand zwischen Header/Navigation und Inhalt auf der Detailseite.', 'dbw-immo-suite'),
+            'section' => 'dbw_immo_single_section',
+            'type' => 'number',
+            'input_attrs' => array('min' => 0, 'max' => 20, 'step' => 1),
         ));
 
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_map', true, __('Lage / Karte anzeigen', 'dbw-immo-suite'), 'dbw_immo_single_section');
@@ -207,6 +233,8 @@ class Customizer
         $accent = get_theme_mod('dbw_immo_color_accent', '#3498db');
         $light = get_theme_mod('dbw_immo_color_light', '#ecf0f1');
         $radius = get_theme_mod('dbw_immo_border_radius', 8);
+        $archive_top = intval(get_theme_mod('dbw_immo_archive_top_spacing', 6));
+        $single_top = intval(get_theme_mod('dbw_immo_single_top_spacing', 2));
 
         // Columns logic
         $cols = get_theme_mod('dbw_immo_archive_columns', 3);
@@ -230,6 +258,8 @@ class Customizer
                 --dbw-light: {$light};
                 --dbw-radius: {$radius}px;
             }
+            #dbw-immo-suite.dbw-immo-archive-container { padding-top: {$archive_top}rem; }
+            #dbw-immo-suite.dbw-single-property-container { padding-top: {$single_top}rem; }
             {$grid_style}
         </style>";
     }
