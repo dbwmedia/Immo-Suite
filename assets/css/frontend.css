@@ -1481,6 +1481,218 @@
 }
 
 /* =========================================
+   SINGLE: Energy Cost Estimation
+   ========================================= */
+#dbw-immo-suite .dbw-ecost-box {
+	background: #fff;
+	border: 1px solid var(--dbw-border, #e0e0e0);
+	border-radius: var(--dbw-radius, 8px);
+	padding: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+#dbw-immo-suite .dbw-ecost-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-weight: 700;
+	font-size: 1rem;
+	color: var(--dbw-primary, #2c3e50);
+	margin-bottom: 1.25rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 2px solid var(--dbw-accent, #2573a7);
+}
+
+#dbw-immo-suite .dbw-ecost-icon {
+	color: var(--dbw-accent, #2573a7);
+	flex-shrink: 0;
+}
+
+#dbw-immo-suite .dbw-ecost-result {
+	text-align: center;
+	padding: 1rem 0;
+}
+
+#dbw-immo-suite .dbw-ecost-monthly {
+	font-size: 1.6rem;
+	font-weight: 800;
+	color: var(--dbw-accent, #2573a7);
+	font-variant-numeric: tabular-nums;
+	line-height: 1.2;
+}
+
+#dbw-immo-suite .dbw-ecost-yearly {
+	font-size: 0.95rem;
+	color: var(--dbw-gray, #666);
+	margin-top: 0.25rem;
+	font-variant-numeric: tabular-nums;
+}
+
+#dbw-immo-suite .dbw-ecost-details {
+	border-top: 1px solid var(--dbw-border-light, #f0f2f5);
+	padding-top: 0.75rem;
+	margin-top: 0.5rem;
+}
+
+#dbw-immo-suite .dbw-ecost-detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	padding: 6px 0;
+	font-size: 0.88rem;
+	color: var(--dbw-text, #333);
+}
+
+#dbw-immo-suite .dbw-ecost-detail-row + .dbw-ecost-detail-row {
+	border-top: 1px solid var(--dbw-border-light, #f0f2f5);
+}
+
+#dbw-immo-suite .dbw-ecost-detail-row strong {
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+#dbw-immo-suite .dbw-ecost-note {
+	font-weight: 400;
+	font-size: 0.8rem;
+	color: var(--dbw-gray, #666);
+}
+
+/* Comparison bar */
+#dbw-immo-suite .dbw-ecost-compare {
+	margin-top: 1rem;
+	padding: 0.75rem 1rem;
+	background: var(--dbw-bg-muted, #f0f2f5);
+	border-radius: var(--dbw-radius, 8px);
+}
+
+#dbw-immo-suite .dbw-ecost-compare-bar {
+	height: 6px;
+	border-radius: 3px;
+	background: var(--dbw-border, #e0e0e0);
+	position: relative;
+	overflow: hidden;
+	margin-bottom: 0.5rem;
+}
+
+#dbw-immo-suite .dbw-ecost-compare-fill {
+	height: 100%;
+	border-radius: 3px;
+	transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#dbw-immo-suite .dbw-ecost-compare-marker {
+	position: absolute;
+	top: -2px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 2px;
+	height: 10px;
+	background: var(--dbw-gray, #666);
+	border-radius: 1px;
+}
+
+#dbw-immo-suite .dbw-ecost-below .dbw-ecost-compare-fill {
+	background: #2ecc71;
+}
+
+#dbw-immo-suite .dbw-ecost-avg .dbw-ecost-compare-fill {
+	background: #f39c12;
+}
+
+#dbw-immo-suite .dbw-ecost-above .dbw-ecost-compare-fill {
+	background: #e74c3c;
+}
+
+#dbw-immo-suite .dbw-ecost-compare-text {
+	font-size: 0.82rem;
+	font-weight: 600;
+}
+
+#dbw-immo-suite .dbw-ecost-below .dbw-ecost-compare-text {
+	color: #27ae60;
+}
+
+#dbw-immo-suite .dbw-ecost-avg .dbw-ecost-compare-text {
+	color: #e67e22;
+}
+
+#dbw-immo-suite .dbw-ecost-above .dbw-ecost-compare-text {
+	color: #c0392b;
+}
+
+#dbw-immo-suite .dbw-ecost-solar-hint {
+	margin-top: 1rem;
+	padding: 0.75rem 1rem;
+	background: #e8f5e9;
+	border-radius: var(--dbw-radius, 8px);
+	font-size: 0.88rem;
+	color: #2e7d32;
+	font-weight: 600;
+}
+
+/* Slider */
+#dbw-immo-suite .dbw-ecost-slider-group {
+	margin-top: 1.25rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--dbw-border-light, #f0f2f5);
+}
+
+#dbw-immo-suite .dbw-ecost-slider-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin-bottom: 6px;
+}
+
+#dbw-immo-suite .dbw-ecost-slider-header label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--dbw-text, #333);
+}
+
+#dbw-immo-suite .dbw-ecost-output {
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: var(--dbw-accent, #2573a7);
+	font-variant-numeric: tabular-nums;
+}
+
+#dbw-immo-suite .dbw-ecost-disclaimer {
+	font-size: 0.78rem;
+	color: var(--dbw-gray, #666);
+	line-height: 1.5;
+	margin: 1rem 0 0;
+	text-align: center;
+}
+
+/* Responsive */
+@container (max-width: 500px) {
+	#dbw-immo-suite .dbw-ecost-monthly {
+		font-size: 1.3rem;
+	}
+
+	#dbw-immo-suite .dbw-ecost-detail-row {
+		font-size: 0.82rem;
+	}
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	#dbw-immo-suite .dbw-ecost-compare-fill {
+		transition: none;
+	}
+}
+
+/* Print: hide energy calculator slider + interactive elements */
+@media print {
+	.dbw-ecost-slider-group,
+	.dbw-ecost-disclaimer {
+		display: none !important;
+	}
+}
+
+/* =========================================
    SINGLE: Map
    ========================================= */
 #dbw-immo-suite #dbw-map {
@@ -2748,5 +2960,183 @@
 		-webkit-print-color-adjust: exact !important;
 		print-color-adjust: exact !important;
 		color-adjust: exact !important;
+	}
+
+	/* 14. Infrastructure Score print */
+	.dbw-infra-ring-progress {
+		transition: none !important;
+	}
+	.dbw-infra-cat-bar {
+		transition: none !important;
+	}
+	.dbw-infra-score {
+		-webkit-print-color-adjust: exact !important;
+		print-color-adjust: exact !important;
+		color-adjust: exact !important;
+	}
+}
+
+/* =========================================
+   Infrastructure Score
+   ========================================= */
+.dbw-infra-score {
+	scroll-margin-top: 100px;
+}
+
+.dbw-infra-score-layout {
+	display: flex;
+	gap: 2rem;
+	align-items: flex-start;
+}
+
+/* Ring */
+.dbw-infra-ring-wrap {
+	flex-shrink: 0;
+	text-align: center;
+}
+
+.dbw-infra-ring-progress {
+	transition: stroke-dashoffset 1.2s ease-out;
+}
+
+.dbw-infra-ring-score {
+	font-size: 28px;
+	font-weight: 800;
+}
+
+.dbw-infra-ring-max {
+	font-size: 11px;
+	fill: #888;
+}
+
+.dbw-infra-ring-label {
+	font-size: 0.9rem;
+	font-weight: 700;
+	margin-top: 0.25rem;
+}
+
+/* Categories */
+.dbw-infra-categories {
+	flex: 1;
+	min-width: 0;
+}
+
+.dbw-infra-cat {
+	border-bottom: 1px solid var(--dbw-border-light, #f0f2f5);
+}
+
+.dbw-infra-cat:last-child {
+	border-bottom: none;
+}
+
+.dbw-infra-cat-header {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	width: 100%;
+	padding: 0.65rem 0;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 0.9rem;
+	color: var(--dbw-text, #333);
+	text-align: left;
+}
+
+.dbw-infra-cat-header:hover {
+	color: var(--dbw-accent, #2573a7);
+}
+
+.dbw-infra-cat-icon {
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+	color: var(--dbw-gray, #5f6b6d);
+}
+
+.dbw-infra-cat-label {
+	width: 100px;
+	flex-shrink: 0;
+	font-weight: 600;
+}
+
+.dbw-infra-cat-bar-wrap {
+	flex: 1;
+	height: 8px;
+	background: #e8e8e8;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.dbw-infra-cat-bar {
+	display: block;
+	height: 100%;
+	width: 0;
+	border-radius: 4px;
+	transition: width 0.8s ease-out;
+}
+
+.dbw-infra-cat-score {
+	flex-shrink: 0;
+	width: 42px;
+	text-align: right;
+	font-weight: 700;
+	font-size: 0.85rem;
+	color: var(--dbw-gray, #5f6b6d);
+}
+
+.dbw-infra-cat-toggle {
+	flex-shrink: 0;
+	color: var(--dbw-gray, #5f6b6d);
+	transition: transform 0.2s ease;
+}
+
+.dbw-infra-cat-header[aria-expanded="true"] .dbw-infra-cat-toggle {
+	transform: rotate(180deg);
+}
+
+/* Detail rows */
+.dbw-infra-cat-details {
+	padding: 0 0 0.5rem 2.6rem;
+}
+
+.dbw-infra-detail-row {
+	display: flex;
+	justify-content: space-between;
+	padding: 0.25rem 0;
+	font-size: 0.85rem;
+	color: var(--dbw-gray, #5f6b6d);
+}
+
+.dbw-infra-detail-dist {
+	font-weight: 600;
+}
+
+/* Responsive: stack on mobile */
+@media (max-width: 600px) {
+	.dbw-infra-score-layout {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.dbw-infra-ring-wrap {
+		margin-bottom: 0.5rem;
+	}
+
+	.dbw-infra-categories {
+		width: 100%;
+	}
+
+	.dbw-infra-cat-label {
+		width: 80px;
+	}
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.dbw-infra-ring-progress,
+	.dbw-infra-cat-bar {
+		transition: none !important;
 	}
 }

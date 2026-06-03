@@ -37,7 +37,7 @@ class Settings
 		$tabs = array(
 			'import'      => __('Import', 'dbw-immo-suite'),
 			'display'     => __('Darstellung', 'dbw-immo-suite'),
-			'calculator'  => __('Finanzierung', 'dbw-immo-suite'),
+			'calculator'  => __('Rechner', 'dbw-immo-suite'),
 			'references'  => __('Referenzen & Verkauf', 'dbw-immo-suite'),
 			'seo'         => __('Maklerfirma (SEO)', 'dbw-immo-suite'),
 			'shortcodes'  => __('Shortcodes', 'dbw-immo-suite'),
@@ -209,6 +209,32 @@ class Settings
 		add_settings_field('calc_default_tilgung', __('Tilgung Standard (%)', 'dbw-immo-suite'), array($this, 'calc_tilgung_callback'), 'dbw-settings-calculator', 'section_calculator');
 		add_settings_field('calc_gest_override', __('Grunderwerbsteuer Override (%)', 'dbw-immo-suite'), array($this, 'calc_gest_override_callback'), 'dbw-settings-calculator', 'section_calculator');
 
+		// ── Tab 3b: Energiekosten-Rechner ──
+		add_settings_section('section_energy_calc', __('Energiekosten-Schaetzung', 'dbw-immo-suite'), array($this, 'print_energy_calc_section_info'), 'dbw-settings-calculator');
+		add_settings_field('energy_show_costs', __('Anzeigen', 'dbw-immo-suite'), array($this, 'energy_show_costs_callback'), 'dbw-settings-calculator', 'section_energy_calc');
+
+		$energy_sources = array(
+			'gas'         => array('label' => __('Gas', 'dbw-immo-suite'), 'default' => 0.12),
+			'oel'         => array('label' => __('Oel', 'dbw-immo-suite'), 'default' => 0.10),
+			'fernwaerme'  => array('label' => __('Fernwaerme', 'dbw-immo-suite'), 'default' => 0.14),
+			'strom'       => array('label' => __('Strom (Direktheizung)', 'dbw-immo-suite'), 'default' => 0.35),
+			'holz'        => array('label' => __('Holz', 'dbw-immo-suite'), 'default' => 0.06),
+			'pellet'      => array('label' => __('Pellet', 'dbw-immo-suite'), 'default' => 0.06),
+			'waermepumpe'  => array('label' => __('Waermepumpe', 'dbw-immo-suite'), 'default' => 0.12),
+			'fluessiggas' => array('label' => __('Fluessiggas', 'dbw-immo-suite'), 'default' => 0.09),
+			'solar'       => array('label' => __('Solar', 'dbw-immo-suite'), 'default' => 0.00),
+		);
+		foreach ($energy_sources as $key => $cfg) {
+			add_settings_field(
+				'energy_price_' . $key,
+				sprintf(__('Preis %s (EUR/kWh)', 'dbw-immo-suite'), $cfg['label']),
+				array($this, 'energy_price_callback'),
+				'dbw-settings-calculator',
+				'section_energy_calc',
+				array('key' => $key, 'default' => $cfg['default'])
+			);
+		}
+
 		// ── Tab 4: Referenzen & Verkauf ──
 		add_settings_section('section_references', __('Referenzen & Verkaufte Objekte', 'dbw-immo-suite'), array($this, 'print_reference_section_info'), 'dbw-settings-references');
 		add_settings_field('enable_references', __('Aktivieren', 'dbw-immo-suite'), array($this, 'enable_references_callback'), 'dbw-settings-references', 'section_references');
@@ -280,6 +306,16 @@ class Settings
 		}
 		if (isset($input['calc_gest_override']) && $input['calc_gest_override'] !== '') {
 			$new_input['calc_gest_override'] = max(0, min(20, (float) str_replace(',', '.', $input['calc_gest_override'])));
+		}
+
+		// Energy Cost Calculator
+		$new_input['energy_show_costs'] = isset($input['energy_show_costs']) ? 1 : 0;
+		$energy_keys = array('gas', 'oel', 'fernwaerme', 'strom', 'holz', 'pellet', 'waermepumpe', 'fluessiggas', 'solar');
+		foreach ($energy_keys as $ek) {
+			$field = 'energy_price_' . $ek;
+			if (isset($input[$field]) && $input[$field] !== '') {
+				$new_input[$field] = max(0, min(2, (float) str_replace(',', '.', $input[$field])));
+			}
 		}
 
 		// Reference Settings
@@ -592,6 +628,24 @@ class Settings
 	public function calc_gest_override_callback()
 	{
 		$this->number_field_callback('calc_gest_override', '', 0.1, 0, 20, __('Leer lassen fuer automatische Erkennung per PLZ. Nur setzen, um die PLZ-Erkennung global zu ueberschreiben.', 'dbw-immo-suite'));
+	}
+
+	public function print_energy_calc_section_info()
+	{
+		print __('Energiepreise pro kWh fuer die Heizkostenschaetzung auf der Detailseite. Preise werden als Standard verwendet, Besucher koennen den Preis per Slider anpassen.', 'dbw-immo-suite');
+	}
+
+	public function energy_show_costs_callback()
+	{
+		$this->checkbox_callback('energy_show_costs', __('Geschaetzte Heizkosten im Energieausweis-Bereich anzeigen', 'dbw-immo-suite'));
+	}
+
+	public function energy_price_callback($args)
+	{
+		$key = $args['key'];
+		$default = $args['default'];
+		$id = 'energy_price_' . $key;
+		$this->number_field_callback($id, $default, 0.01, 0, 2, sprintf(__('Standard: %s EUR/kWh', 'dbw-immo-suite'), number_format($default, 2, ',', '.')));
 	}
 
 	private function number_field_callback($id, $default, $step, $min, $max, $desc = '')
