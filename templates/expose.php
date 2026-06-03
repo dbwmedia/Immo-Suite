@@ -569,6 +569,14 @@ img { max-width: 100%; height: auto; display: block; }
                     <?php endforeach; ?>
                 </table>
             <?php endif; ?>
+
+            <?php
+            // Infrastructure Score (compact expose version)
+            // $post_id is in scope from PdfExpose::render_expose()
+            if (isset($post_id) && class_exists('DBW\ImmoSuite\Frontend\InfrastructureScore')) {
+                \DBW\ImmoSuite\Frontend\InfrastructureScore::render_expose($post_id, $accent, $primary);
+            }
+            ?>
         </div>
     <?php endif; ?>
 

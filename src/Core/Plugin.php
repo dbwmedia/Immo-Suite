@@ -144,6 +144,9 @@ class Plugin
         $plugin_finance_calc = new \DBW\ImmoSuite\Frontend\FinanceCalculator();
         $this->loader->add_action('init', $plugin_finance_calc, 'init');
 
+        $plugin_infra_score = new \DBW\ImmoSuite\Frontend\InfrastructureScore();
+        $this->loader->add_action('init', $plugin_infra_score, 'init');
+
         $plugin_block_references = new \DBW\ImmoSuite\blocks\ReferencesBlock();
         $this->loader->add_action('init', $plugin_block_references, 'init');
 

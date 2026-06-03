@@ -362,30 +362,16 @@ get_header(); ?>
 						?>
 						<?php endif; ?>
 
-						<!-- Infrastructure Distances -->
-						<?php
-						// Helper to get all distanz_ meta
-						$infra_keys = array('kindergaerten', 'grundschule', 'realschule', 'gymnasium', 'einkaufsmoeglichkeiten', 'oepnv'); // Common ones
-						?>
-						<h4 style="margin-top:20px; font-size:1rem; color:#666;">Entfernungen</h4>
-						<ul class="dbw-infra-list">
-							<?php
-							// Try fetching specific keys we mapped or all meta
-							$custom_fields = get_post_custom($id);
-							foreach ($custom_fields as $key => $val) {
-								if (strpos($key, 'distanz_') === 0) {
-									$label = ucfirst(str_replace('distanz_', '', $key));
-									$value = $val[0];
-									if (!$value)
-										continue;
-									echo '<li class="dbw-infra-item"><span>' . esc_html($label) . ':</span> <strong>' . esc_html($value) . ' km</strong></li>';
-								}
-							}
-							?>
-						</ul>
 					</div>
 					<?php
 				endif; ?>
+
+				<?php
+				// Infrastructure Score (replaces old distance list)
+				if (class_exists('DBW\ImmoSuite\Frontend\InfrastructureScore')) {
+					\DBW\ImmoSuite\Frontend\InfrastructureScore::render($id);
+				}
+				?>
 
 				<?php
 			// Finance Calculator (only for Kaufobjekte)
