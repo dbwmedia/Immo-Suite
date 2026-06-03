@@ -38,6 +38,10 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Energieausweis-Skala** — grafische Darstellung mit Pfeil-Indikator
 - **Multi-Step Kontakt-Modal** — Typeform-Style 2-Step-Flow: Intent-Auswahl (4 animierte SVG-Cards) → Kontaktdaten mit intent-spezifischen Feldern, Progress-Bar, Datenschutz-Checkbox, AJAX-Submit, animiertem Erfolgs-Screen mit Makler-Kontaktkarte, Honeypot + Rate Limiting, Mobile-Bottom-Sheet + Sticky-CTA-Bar
 - **Kaufnebenkosten- & Finanzierungsrechner** — automatische Nebenkosten-Aufschluesselung (Grunderwerbsteuer per PLZ, Notar, Grundbuch, Provision) + interaktive Finanzierung mit 3 Slidern (Eigenkapital, Zinssatz, Tilgung), Live-Berechnung, alle Raten im Backend anpassbar
+- **Infrastruktur-Score** — Walk-Score-Stil mit SVG-Ring (0–10), 5 gewichteten Kategorie-Balken (OEPNV, Einkaufen, Bildung, Gastronomie, Verkehr), aufklappbaren Distanz-Details, auch im Expose
+- **Energiekosten-Rechner** — geschaetzte Heizkosten basierend auf Energiepass-Daten, konfigurierbarer Energiepreis per Slider, 9 Energietraeger
+- **Preis-pro-Quadratmeter** — automatische Berechnung mit Vergleich zum Standort-Durchschnitt, Abweichungs-Badge, optionale Archiv-Karten-Badges, Transient-Cache
+- **WhatsApp-Kontakt-Button** — gruener CTA in Sidebar, optionaler Floating-Button (pulsierend), Mobile-Sticky-Bar-Icon, Modal-Success-Link, vorbefuellte Nachricht mit Platzhaltern, globale Nummer oder pro Objekt, Du/Sie-System
 - **Highlights-Sidebar** — Sticky-Box mit Eckdaten, Preis, Provision, Energieklasse
 - **Aehnliche Objekte** — "Das koennte Sie auch interessieren" mit 3-stufigem Fallback
 - **Floating Action Buttons** — Zurueck, Teilen (Web Share API), Expose/PDF-Download, Grundrisse-Anker
@@ -109,13 +113,13 @@ Zeigt verkaufte und Referenz-Objekte an.
 ### WordPress Customizer
 - **Design System** — Primary, Secondary, Accent, Hintergrundfarbe, Eckenradius
 - **Archiv-Steuerung** — Objekte/Seite, Spalten, Sichtbarkeit (Preis, Flaeche, Zimmer, Baujahr, Energie)
-- **Detailseite** — Toggles fuer Karte, Energie, Galerie, Kontakt, Teilen, Expose/PDF, Aehnliche Objekte, Finanzierungsrechner
+- **Detailseite** — Toggles fuer Karte, Energie, Galerie, Kontakt, Teilen, Expose/PDF, Aehnliche Objekte, Finanzierungsrechner, Infrastruktur-Score, Preis/m², WhatsApp, WhatsApp-Floating
 - **Highlights-Box** — Hintergrundfarbe und Textfarbe
 
 ### Admin-Backend
 - **7 Tabs im Property-Editor** — Basisdaten, Preise, Flaechen, Ausstattung, Technik, Kontakt, Import Info
 - **Import-Dashboard** — System-Status, manueller Import-Trigger, Historie (letzte 20 Laeufe)
-- **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Darstellung (Du/Sie-Anrede, Finanzierungsrechner-Defaults), Maklerfirma (SEO), Shortcode-Doku
+- **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Darstellung (Du/Sie-Anrede, Preis/m², WhatsApp), Rechner (Finanzierung, Energiekosten), Maklerfirma (SEO), Shortcode-Doku
 - **Automatischer WP-Cron Import** — stuendlich, mit Lock-Mechanismus
 
 ---

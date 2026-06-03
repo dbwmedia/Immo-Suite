@@ -7,6 +7,83 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.12.0] — 2026-06-03
+
+Zwei neue Features: WhatsApp-Kontakt-Button als zusaetzlicher Kommunikationskanal und Preis-pro-Quadratmeter-Vergleich mit Durchschnittswerten pro Standort.
+
+### Hinzugefuegt
+- **WhatsApp-Kontakt-Button** — vollstaendige Integration an 4 Stellen:
+  - **Sidebar CTA-Stack** — gruener Button (#25D366) zwischen "Immobilie anfragen" und Telefon-Link, offizielles WhatsApp-SVG-Icon
+  - **Floating-Button** — 56x56px Kreis (fixed bottom-right), Puls-Animation, verschwindet bei offenem Modal (`body:has(dialog[open])`), Mobile-Position ueber Sticky-Bar
+  - **Mobile Sticky-CTA-Bar** — WhatsApp-Icon-Button neben "Anfragen"
+  - **Modal Success-Screen** — "Oder direkt per WhatsApp schreiben"-Link mit Icon
+- **WhatsApp-URL-Generierung** — `https://wa.me/{nummer}?text={nachricht}` mit `rawurlencode()`, Nummer-Normalisierung (nur Ziffern, kein +)
+- **Vorbefuellte Nachricht** — Platzhalter `{ansprechpartner}`, `{titel}`, `{url}`, `{name}`, beruecksichtigt Du/Sie-System via `dbw_anrede()`
+- **Nummer-Logik** — Prioritaet: globale Override-Nummer → Kontaktperson des Objekts → Button wird ausgeblendet
+- **Neue Datei `WhatsAppButton.php`** (`src/Frontend/`) — zentrale Klasse mit `get_whatsapp_url()`, `render_cta_button()`, `render_floating_button()`, `render_success_link()`
+- **Backend-Einstellungen** (Tab "Darstellung", Sektion "WhatsApp"):
+  - `whatsapp_enabled` — WhatsApp-Button global aktivieren (Checkbox)
+  - `whatsapp_floating` — Floating-Button anzeigen (Checkbox)
+  - `whatsapp_number_override` — globale WhatsApp-Business-Nummer (Tel-Input, ueberschreibt Kontaktperson)
+  - `whatsapp_cta_text` — Button-Beschriftung (Text, Default: "Per WhatsApp anfragen")
+  - `whatsapp_message_template` — Nachrichtenvorlage mit Platzhaltern (Textarea)
+- **Customizer-Toggles** — `dbw_immo_single_show_whatsapp` (Default: an), `dbw_immo_whatsapp_floating` (Default: aus)
+- **Preis-pro-Quadratmeter-Vergleich** — automatische Berechnung und Vergleich mit Standort-Durchschnitt:
+  - **Neue Datei `PriceComparison.php`** (`src/Frontend/`) — Berechnung, Transient-Caching, Rendering
+  - Abweichungs-Indikator (ueber/unter/im Durchschnitt) mit Badge
+  - Optional auf Archiv-Karten als Badge
+  - Backend-Einstellungen: Show/Hide-Toggles, Min. Vergleichsobjekte, Cache-Dauer
+  - Customizer-Toggles fuer Einzelansicht und Archiv
+
+### Geaendert
+- **ContactModal.php** — WhatsApp-Integration an 3 Stellen (CTA-Stack, Success-Screen, Sticky-Bar)
+- **Plugin.php** — `WhatsAppButton` und `PriceComparison` im Loader registriert
+- **Customizer.php** — 4 neue Toggles (WhatsApp anzeigen, WhatsApp Floating, Preis/m² Single, Preis/m² Archiv)
+- **Settings.php** — 2 neue Sektionen "WhatsApp" und "Preis pro m²" mit Sanitization
+- **frontend.css** — ~100 Zeilen neue Styles (WhatsApp-Button, Floating, Pulse-Animation, Print-Hide, Success-Link)
+- **Version** auf 1.12.0 aktualisiert
+
+### Technische Details
+- Kein JavaScript noetig — reine `<a href>` Links (Desktop: WhatsApp Web/App, Mobile: WhatsApp App)
+- `rel="noopener"` und `aria-label` auf allen externen Links
+- Eigene CSS-Klassen fuer Event-Tracking (Google Analytics etc.)
+- Floating-Button wird bei `dialog[open]` via CSS `:has()` ausgeblendet (kein JS)
+- `@media (prefers-reduced-motion)` deaktiviert Pulse-Animation
+- Transient-basierter Cache fuer Preis/m²-Durchschnittswerte
+
+---
+
+## [1.11.0] — 2026-06-03
+
+Zwei neue Analyse-Features: Visueller Infrastruktur-Score und Energiekosten-Rechner auf der Detailseite.
+
+### Hinzugefuegt
+- **Infrastruktur-Score** — visueller Score (0–10) basierend auf `distanz_*` Meta-Feldern, aehnlich Walk Score
+  - SVG-Ring-Animation mit Score-Zahl, Farbe (Gruen 8+, Blau 6-7.9, Orange 4-5.9, Rot 0-3.9)
+  - 5 gewichtete Kategorien: OEPNV (25%), Einkaufen (20%), Bildung (25%), Gastronomie (10%), Verkehr (20%)
+  - Horizontale Fortschrittsbalken mit SVG-Icons und aufklappbaren Distanz-Details
+  - Gewichtungs-Umverteilung bei fehlenden Kategorien, Mindest-Datenbasis (3 Felder)
+  - Expose-Integration (Seite 3 Lage)
+- **Neue Datei `InfrastructureScore.php`** (`src/Frontend/`)
+- **Neue Datei `infra-score.js`** (`assets/js/`) — Ring- und Balken-Animation via IntersectionObserver
+- **Energiekosten-Rechner** — geschaetzte monatliche/jaehrliche Heizkosten inline im Energieausweis-Bereich:
+  - Berechnung: Endenergieverbrauch × Wohnflaeche × Preis/kWh
+  - Interaktiver Energiepreis-Slider pro kWh
+  - Automatische Erkennung des Energietraegers (9 Typen: Gas, Oel, Strom, Fernwaerme, Holz, Pellet, Waermepumpe, Fluessiggas, Solar)
+  - 9 konfigurierbare Energiepreise in den Einstellungen (Tab "Rechner")
+  - Aktivierbar per Setting `energy_show_costs`
+
+### Geaendert
+- **single-immobilie.php** — alte Distanz-Liste ersetzt durch `InfrastructureScore::render()`
+- **expose.php** — `InfrastructureScore::render_expose()` auf Seite 3
+- **EnergyRenderer.php** — Energiekosten-Rechner integriert
+- **Plugin.php** — `InfrastructureScore` im Loader registriert
+- **Customizer.php** — Toggle "Infrastruktur-Score anzeigen"
+- **Settings.php** — Sektion "Energiekosten-Schaetzung" im Tab "Rechner" mit 9 Energiepreisfeldern + Toggle
+- **frontend.css** — ~150 Zeilen neue Styles (Ring, Balken, Kategorien, Details, Energiekosten)
+
+---
+
 ## [1.10.0] — 2026-06-02
 
 Professionelle Expose-Ansicht ersetzt den bisherigen Drucken-Button. Standalone-Seite ohne Theme-Header/Footer, optimiert fuer A4-Druck und PDF-Export.
