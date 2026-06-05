@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.14.3] — 2026-06-05
+
+### Behoben
+- **503-Crash beim Speichern der Einstellungen** — Endlosrekursion im `sanitize()`-Callback behoben. `PageGenerator::create_reference_page()` rief `update_option()` auf dieselbe Option auf, was `sanitize()` erneut triggerte und eine Endlosschleife ausloeste, die PHP-FPM zum Absturz brachte.
+- **PHP 8.2 Kompatibilitaet** — `Undefined array key "anrede"`-Warning und `Automatic conversion of false to array`-Deprecation in PageGenerator behoben.
+
+---
+
 ## [1.14.0] — 2026-06-05
 
 ### Hinzugefuegt
