@@ -168,6 +168,9 @@ class Plugin
         $plugin_privacy = new \DBW\ImmoSuite\Core\Privacy();
         $this->loader->add_action('init', $plugin_privacy, 'init');
 
+        $plugin_media_cleanup = new \DBW\ImmoSuite\Core\MediaCleanup();
+        $this->loader->add_action('init', $plugin_media_cleanup, 'init');
+
         $plugin_block_references = new \DBW\ImmoSuite\blocks\ReferencesBlock();
         $this->loader->add_action('init', $plugin_block_references, 'init');
 
