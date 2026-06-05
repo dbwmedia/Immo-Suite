@@ -164,9 +164,6 @@ $dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::build
 	'dbw-immo-suite'
 );
 $dbw_immo_update_checker->setBranch('main');
-if (defined('DBW_IMMO_SUITE_GITHUB_TOKEN')) {
-	$dbw_immo_update_checker->setAuthentication(DBW_IMMO_SUITE_GITHUB_TOKEN);
-}
 
 // Initialize Plugin
 function run_dbw_immo_suite()
