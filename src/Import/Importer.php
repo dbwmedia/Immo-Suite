@@ -940,8 +940,16 @@ class Importer
                         $zip->extractTo($temp_dir);
                         $zip->close();
 
+                        // Find XMLs recursively (ZIPs may contain subdirectories)
+                        $temp_xmls = array();
+                        $temp_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($temp_dir));
+                        foreach ($temp_files as $temp_file) {
+                            if ($temp_file->isFile() && strtolower($temp_file->getExtension()) === 'xml') {
+                                $temp_xmls[] = $temp_file->getPathname();
+                            }
+                        }
+
                         // Check MD5 Hash
-                        $temp_xmls = glob($temp_dir . '*.xml');
                         if (!empty($temp_xmls)) {
                             $hash = '';
                             foreach ($temp_xmls as $xml_file) {
