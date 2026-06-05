@@ -575,7 +575,7 @@ class Settings
 
 	public function enable_garbage_collection_callback()
 	{
-		$this->checkbox_callback('enable_garbage_collection', '<br>WICHTIG: Nur aktivieren, wenn Ihre Maklersoftware immer den <b>kompletten Bestand</b> (Full Sync) überträgt! Fehlt ein Objekt in der ZIP, wird es andernfalls archiviert.');
+		$this->checkbox_callback('enable_garbage_collection', 'WICHTIG: Nur aktivieren, wenn die Maklersoftware immer den <b>kompletten Bestand</b> (Full Sync) uebertraegt! Fehlt ein Objekt in der ZIP, wird es andernfalls archiviert.');
 	}
 
 	// -- Reference Callbacks --
@@ -628,7 +628,7 @@ class Settings
 		$val = isset($options[$id]) && $options[$id] == 1 ? 'checked' : '';
 		printf(
 			'<input type="checkbox" id="%s" name="%s[%s]" value="1" %s /> <label for="%s">%s</label>',
-			esc_attr($id), esc_attr($this->option_name), esc_attr($id), $val, esc_attr($id), esc_html($label)
+			esc_attr($id), esc_attr($this->option_name), esc_attr($id), $val, esc_attr($id), wp_kses($label, array('b' => array(), 'strong' => array()))
 		);
 	}
 
