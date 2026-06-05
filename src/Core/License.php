@@ -124,7 +124,7 @@ class License
         }
 
         echo '<div class="notice notice-warning"><p>';
-        echo '<strong>dbw Immo Suite:</strong> ';
+        echo '<strong>Immo Suite:</strong> ';
         echo 'Bitte aktiviere deine Lizenz unter ';
         echo '<a href="' . esc_url(admin_url('edit.php?post_type=immobilie&page=dbw-immo-suite-settings#tab-license')) . '">Einstellungen</a>.';
         echo '</p></div>';

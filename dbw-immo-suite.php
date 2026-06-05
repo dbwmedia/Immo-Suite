@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: dbw Immo Suite
- * Plugin URI: https://dbw-media.de
- * Description: Die Brücke zwischen Maklersoftware und moderner Website. dbw Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
- * Version: 1.14.1
- * Author: Dennis Buchwald – dbw media
- * Author URI: https://dbw-media.de
+ * Plugin Name: Immo Suite
+ * Plugin URI: https://dennisbuchwald.de/immo-suite
+ * Description: Die Brücke zwischen Maklersoftware und moderner Website. Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
+ * Version: 1.14.2
+ * Author: Dennis Buchwald
+ * Author URI: https://dennisbuchwald.de
  * Text Domain: dbw-immo-suite
  * Domain Path: /languages
  */
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define Constants
-define('DBW_IMMO_SUITE_VERSION', '1.14.1');
+define('DBW_IMMO_SUITE_VERSION', '1.14.2');
 define('DBW_IMMO_SUITE_PATH', plugin_dir_path(__FILE__));
 define('DBW_IMMO_SUITE_URL', plugin_dir_url(__FILE__));
 
@@ -65,7 +65,7 @@ function check_requirements()
 	}
 	if (!empty($missing)) {
 		add_action('admin_notices', function () use ($missing) {
-			echo '<div class="notice notice-error"><p><strong>DBW Immo Suite:</strong> '
+			echo '<div class="notice notice-error"><p><strong>Immo Suite:</strong> '
 				. sprintf(
 					__('Fehlende PHP-Erweiterungen: %s. Der OpenImmo-Import wird nicht funktionieren.', 'dbw-immo-suite'),
 					'<code>' . implode('</code>, <code>', $missing) . '</code>'
@@ -164,6 +164,14 @@ $dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::build
 	'dbw-immo-suite'
 );
 $dbw_immo_update_checker->setBranch('main');
+
+// Plugin row meta links
+add_filter('plugin_row_meta', function ($links, $file) {
+	if ($file === plugin_basename(__FILE__)) {
+		$links[] = '<a href="https://dbw-media.de" target="_blank">Agentur: dbw media</a>';
+	}
+	return $links;
+}, 10, 2);
 
 // Initialize Plugin
 function run_dbw_immo_suite()

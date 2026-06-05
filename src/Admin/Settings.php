@@ -183,7 +183,7 @@ class Settings
 		</table>
 
 		<p class="description" style="margin-top: 10px;">
-			<?php esc_html_e('Tipp: Im Gutenberg-Editor stehen diese Funktionen auch als native Bloecke unter "dbw Immo Suite" zur Verfuegung.', 'dbw-immo-suite'); ?>
+			<?php esc_html_e('Tipp: Im Gutenberg-Editor stehen diese Funktionen auch als native Bloecke unter "Immo Suite" zur Verfuegung.', 'dbw-immo-suite'); ?>
 		</p>
 		<?php
 	}

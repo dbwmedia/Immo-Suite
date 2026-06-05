@@ -55,7 +55,7 @@ class PageGenerator
             set_transient('dbw_immo_reference_page_error', true, 60);
             add_action('admin_notices', function () {
                 if (get_transient('dbw_immo_reference_page_error')) {
-                    echo '<div class="notice notice-error"><p><strong>DBW Immo Suite:</strong> '
+                    echo '<div class="notice notice-error"><p><strong>Immo Suite:</strong> '
                         . esc_html__('Die Referenz-Seite konnte nicht automatisch erstellt werden. Bitte erstellen Sie manuell eine Seite mit dem Referenzen-Block.', 'dbw-immo-suite')
                         . '</p></div>';
                     delete_transient('dbw_immo_reference_page_error');

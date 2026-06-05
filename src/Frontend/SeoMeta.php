@@ -80,7 +80,7 @@ class SeoMeta
         $property_type = ($type_terms && !is_wp_error($type_terms)) ? $type_terms[0]->name : 'Immobilie';
 
         // Output
-        echo "\n<!-- DBW Immo Suite SEO -->\n";
+        echo "\n<!-- Immo Suite SEO -->\n";
         echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
         echo '<meta property="og:title" content="' . esc_attr($title) . '">' . "\n";
         echo '<meta property="og:description" content="' . esc_attr($description) . '">' . "\n";
@@ -105,7 +105,7 @@ class SeoMeta
         echo '<meta property="og:locale" content="de_DE">' . "\n";
         echo '<meta name="twitter:title" content="' . esc_attr($title) . '">' . "\n";
         echo '<meta name="twitter:description" content="' . esc_attr($description) . '">' . "\n";
-        echo "<!-- /DBW Immo Suite SEO -->\n\n";
+        echo "<!-- /Immo Suite SEO -->\n\n";
     }
 
     /**
@@ -170,7 +170,7 @@ class SeoMeta
             }
         }
 
-        echo "\n<!-- DBW Immo Suite Archive SEO -->\n";
+        echo "\n<!-- Immo Suite Archive SEO -->\n";
         echo '<meta name="description" content="' . esc_attr(mb_substr($description, 0, 160)) . '">' . "\n";
         echo '<meta property="og:title" content="' . esc_attr($title) . '">' . "\n";
         echo '<meta property="og:description" content="' . esc_attr(mb_substr($description, 0, 160)) . '">' . "\n";
@@ -184,7 +184,7 @@ class SeoMeta
             echo '<meta property="og:image" content="' . esc_url($archive_image) . '">' . "\n";
         }
         echo '<meta name="twitter:card" content="summary">' . "\n";
-        echo "<!-- /DBW Immo Suite Archive SEO -->\n\n";
+        echo "<!-- /Immo Suite Archive SEO -->\n\n";
     }
 
     /**

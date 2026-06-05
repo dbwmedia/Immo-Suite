@@ -15,7 +15,7 @@ class Privacy
     public function register_exporter($exporters)
     {
         $exporters['dbw-immo-suite'] = array(
-            'exporter_friendly_name' => __('dbw Immo Suite', 'dbw-immo-suite'),
+            'exporter_friendly_name' => __('Immo Suite', 'dbw-immo-suite'),
             'callback'               => array($this, 'export_personal_data'),
         );
         return $exporters;
@@ -24,7 +24,7 @@ class Privacy
     public function register_eraser($erasers)
     {
         $erasers['dbw-immo-suite'] = array(
-            'eraser_friendly_name' => __('dbw Immo Suite', 'dbw-immo-suite'),
+            'eraser_friendly_name' => __('Immo Suite', 'dbw-immo-suite'),
             'callback'             => array($this, 'erase_personal_data'),
         );
         return $erasers;
