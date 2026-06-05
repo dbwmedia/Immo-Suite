@@ -46,6 +46,19 @@ class Plugin
         $plugin_license = new \DBW\ImmoSuite\Core\License();
         $this->loader->add_action('init', $plugin_license, 'init');
 
+        // CPT + Taxonomies must always register (admin menu depends on them)
+        $plugin_post_types = new \DBW\ImmoSuite\PostTypes\Property();
+        $this->loader->add_action('init', $plugin_post_types, 'register_post_type');
+
+        $plugin_tax_objektart = new \DBW\ImmoSuite\Taxonomies\PropertyType();
+        $this->loader->add_action('init', $plugin_tax_objektart, 'register_taxonomy');
+
+        $plugin_tax_vermarktung = new \DBW\ImmoSuite\Taxonomies\MarketingType();
+        $this->loader->add_action('init', $plugin_tax_vermarktung, 'register_taxonomy');
+
+        $plugin_tax_location = new \DBW\ImmoSuite\Taxonomies\Location();
+        $this->loader->add_action('init', $plugin_tax_location, 'register_taxonomy');
+
         $plugin_settings = new \DBW\ImmoSuite\Admin\Settings();
         $this->loader->add_action('init', $plugin_settings, 'init');
 
@@ -116,18 +129,6 @@ class Plugin
      */
     private function define_public_hooks()
     {
-        $plugin_post_types = new \DBW\ImmoSuite\PostTypes\Property();
-        $this->loader->add_action('init', $plugin_post_types, 'register_post_type');
-
-        $plugin_tax_objektart = new \DBW\ImmoSuite\Taxonomies\PropertyType();
-        $this->loader->add_action('init', $plugin_tax_objektart, 'register_taxonomy');
-
-        $plugin_tax_vermarktung = new \DBW\ImmoSuite\Taxonomies\MarketingType();
-        $this->loader->add_action('init', $plugin_tax_vermarktung, 'register_taxonomy');
-
-        $plugin_tax_location = new \DBW\ImmoSuite\Taxonomies\Location();
-        $this->loader->add_action('init', $plugin_tax_location, 'register_taxonomy');
-
         $plugin_customizer = new \DBW\ImmoSuite\Admin\Customizer();
         $this->loader->add_action('init', $plugin_customizer, 'init');
 
