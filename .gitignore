@@ -33,6 +33,9 @@ dist/
 # Note: build/ is intentionally tracked in git so the plugin works without npm.
 # After changing block JS/JSON files, run: npm run build
 
+# License keys (plain text — never commit!)
+LICENSE-KEYS.txt
+
 # Environment
 .env
 .env.local

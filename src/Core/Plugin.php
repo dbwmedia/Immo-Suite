@@ -24,7 +24,9 @@ class Plugin
     {
         $this->load_dependencies();
         $this->define_admin_hooks();
-        $this->define_public_hooks();
+        if (\DBW\ImmoSuite\Core\License::is_valid()) {
+            $this->define_public_hooks();
+        }
     }
 
     /**
@@ -41,6 +43,9 @@ class Plugin
      */
     private function define_admin_hooks()
     {
+        $plugin_license = new \DBW\ImmoSuite\Core\License();
+        $this->loader->add_action('init', $plugin_license, 'init');
+
         $plugin_settings = new \DBW\ImmoSuite\Admin\Settings();
         $this->loader->add_action('init', $plugin_settings, 'init');
 

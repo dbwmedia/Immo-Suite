@@ -43,6 +43,7 @@ class Settings
 			'references'  => __('Referenzen & Verkauf', 'dbw-immo-suite'),
 			'seo'         => __('Maklerfirma (SEO)', 'dbw-immo-suite'),
 			'shortcodes'  => __('Shortcodes', 'dbw-immo-suite'),
+			'license'     => __('Lizenz', 'dbw-immo-suite'),
 		);
 		?>
 		<div class="wrap">
@@ -87,6 +88,10 @@ class Settings
 			<div class="dbw-tab-panel" id="tab-shortcodes" style="display:none;">
 				<?php $this->render_shortcode_reference(); ?>
 			</div>
+
+			<div class="dbw-tab-panel" id="tab-license" style="display:none;">
+				<?php $this->render_license_tab(); ?>
+			</div>
 		</div>
 
 		<script>
@@ -101,9 +106,9 @@ class Settings
 				panels.forEach(function(p) {
 					p.style.display = (p.id === 'tab-' + slug) ? '' : 'none';
 				});
-				// Hide submit button on shortcodes tab
+				// Hide submit button on non-form tabs
 				var submit = document.querySelector('.wrap .submit');
-				if (submit) submit.style.display = (slug === 'shortcodes') ? 'none' : '';
+				if (submit) submit.style.display = (slug === 'shortcodes' || slug === 'license') ? 'none' : '';
 			}
 
 			tabs.forEach(function(tab) {
@@ -180,6 +185,50 @@ class Settings
 		<p class="description" style="margin-top: 10px;">
 			<?php esc_html_e('Tipp: Im Gutenberg-Editor stehen diese Funktionen auch als native Bloecke unter "dbw Immo Suite" zur Verfuegung.', 'dbw-immo-suite'); ?>
 		</p>
+		<?php
+	}
+
+	/**
+	 * Render the license activation tab.
+	 */
+	private function render_license_tab()
+	{
+		$is_valid = \DBW\ImmoSuite\Core\License::is_valid();
+		$stored_key = get_option(\DBW\ImmoSuite\Core\License::OPTION_KEY, '');
+
+		// Feedback messages
+		if (isset($_GET['dbw_license'])) {
+			if ($_GET['dbw_license'] === 'activated') {
+				echo '<div class="notice notice-success inline"><p>' . esc_html__('Lizenz erfolgreich aktiviert!', 'dbw-immo-suite') . '</p></div>';
+			} elseif ($_GET['dbw_license'] === 'invalid') {
+				echo '<div class="notice notice-error inline"><p>' . esc_html__('Ungültiger Lizenzschlüssel.', 'dbw-immo-suite') . '</p></div>';
+			}
+		}
+		?>
+		<h2><?php esc_html_e('Lizenz', 'dbw-immo-suite'); ?></h2>
+
+		<?php if ($is_valid) : ?>
+			<div style="background:#d4edda; border-left:4px solid #00a32a; padding:12px 16px; margin-bottom:16px; border-radius:0 4px 4px 0;">
+				<strong><?php esc_html_e('Lizenz aktiv', 'dbw-immo-suite'); ?></strong><br>
+				<code><?php echo esc_html($stored_key); ?></code>
+			</div>
+		<?php endif; ?>
+
+		<form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+			<?php wp_nonce_field('dbw_immo_license_activate'); ?>
+			<input type="hidden" name="action" value="dbw_immo_activate_license">
+			<table class="form-table">
+				<tr>
+					<th scope="row"><label for="dbw_immo_license_key"><?php esc_html_e('Lizenzschlüssel', 'dbw-immo-suite'); ?></label></th>
+					<td>
+						<input type="text" id="dbw_immo_license_key" name="dbw_immo_license_key"
+							   value="<?php echo esc_attr($stored_key); ?>"
+							   class="regular-text" placeholder="DBWIS-XXXX-XXXX-XXXX" style="font-family:monospace;" />
+					</td>
+				</tr>
+			</table>
+			<?php submit_button(__('Lizenz aktivieren', 'dbw-immo-suite'), 'primary', 'submit', false); ?>
+		</form>
 		<?php
 	}
 
