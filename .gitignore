@@ -17,6 +17,7 @@ yarn-error.log
 
 # Composer
 vendor/
+!vendor/plugin-update-checker/
 composer.lock
 
 # Logs

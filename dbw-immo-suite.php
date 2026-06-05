@@ -156,6 +156,18 @@ function dbw_format_phone($raw)
 	return array('display' => $display, 'tel' => $tel);
 }
 
+// GitHub Update Checker
+require_once DBW_IMMO_SUITE_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
+$dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+	'https://github.com/dbwmedia/dbw-immo-suite/',
+	__FILE__,
+	'dbw-immo-suite'
+);
+$dbw_immo_update_checker->setBranch('main');
+if (defined('DBW_IMMO_SUITE_GITHUB_TOKEN')) {
+	$dbw_immo_update_checker->setAuthentication(DBW_IMMO_SUITE_GITHUB_TOKEN);
+}
+
 // Initialize Plugin
 function run_dbw_immo_suite()
 {
