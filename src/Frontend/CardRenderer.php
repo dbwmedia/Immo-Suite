@@ -118,7 +118,6 @@ class CardRenderer
                         'loading' => 'lazy',
                         'decoding' => 'async',
                         'sizes' => '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
-                        'style' => 'view-transition-name: dbw-hero-' . get_the_ID(),
                     )); ?>
                 <?php else : ?>
                     <div class="dbw-placeholder-content">

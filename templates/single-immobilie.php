@@ -223,8 +223,7 @@ get_header(); ?>
 								<?php if ($img['srcset']): ?>srcset="<?php echo esc_attr($img['srcset']); ?>"<?php endif; ?>
 								sizes="(max-width: 768px) 100vw, 800px"
 								<?php if ($img['width'] && $img['height']): ?>width="<?php echo esc_attr($img['width']); ?>" height="<?php echo esc_attr($img['height']); ?>"<?php endif; ?>
-								<?php echo ($index > 0) ? 'loading="lazy" decoding="async"' : 'fetchpriority="high"'; ?>
-								<?php if ($index === 0): ?>style="view-transition-name: dbw-hero-<?php echo esc_attr($id); ?>"<?php endif; ?>>
+								<?php echo ($index > 0) ? 'loading="lazy" decoding="async"' : 'fetchpriority="high"'; ?>>
 							<?php if ($img['alt']): ?>
 								<div
 									style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 20px; font-size: 0.9rem;">
