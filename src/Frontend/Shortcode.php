@@ -59,6 +59,9 @@ class Shortcode
             'highlights' => 'no',
             'hide_price' => 'no',
             'show_date'  => 'no',
+            'cta'        => 'no',
+            'cta_text'   => '',
+            'cta_url'    => '',
         ), $atts, 'dbw_immo_grid');
 
         $posts_per_page = intval($atts['count']);
@@ -157,6 +160,16 @@ class Shortcode
 
             echo '</div>';
             $this->render_pagination($query);
+
+            // CTA Button
+            if ($atts['cta'] === 'yes') {
+                $cta_text = !empty($atts['cta_text']) ? $atts['cta_text'] : __('Zu allen Immobilien', 'dbw-immo-suite');
+                $cta_url = !empty($atts['cta_url']) ? $atts['cta_url'] : get_post_type_archive_link('immobilie');
+                echo '<div class="dbw-grid-cta">';
+                echo '<a href="' . esc_url($cta_url) . '" class="dbw-btn dbw-btn--outline">' . esc_html($cta_text) . ' &rarr;</a>';
+                echo '</div>';
+            }
+
             echo '</div>';
             echo '</div>';
         } else {

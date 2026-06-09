@@ -7,6 +7,16 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.15.1] — 2026-06-09
+
+### Hinzugefuegt
+- **CTA-Button im Immo Grid** — Neuer optionaler "Zu allen Immobilien"-Button unter dem Grid. Im Gutenberg-Block ueber Sidebar-Panel "CTA-Button" aktivierbar mit anpassbarem Text und URL (Default: Immobilien-Archiv). Im Shortcode: `[dbw_immo_grid cta="yes" cta_text="Alle Objekte" cta_url="/immobilien/"]`.
+
+### Behoben
+- **Pagination im Grid-Block** — Pagination nutzte `paginate_links()` ohne Wrapper-Markup, sodass die gestylten `.dbw-page-item` CSS-Selektoren nicht griffen. Jetzt identische Markup-Struktur wie im Archiv (Liste mit `<li class="dbw-page-item">`).
+
+---
+
 ## [1.15.0] — 2026-06-09
 
 ### Hinzugefuegt

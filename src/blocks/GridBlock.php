@@ -135,17 +135,34 @@ class GridBlock
 
             echo '</div>';
 
-            // Pagination (only if enough posts and let's assume this block doesn't paginate by default, but it's good to have)
+            // Pagination
             if ($query->max_num_pages > 1) {
-                echo '<div class="dbw-pagination">';
-                echo paginate_links(array(
-                    'base' => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
-                    'format' => '?paged=%#%',
-                    'current' => max(1, get_query_var('paged')),
-                    'total' => $query->max_num_pages,
+                $big = 999999999;
+                $pages = paginate_links(array(
+                    'base'      => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
+                    'format'    => '?paged=%#%',
+                    'current'   => max(1, get_query_var('paged')),
+                    'total'     => $query->max_num_pages,
+                    'type'      => 'array',
                     'prev_text' => '&larr;',
                     'next_text' => '&rarr;',
                 ));
+                if (is_array($pages)) {
+                    echo '<div class="dbw-pagination"><ul class="dbw-page-list">';
+                    foreach ($pages as $page) {
+                        echo '<li class="dbw-page-item">' . $page . '</li>';
+                    }
+                    echo '</ul></div>';
+                }
+            }
+
+            // CTA Button
+            $show_cta = isset($attributes['showCtaButton']) ? $attributes['showCtaButton'] : false;
+            if ($show_cta) {
+                $cta_text = !empty($attributes['ctaButtonText']) ? $attributes['ctaButtonText'] : __('Zu allen Immobilien', 'dbw-immo-suite');
+                $cta_url = !empty($attributes['ctaButtonUrl']) ? $attributes['ctaButtonUrl'] : get_post_type_archive_link('immobilie');
+                echo '<div class="dbw-grid-cta">';
+                echo '<a href="' . esc_url($cta_url) . '" class="dbw-btn dbw-btn--outline">' . esc_html($cta_text) . ' &rarr;</a>';
                 echo '</div>';
             }
 

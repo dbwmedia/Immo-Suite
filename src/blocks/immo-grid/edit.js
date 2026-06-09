@@ -1,11 +1,11 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, ToggleControl, RangeControl, SelectControl } from '@wordpress/components';
+import { PanelBody, ToggleControl, RangeControl, SelectControl, TextControl } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import ServerSideRender from '@wordpress/server-side-render';
 
 export default function Edit({ attributes, setAttributes }) {
-    const { postsPerPage, marketing, propertyType, hidePrice, showDate, onlyHighlights, location, columns } = attributes;
+    const { postsPerPage, marketing, propertyType, hidePrice, showDate, onlyHighlights, location, columns, showCtaButton, ctaButtonText, ctaButtonUrl } = attributes;
     const blockProps = useBlockProps();
 
     // Fetch taxonomy terms dynamically
@@ -104,6 +104,30 @@ export default function Edit({ attributes, setAttributes }) {
                         options={typeOptions}
                         onChange={(value) => setAttributes({ propertyType: value })}
                     />
+                </PanelBody>
+                <PanelBody title={__('CTA-Button', 'dbw-immo-suite')} initialOpen={false}>
+                    <ToggleControl
+                        label={__('Button "Zu allen Immobilien" anzeigen', 'dbw-immo-suite')}
+                        checked={showCtaButton}
+                        onChange={(value) => setAttributes({ showCtaButton: value })}
+                    />
+                    {showCtaButton && (
+                        <>
+                            <TextControl
+                                label={__('Button-Text', 'dbw-immo-suite')}
+                                value={ctaButtonText}
+                                placeholder={__('Zu allen Immobilien', 'dbw-immo-suite')}
+                                onChange={(value) => setAttributes({ ctaButtonText: value })}
+                            />
+                            <TextControl
+                                label={__('Button-URL (optional)', 'dbw-immo-suite')}
+                                help={__('Leer lassen fuer automatischen Link zum Immobilien-Archiv.', 'dbw-immo-suite')}
+                                value={ctaButtonUrl}
+                                placeholder="/immobilien/"
+                                onChange={(value) => setAttributes({ ctaButtonUrl: value })}
+                            />
+                        </>
+                    )}
                 </PanelBody>
             </InspectorControls>
 

@@ -45,6 +45,18 @@
     "columns": {
       "type": "number",
       "default": 3
+    },
+    "showCtaButton": {
+      "type": "boolean",
+      "default": false
+    },
+    "ctaButtonText": {
+      "type": "string",
+      "default": ""
+    },
+    "ctaButtonUrl": {
+      "type": "string",
+      "default": ""
     }
   }
 }
