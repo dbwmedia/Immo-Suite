@@ -7,10 +7,11 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.15.3] — 2026-06-09
+## [1.15.4] — 2026-06-09
 
-### Hinzugefuegt
-- **MPA View Transition (Archiv → Detail)** — Beim Klick auf eine Immobilien-Card morpht das Bild nahtlos in das Hero-Bild der Detailseite. Nutzt die Cross-Document View Transition API (`@view-transition { navigation: auto }`) mit per-Post `view-transition-name` auf Card-Bild und erstem Galerie-Slide. Chrome 126+, Fallback: normaler Seitenwechsel. `prefers-reduced-motion` deaktiviert die Transition.
+### Geaendert
+- **MPA View Transition entfernt** — Cross-Document View Transition (Archiv → Detail) verursachte sichtbares Flackern beim Seitenwechsel und wurde entfernt. Die same-page View Transition beim Grid/List-Wechsel bleibt erhalten.
+- **Zurueck-Button** nutzt jetzt `history.back()` statt hartem Archiv-Link — navigiert zur tatsaechlichen Herkunftsseite (Homepage, Grid-Block, Archiv Seite 2 etc.). Archiv-Link bleibt als Fallback fuer Direktzugriffe.
 
 ---
 
