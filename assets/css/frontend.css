@@ -1,5 +1,16 @@
 /* DBW ImmoSuite Frontend Styles */
 
+/* Cross-document View Transitions (Archive → Detail) */
+@view-transition {
+	navigation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	@view-transition {
+		navigation: none;
+	}
+}
+
 :root {
 	--dbw-primary: #2c3e50;
 	--dbw-secondary: #34495e;

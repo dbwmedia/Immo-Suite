@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.15.3] — 2026-06-09
+
+### Hinzugefuegt
+- **MPA View Transition (Archiv → Detail)** — Beim Klick auf eine Immobilien-Card morpht das Bild nahtlos in das Hero-Bild der Detailseite. Nutzt die Cross-Document View Transition API (`@view-transition { navigation: auto }`) mit per-Post `view-transition-name` auf Card-Bild und erstem Galerie-Slide. Chrome 126+, Fallback: normaler Seitenwechsel. `prefers-reduced-motion` deaktiviert die Transition.
+
+---
+
 ## [1.15.2] — 2026-06-09
 
 ### Hinzugefuegt
