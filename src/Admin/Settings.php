@@ -252,6 +252,10 @@ class Settings
 		add_settings_field('grayscale_sold', __('Grayscale bei Verkauft', 'dbw-immo-suite'), array($this, 'grayscale_sold_callback'), 'dbw-settings-display', 'section_display');
 		add_settings_field('grayscale_reserved', __('Grayscale bei Reserviert', 'dbw-immo-suite'), array($this, 'grayscale_reserved_callback'), 'dbw-settings-display', 'section_display');
 
+		// ── Kontakt / E-Mail ──
+		add_settings_section('section_contact', __('Kontaktanfragen', 'dbw-immo-suite'), array($this, 'print_contact_section_info'), 'dbw-settings-display');
+		add_settings_field('contact_cc_email', __('CC-Adresse (optional)', 'dbw-immo-suite'), array($this, 'contact_cc_email_callback'), 'dbw-settings-display', 'section_contact');
+
 		// ── Preis pro m² ──
 		add_settings_section('section_price_sqm', __('Preis pro m²', 'dbw-immo-suite'), array($this, 'print_price_sqm_section_info'), 'dbw-settings-display');
 		add_settings_field('show_price_per_sqm', __('Preis/m² anzeigen', 'dbw-immo-suite'), array($this, 'show_price_per_sqm_callback'), 'dbw-settings-display', 'section_price_sqm');
@@ -655,6 +659,24 @@ class Settings
 	public function print_display_section_info()
 	{
 		print __('Einstellungen fuer die Darstellung im Frontend.', 'dbw-immo-suite');
+	}
+
+	public function print_contact_section_info()
+	{
+		print __('Anfragen werden an die Kontaktperson der jeweiligen Immobilie gesendet. Ist keine hinterlegt, geht die Mail an die WordPress-Admin-Adresse.', 'dbw-immo-suite');
+	}
+
+	public function contact_cc_email_callback()
+	{
+		$settings = get_option($this->option_name);
+		$value = isset($settings['contact_cc_email']) ? $settings['contact_cc_email'] : '';
+		printf(
+			'<input type="email" id="contact_cc_email" name="%s[contact_cc_email]" value="%s" class="regular-text" placeholder="info@beispiel.de" />'
+			. '<p class="description">%s</p>',
+			esc_attr($this->option_name),
+			esc_attr($value),
+			__('Jede Kontaktanfrage wird zusaetzlich als Kopie (CC) an diese Adresse gesendet. Leer lassen um kein CC zu senden.', 'dbw-immo-suite')
+		);
 	}
 
 	public function grayscale_sold_callback()

@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.16.0] — 2026-06-09
+
+### Hinzugefuegt
+- **CC-Adresse fuer Kontaktanfragen** — Neues Feld "CC-Adresse (optional)" unter Darstellung → Kontaktanfragen in den Plugin-Einstellungen. Jede Kontaktanfrage wird zusaetzlich als Kopie an diese Adresse gesendet (z.B. info@maklerfirma.de). Die primaere Mail geht weiterhin an die Kontaktperson der Immobilie (oder den WP-Admin als Fallback).
+
+---
+
 ## [1.15.6] — 2026-06-09
 
 ### Behoben

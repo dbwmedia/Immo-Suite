@@ -150,6 +150,13 @@ class ContactForm
             'Reply-To: ' . $name . ' <' . $email . '>',
         );
 
+        // Optional CC from settings
+        $settings = get_option('dbw_immo_suite_settings');
+        $cc_email = isset($settings['contact_cc_email']) ? sanitize_email($settings['contact_cc_email']) : '';
+        if ($cc_email && is_email($cc_email) && $cc_email !== $to) {
+            $headers[] = 'Cc: ' . $cc_email;
+        }
+
         $sent = wp_mail($to, $subject, $body, $headers);
 
         // Set rate limit after successful processing (even if mail fails)
