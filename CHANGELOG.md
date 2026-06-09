@@ -7,11 +7,22 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.14.3] — 2026-06-05
+## [1.14.5] — 2026-06-09
+
+### Behoben
+- **Karte laedt nicht** — Borlabs Cookie Content Blocker hat den eigenen Consent-Placeholder des Plugins (`#dbw-map-consent`) ausgeblendet, sodass weder der "Karte laden"-Button noch die Leaflet-Karte sichtbar war. `data-borlabs-cookie-*` Attribute vom Placeholder entfernt — das Plugin hat bereits einen eigenen DSGVO-Consent-Mechanismus.
+- **Infra-Score Hover-Effekt** — Dunkler Hintergrund beim Hover/Focus auf Kategorie-Balken (Einkaufen, Bildung, Verkehr) entfernt. Theme-Styles ueberschrieben den Button-Style — jetzt explizit zurueckgesetzt.
+- **WhatsApp-Button unterstrichen** — Text-Unterstreichung im Sidebar-CTA entfernt. `text-decoration: none` im Base-Style `.dbw-cta` ergaenzt, damit alle CTA-Buttons konsistent sind (egal ob `<a>` oder `<button>`).
+
+---
+
+## [1.14.4] — 2026-06-05
 
 ### Behoben
 - **503-Crash beim Speichern der Einstellungen** — Endlosrekursion im `sanitize()`-Callback behoben. `PageGenerator::create_reference_page()` rief `update_option()` auf dieselbe Option auf, was `sanitize()` erneut triggerte und eine Endlosschleife ausloeste, die PHP-FPM zum Absturz brachte.
-- **PHP 8.2 Kompatibilitaet** — `Undefined array key "anrede"`-Warning und `Automatic conversion of false to array`-Deprecation in PageGenerator behoben.
+- **XML-Import auf PHP 8.2** — `libxml_disable_entity_loader(true)` blockierte auf PHP 8.2 das Laden lokaler XML-Dateien komplett ("failed to load external entity"). Aufruf wird auf PHP 8.0+ uebersprungen (dort standardmaessig deaktiviert).
+- **ZIP mit Unterordnern** — AJAX-Import suchte XMLs nur im Root des entpackten Verzeichnisses. ZIPs mit Unterordner-Struktur (z.B. immonex Demo-Daten) wurden nicht verarbeitet. Jetzt rekursive Suche wie im Cron-Import.
+- **PHP 8.2 Warnungen** — `Undefined array key "anrede"` und `Automatic conversion of false to array` in PageGenerator behoben.
 
 ---
 

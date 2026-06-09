@@ -353,9 +353,7 @@ get_header(); ?>
 						<?php if ($lat && $lng): ?>
 						<div id="dbw-map-consent" class="dbw-map-placeholder"
 							data-lat="<?php echo esc_attr($lat); ?>"
-							data-lng="<?php echo esc_attr($lng); ?>"
-							data-borlabs-cookie-type="content"
-							data-borlabs-cookie-id="openstreetmap">
+							data-lng="<?php echo esc_attr($lng); ?>">
 							<div class="dbw-map-placeholder__inner">
 								<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
 								<p class="dbw-map-placeholder__text"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
