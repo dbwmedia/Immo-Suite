@@ -7,6 +7,16 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.15.2] — 2026-06-09
+
+### Hinzugefuegt
+- **View Transition beim Grid/List-Wechsel** — Sanfter Crossfade (0.25s) via View Transition API beim Umschalten zwischen Kachel- und Listenansicht. Fallback fuer aeltere Browser. `prefers-reduced-motion` wird respektiert.
+
+### Behoben
+- **Leaflet 404 auf dem Server** — `.gitignore` hatte `vendor/` ohne fuehrenden Slash, was auch `assets/vendor/leaflet/` ausschloss. Leaflet JS/CSS und Marker-Images waren nicht im Repo → 404 → `L is not defined`. Fix: `/vendor/` (nur Root) + Vendor-Dateien getrackt.
+
+---
+
 ## [1.15.1] — 2026-06-09
 
 ### Hinzugefuegt
