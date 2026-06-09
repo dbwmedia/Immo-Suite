@@ -1169,8 +1169,7 @@
 }
 
 #dbw-immo-suite .dbw-property-grid.is-list-view .dbw-card-meta-grid {
-	grid-template-columns: 1fr 1fr 1fr 1fr;
-	/* 4 columns for horizontal space */
+	grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 	margin-top: 1.5rem;
 }
 
