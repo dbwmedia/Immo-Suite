@@ -30,7 +30,7 @@ $mods_to_remove = array(
     'dbw_immo_border_radius', 'dbw_immo_archive_per_page', 'dbw_immo_archive_columns',
     'dbw_immo_archive_show_year', 'dbw_immo_archive_show_area', 'dbw_immo_archive_show_rooms',
     'dbw_immo_archive_show_price', 'dbw_immo_archive_show_energy_class',
-    'dbw_immo_single_show_map', 'dbw_immo_single_show_energy', 'dbw_immo_single_show_gallery',
+    'dbw_immo_single_show_map', 'dbw_immo_single_map_consent', 'dbw_immo_single_show_energy', 'dbw_immo_single_show_gallery',
     'dbw_immo_single_show_contact', 'dbw_immo_single_show_share', 'dbw_immo_single_show_print',
     'dbw_immo_single_show_similar', 'dbw_immo_highlights_bg_style', 'dbw_immo_highlights_text_color',
     'dbw_immo_expose_btn_text',

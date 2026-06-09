@@ -7,10 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.14.5] — 2026-06-09
+## [1.15.0] — 2026-06-09
+
+### Hinzugefuegt
+- **Karten-Consent Toggle** — Neuer Customizer-Schalter "Karten-Consent anzeigen (fuer Cookie-Tools wie Borlabs)". Standardmaessig **deaktiviert**: Karte wird direkt geladen ohne Consent-Placeholder. Aktivieren fuer Instanzen mit Borlabs Cookie o.ae., damit der bisherige "Karte laden"-Placeholder mit Borlabs-Integration erscheint.
 
 ### Behoben
-- **Karte laedt nicht** — Borlabs Cookie Content Blocker hat den eigenen Consent-Placeholder des Plugins (`#dbw-map-consent`) ausgeblendet, sodass weder der "Karte laden"-Button noch die Leaflet-Karte sichtbar war. `data-borlabs-cookie-*` Attribute vom Placeholder entfernt — das Plugin hat bereits einen eigenen DSGVO-Consent-Mechanismus.
+- **Karte laedt nicht ohne Cookie-Tool** — Auf sauberen WP-Instanzen ohne Borlabs wurde die Karte nie sichtbar, da der Consent-Placeholder immer angezeigt wurde, aber kein Cookie-Tool den Consent-Flow ausloeste. Jetzt wird die Karte standardmaessig direkt geladen.
 - **Infra-Score Hover-Effekt** — Dunkler Hintergrund beim Hover/Focus auf Kategorie-Balken (Einkaufen, Bildung, Verkehr) entfernt. Theme-Styles ueberschrieben den Button-Style — jetzt explizit zurueckgesetzt.
 - **WhatsApp-Button unterstrichen** — Text-Unterstreichung im Sidebar-CTA entfernt. `text-decoration: none` im Base-Style `.dbw-cta` ergaenzt, damit alle CTA-Buttons konsistent sind (egal ob `<a>` oder `<button>`).
 
