@@ -152,6 +152,7 @@ get_header(); ?>
 
 				<!-- Floating Buttons - Top Left -->
 				<a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-gallery-btn"
+					onclick="if(history.length>1){history.back();return false;}"
 					aria-label="<?php esc_attr_e('Zurueck zur Uebersicht', 'dbw-immo-suite'); ?>"
 					style="position: absolute; top: 20px; left: 20px; z-index: 1; display:flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none;">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
