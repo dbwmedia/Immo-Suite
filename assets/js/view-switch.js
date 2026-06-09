@@ -34,8 +34,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const savedView = localStorage.getItem('dbw_immo_view') || 'grid';
         setView(savedView);
 
+        // Animated switch via View Transition API (with fallback)
+        const switchView = (view) => {
+            if (document.startViewTransition) {
+                document.startViewTransition(() => setView(view));
+            } else {
+                setView(view);
+            }
+        };
+
         // Click Handlers
-        gridBtn.addEventListener('click', () => setView('grid'));
-        listBtn.addEventListener('click', () => setView('list'));
+        gridBtn.addEventListener('click', () => switchView('grid'));
+        listBtn.addEventListener('click', () => switchView('list'));
     }
 });

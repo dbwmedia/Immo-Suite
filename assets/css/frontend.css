@@ -1070,6 +1070,26 @@
 
 
 /* =========================================
+   VIEW TRANSITION (Grid <-> List)
+   ========================================= */
+#dbw-immo-suite .dbw-property-grid {
+	view-transition-name: dbw-grid;
+}
+
+::view-transition-old(dbw-grid),
+::view-transition-new(dbw-grid) {
+	animation-duration: 0.25s;
+	animation-timing-function: ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(dbw-grid),
+	::view-transition-new(dbw-grid) {
+		animation-duration: 0s;
+	}
+}
+
+/* =========================================
    LIST VIEW OVERRIDES
    ========================================= */
 
