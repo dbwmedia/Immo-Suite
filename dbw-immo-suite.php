@@ -170,14 +170,6 @@ $dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::build
 );
 $dbw_immo_update_checker->setBranch('main');
 
-// Plugin row meta links
-add_filter('plugin_row_meta', function ($links, $file) {
-	if ($file === plugin_basename(__FILE__)) {
-		$links[] = '<a href="https://dbw-media.de" target="_blank">Agentur: dbw media</a>';
-	}
-	return $links;
-}, 10, 2);
-
 // Initialize Plugin
 function run_dbw_immo_suite()
 {
