@@ -61,13 +61,17 @@ class ArchiveMap
     }
 
     /**
-     * Collect markers for all properties matching the current (filtered) archive query.
+     * Collect markers for all properties matching the given query args,
+     * or the current (filtered) archive query if none are passed.
      */
-    private static function collect_markers()
+    public static function collect_markers($override_args = null)
     {
-        global $wp_query;
-
-        $vars = $wp_query->query_vars;
+        if (is_array($override_args)) {
+            $vars = $override_args;
+        } else {
+            global $wp_query;
+            $vars = $wp_query->query_vars;
+        }
         $vars['posts_per_page'] = self::MAX_MARKERS;
         $vars['paged']          = 1;
         $vars['fields']         = 'ids';

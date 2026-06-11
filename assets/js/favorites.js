@@ -198,5 +198,20 @@
         document.addEventListener('dbw:enter-map-view', function () {
             if (favMode) exitFavMode();
         });
+
+        // AJAX filtering replaced the grid: sync hearts on the new cards and
+        // drop the favorites-view state (its stored grid HTML is stale now)
+        document.addEventListener('dbw:grid-updated', function () {
+            if (favMode) {
+                favMode = false;
+                originalGridHtml = null;
+                var t = document.getElementById('dbw-fav-toggle');
+                if (t) {
+                    t.classList.remove('is-active');
+                    t.setAttribute('aria-pressed', 'false');
+                }
+            }
+            syncAllButtons();
+        });
     });
 })();

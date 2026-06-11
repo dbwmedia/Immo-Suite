@@ -3,8 +3,11 @@
 
     var map = null;
     var initialized = false;
+    var markerLayer = null;
+    var markersOverride = null;
 
     function getMarkers() {
+        if (Array.isArray(markersOverride)) return markersOverride;
         var dataEl = document.getElementById('dbw-archive-map-data');
         if (!dataEl) return [];
         try {
@@ -45,6 +48,40 @@
         return wrap;
     }
 
+    function renderMarkers(markers) {
+        var mapEl = document.getElementById('dbw-archive-map');
+        var emptyEl = document.querySelector('[data-dbw-map-empty]');
+        if (!map || !mapEl) return;
+
+        if (markerLayer) {
+            markerLayer.clearLayers();
+        } else {
+            markerLayer = L.layerGroup().addTo(map);
+        }
+
+        if (!markers.length) {
+            mapEl.style.display = 'none';
+            if (emptyEl) emptyEl.hidden = false;
+            return;
+        }
+        mapEl.style.display = 'block';
+        if (emptyEl) emptyEl.hidden = true;
+
+        var bounds = [];
+        markers.forEach(function (m) {
+            var marker = L.marker([m.lat, m.lng]);
+            marker.bindPopup(buildPopup(m), { minWidth: 200 });
+            markerLayer.addLayer(marker);
+            bounds.push([m.lat, m.lng]);
+        });
+
+        if (bounds.length === 1) {
+            map.setView(bounds[0], 14);
+        } else {
+            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+        }
+    }
+
     function initMap() {
         if (initialized || typeof L === 'undefined') return;
 
@@ -70,19 +107,22 @@
             maxZoom: 18
         }).addTo(map);
 
-        var bounds = [];
-        markers.forEach(function (m) {
-            var marker = L.marker([m.lat, m.lng]).addTo(map);
-            marker.bindPopup(buildPopup(m), { minWidth: 200 });
-            bounds.push([m.lat, m.lng]);
-        });
-
-        if (bounds.length === 1) {
-            map.setView(bounds[0], 14);
-        } else {
-            map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
-        }
+        renderMarkers(markers);
     }
+
+    // Public API: AJAX filtering swaps the marker set
+    window.dbwArchiveMap = {
+        refresh: function (markers) {
+            markersOverride = Array.isArray(markers) ? markers : [];
+            if (map) {
+                renderMarkers(markersOverride);
+            } else if (initialized) {
+                // Map container was initialized but skipped (no markers before)
+                initialized = false;
+                initMap();
+            }
+        }
+    };
 
     function hasConsent() {
         var consentEl = document.getElementById('dbw-archive-map-consent');

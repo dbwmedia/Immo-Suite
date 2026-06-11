@@ -233,6 +233,18 @@ class Plugin
             wp_enqueue_script('dbw-immo-view-switch-js');
         }
 
+        // AJAX filtering on archive + taxonomy pages
+        if (is_post_type_archive('immobilie') || is_tax(array('objektart', 'vermarktungsart', 'ort'))) {
+            wp_enqueue_script('dbw-immo-filter-ajax', DBW_IMMO_SUITE_URL . 'assets/js/filter-ajax.js', array(), DBW_IMMO_SUITE_VERSION, true);
+            wp_localize_script('dbw-immo-filter-ajax', 'dbwImmoFilter', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'i18n'    => array(
+                    'showResults' => __('%d Objekte anzeigen', 'dbw-immo-suite'),
+                    'noResults'   => __('Keine Immobilien gefunden.', 'dbw-immo-suite'),
+                ),
+            ));
+        }
+
         // Archive map view (Leaflet from local vendor copy)
         if ((is_post_type_archive('immobilie') || is_tax(array('objektart', 'vermarktungsart', 'ort')))
             && \DBW\ImmoSuite\Frontend\ArchiveMap::is_enabled()) {

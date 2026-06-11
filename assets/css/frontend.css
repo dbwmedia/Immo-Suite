@@ -3802,3 +3802,231 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 		bottom: 96px;
 	}
 }
+
+/* ============================================================
+   Filter 2.0 — chips, room pills, price slider, skeleton (v2.0)
+   ============================================================ */
+
+/* Active filter chips */
+#dbw-immo-suite .dbw-filter-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: -0.75rem 0 1.25rem;
+}
+
+#dbw-immo-suite .dbw-filter-chips:empty {
+	display: none;
+}
+
+#dbw-immo-suite .dbw-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: var(--dbw-primary);
+	color: #fff;
+	font-size: 0.82rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background 0.2s ease, transform 0.15s ease;
+}
+
+#dbw-immo-suite .dbw-chip:hover {
+	background: var(--dbw-accent, #2573a7);
+	transform: translateY(-1px);
+}
+
+#dbw-immo-suite .dbw-chip__x {
+	font-size: 1rem;
+	line-height: 1;
+	opacity: 0.7;
+}
+
+#dbw-immo-suite .dbw-chip--reset {
+	background: transparent;
+	color: var(--dbw-gray, #5f6b6d);
+	border: 1px dashed var(--dbw-border, #ddd);
+}
+
+#dbw-immo-suite .dbw-chip--reset:hover {
+	background: var(--dbw-light, #f4f6f7);
+	color: var(--dbw-primary);
+	transform: none;
+}
+
+/* Room pills */
+#dbw-immo-suite .dbw-room-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+#dbw-immo-suite .dbw-room-pill input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+#dbw-immo-suite .dbw-room-pill span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 44px;
+	padding: 8px 12px;
+	border-radius: 999px;
+	border: 1px solid var(--dbw-border, #ddd);
+	background: #fff;
+	color: var(--dbw-text);
+	font-size: 0.88rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+#dbw-immo-suite .dbw-room-pill input:checked + span {
+	background: var(--dbw-primary);
+	border-color: var(--dbw-primary);
+	color: #fff;
+}
+
+#dbw-immo-suite .dbw-room-pill input:focus-visible + span {
+	outline: 2px solid var(--dbw-accent, #2573a7);
+	outline-offset: 2px;
+}
+
+/* Price histogram + dual range slider (JS-only UI) */
+#dbw-immo-suite .dbw-js-only {
+	display: none;
+}
+
+#dbw-immo-suite .js-enabled .dbw-js-only {
+	display: block;
+}
+
+#dbw-immo-suite .dbw-price-histogram {
+	display: flex;
+	align-items: flex-end;
+	gap: 2px;
+	height: 36px;
+	padding: 0 9px;
+	margin-bottom: -2px;
+}
+
+#dbw-immo-suite .dbw-hist-bar {
+	flex: 1;
+	background: var(--dbw-accent, #2573a7);
+	opacity: 0.45;
+	border-radius: 2px 2px 0 0;
+	transition: opacity 0.2s ease;
+}
+
+#dbw-immo-suite .dbw-hist-bar.is-out {
+	opacity: 0.12;
+}
+
+#dbw-immo-suite .dbw-range-slider {
+	position: relative;
+	height: 28px;
+	margin-bottom: 0.5rem;
+}
+
+#dbw-immo-suite .dbw-range-track {
+	position: absolute;
+	top: 50%;
+	left: 9px;
+	right: 9px;
+	height: 4px;
+	transform: translateY(-50%);
+	background: var(--dbw-border, #e0e0e0);
+	border-radius: 2px;
+}
+
+#dbw-immo-suite .dbw-range-fill {
+	position: absolute;
+	top: 50%;
+	height: 4px;
+	transform: translateY(-50%);
+	background: var(--dbw-accent, #2573a7);
+	border-radius: 2px;
+	margin: 0 9px;
+	max-width: calc(100% - 18px);
+}
+
+#dbw-immo-suite .dbw-range-slider input[type="range"] {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	margin: 0;
+	background: transparent;
+	-webkit-appearance: none;
+	appearance: none;
+	pointer-events: none;
+}
+
+#dbw-immo-suite .dbw-range-slider input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	pointer-events: auto;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: #fff;
+	border: 2px solid var(--dbw-accent, #2573a7);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+	cursor: grab;
+}
+
+#dbw-immo-suite .dbw-range-slider input[type="range"]::-moz-range-thumb {
+	pointer-events: auto;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: #fff;
+	border: 2px solid var(--dbw-accent, #2573a7);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+	cursor: grab;
+}
+
+/* Skeleton cards during AJAX loading */
+#dbw-immo-suite .dbw-skeleton-card {
+	background: var(--dbw-white, #fff);
+	border-radius: 12px;
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	overflow: hidden;
+}
+
+#dbw-immo-suite .dbw-skeleton {
+	background: linear-gradient(90deg, var(--dbw-light, #ecf0f1) 25%, #e8ecef 50%, var(--dbw-light, #ecf0f1) 75%);
+	background-size: 800px 100%;
+	animation: dbw-shimmer 1.4s infinite linear;
+	border-radius: 6px;
+}
+
+#dbw-immo-suite .dbw-skeleton--img {
+	height: 220px;
+	border-radius: 0;
+}
+
+#dbw-immo-suite .dbw-skeleton-body {
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+#dbw-immo-suite .dbw-skeleton--line {
+	height: 16px;
+}
+
+#dbw-immo-suite .dbw-skeleton--tall {
+	height: 48px;
+	margin-top: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#dbw-immo-suite .dbw-skeleton {
+		animation: none;
+	}
+}
