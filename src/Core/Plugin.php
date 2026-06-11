@@ -283,6 +283,9 @@ class Plugin
             wp_enqueue_script('dbw-immo-lightbox', DBW_IMMO_SUITE_URL . 'assets/js/lightbox.js', array(), DBW_IMMO_SUITE_VERSION, true);
             wp_enqueue_script('dbw-immo-gallery', DBW_IMMO_SUITE_URL . 'assets/js/gallery.js', array(), DBW_IMMO_SUITE_VERSION, true);
             wp_enqueue_script('dbw-immo-section-nav', DBW_IMMO_SUITE_URL . 'assets/js/section-nav.js', array(), DBW_IMMO_SUITE_VERSION, true);
+            wp_localize_script('dbw-immo-section-nav', 'dbwSectionNav', array(
+                'position' => get_theme_mod('dbw_immo_single_section_nav', 'top'),
+            ));
             wp_enqueue_script('dbw-immo-count-up', DBW_IMMO_SUITE_URL . 'assets/js/count-up.js', array(), DBW_IMMO_SUITE_VERSION, true);
             wp_enqueue_script('dbw-immo-contact-modal', DBW_IMMO_SUITE_URL . 'assets/js/contact-modal.js', array(), DBW_IMMO_SUITE_VERSION, true);
             wp_localize_script('dbw-immo-contact-modal', 'dbwContactModal', array(

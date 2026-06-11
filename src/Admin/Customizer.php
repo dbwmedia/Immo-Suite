@@ -153,6 +153,23 @@ class Customizer
         $this->add_toggle_setting($wp_customize, 'dbw_immo_whatsapp_floating', false, __('WhatsApp Floating-Button anzeigen', 'dbw-immo-suite'), 'dbw_immo_single_section');
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_expose_request', false, __('Expose-Anfrage Button anzeigen (mit Provisionshinweis)', 'dbw-immo-suite'), 'dbw_immo_single_section');
 
+        // Section nav position
+        $wp_customize->add_setting('dbw_immo_single_section_nav', array(
+            'default' => 'top',
+            'sanitize_callback' => 'sanitize_text_field',
+        ));
+        $wp_customize->add_control('dbw_immo_single_section_nav', array(
+            'label' => __('Sektions-Navigation', 'dbw-immo-suite'),
+            'description' => __('Sticky-Leiste mit Sprungmarken (Beschreibung, Lage, ...). "Oben" dockt automatisch unter fixen Theme-Headern an.', 'dbw-immo-suite'),
+            'section' => 'dbw_immo_single_section',
+            'type' => 'select',
+            'choices' => array(
+                'top'    => __('Oben (sticky)', 'dbw-immo-suite'),
+                'bottom' => __('Unten (schwebend)', 'dbw-immo-suite'),
+                'off'    => __('Ausblenden', 'dbw-immo-suite'),
+            ),
+        ));
+
         // Highlights Box
         $wp_customize->add_setting('dbw_immo_highlights_bg_style', array(
             'default' => 'primary',
@@ -264,9 +281,9 @@ class Customizer
                 --dbw-radius: {$radius}px;
             }
             #dbw-immo-suite.dbw-immo-archive-container { padding-top: {$archive_top}rem; }
-            /* --dbw-nav-offset: sticky edge for section nav + sidebar, so they
-               clear fixed theme headers (same value as the top spacing) */
-            #dbw-immo-suite.dbw-single-property-container { padding-top: {$single_top}rem; --dbw-nav-offset: {$single_top}rem; }
+            /* --dbw-nav-offset (sticky edge for section nav + sidebar) is
+               measured by section-nav.js from the actual fixed theme header */
+            #dbw-immo-suite.dbw-single-property-container { padding-top: {$single_top}rem; }
             {$grid_style}
         </style>";
     }

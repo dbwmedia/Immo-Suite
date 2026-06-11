@@ -7,6 +7,17 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.0.3] — 2026-06-11
+
+### Geaendert
+- **Sektions-Navigation: automatische Header-Erkennung** — Die Sticky-Leiste misst jetzt selbst die Hoehe des fixen Theme-Headers (inkl. Admin-Bar, auch gestapelt) und dockt buendig darunter an. Der Customizer-Wert "Abstand nach oben" ist davon wieder entkoppelt (die Kopplung aus 2.0.2 erzeugte bei grossen Abstaenden eine sichtbare Luecke, durch die Content scrollte). Funktioniert ohne Konfiguration in jedem Theme; Neumessung bei Scroll/Resize (Shrinking-Header).
+- **Neue Customizer-Option "Sektions-Navigation"** — Oben (sticky, Standard), Unten (schwebende Pill am unteren Bildschirmrand, nie Header-Konflikte) oder Ausblenden.
+
+### Behoben
+- **Stacking-Probleme** — Highlights-Sidebar konnte die Sektions-Leiste ueberlappen; Leaflet-Karten (z-index bis ~1000) konnten ueber der Leiste liegen. Karten-Container sind jetzt isoliert, die Leiste liegt zuverlaessig darueber.
+
+---
+
 ## [2.0.2] — 2026-06-11
 
 ### Behoben

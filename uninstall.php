@@ -45,6 +45,7 @@ $mods_to_remove = array(
     'dbw_immo_archive_show_price_sqm',
     'dbw_immo_single_show_address', 'dbw_immo_single_show_expose_request',
     'dbw_immo_archive_show_favorites', 'dbw_immo_archive_show_map_view',
+    'dbw_immo_single_section_nav',
 );
 
 foreach ($mods_to_remove as $mod) {

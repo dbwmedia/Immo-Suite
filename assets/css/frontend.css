@@ -4151,9 +4151,11 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 
 #dbw-immo-suite .dbw-section-nav {
 	position: sticky;
+	/* --dbw-nav-offset is measured by section-nav.js from the actual
+	   fixed theme chrome (admin bar + sticky header) */
 	top: var(--dbw-nav-offset, 0px);
-	z-index: 50;
-	background: rgba(255, 255, 255, 0.92);
+	z-index: 100;
+	background: rgba(255, 255, 255, 0.97);
 	backdrop-filter: blur(8px);
 	-webkit-backdrop-filter: blur(8px);
 	border-radius: 10px;
@@ -4161,10 +4163,6 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 	margin-bottom: 1.5rem;
 	overflow: hidden;
-}
-
-body.admin-bar #dbw-immo-suite .dbw-section-nav {
-	top: calc(var(--dbw-nav-offset, 0px) + 32px);
 }
 
 #dbw-immo-suite .dbw-section-nav__inner {
@@ -4349,4 +4347,53 @@ body.admin-bar #dbw-immo-suite .dbw-section-nav {
 #dbw-immo-suite .dbw-property-card .dbw-property-title a {
 	box-shadow: none;
 	text-decoration: none;
+}
+
+/* ============================================================
+   Section nav: stacking + bottom variant (v2.0.3)
+   ============================================================ */
+
+/* Leaflet panes use z-index up to ~1000 inside the map — isolate the
+   containers so the map never paints over the sticky nav */
+#dbw-immo-suite #dbw-map,
+#dbw-immo-suite #dbw-archive-map {
+	position: relative;
+	z-index: 1;
+	isolation: isolate;
+}
+
+/* Sidebar stays below the nav */
+#dbw-immo-suite .dbw-sidebar {
+	z-index: 1;
+}
+
+/* Bottom variant: floating pill, never conflicts with theme headers */
+#dbw-immo-suite .dbw-section-nav--bottom {
+	position: fixed;
+	top: auto;
+	bottom: 24px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: max-content;
+	max-width: calc(100vw - 32px);
+	margin-bottom: 0;
+	border-radius: 999px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+	z-index: 9000;
+}
+
+#dbw-immo-suite .dbw-section-nav--bottom .dbw-section-nav__inner {
+	padding: 6px;
+}
+
+/* Anchor offset without the top nav: only the theme header matters */
+#dbw-immo-suite.dbw-has-nav-bottom .dbw-main-col .dbw-section {
+	scroll-margin-top: calc(var(--dbw-nav-offset, 0px) + 24px);
+}
+
+/* On mobile the sticky CTA bar owns the bottom edge — lift the pill */
+@media (max-width: 768px) {
+	#dbw-immo-suite .dbw-section-nav--bottom {
+		bottom: 84px;
+	}
 }
