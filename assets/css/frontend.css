@@ -4117,3 +4117,29 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 		transform: none;
 	}
 }
+
+/* ============================================================
+   Gallery counter + active thumb (v2.0)
+   ============================================================ */
+
+#dbw-immo-suite .dbw-gallery-counter {
+	position: absolute;
+	/* the thumbnail strip occupies the bottom ~85px of the wrapper */
+	bottom: 100px;
+	right: 16px;
+	z-index: 2;
+	background: rgba(20, 25, 30, 0.75);
+	color: #fff;
+	font-size: 0.8rem;
+	font-weight: 600;
+	padding: 4px 12px;
+	border-radius: 999px;
+	letter-spacing: 0.04em;
+	pointer-events: none;
+}
+
+#dbw-immo-suite .dbw-gallery-thumb.is-active {
+	opacity: 1;
+	outline: 2px solid var(--dbw-accent, #2573a7);
+	outline-offset: 1px;
+}

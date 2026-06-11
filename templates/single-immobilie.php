@@ -240,14 +240,21 @@ get_header(); ?>
 					endforeach; ?>
 				</div>
 
+				<!-- Image Counter -->
+				<?php if (count($gallery_images) > 1): ?>
+					<div class="dbw-gallery-counter" aria-hidden="true">
+						<span data-dbw-gal-current>1</span>/<?php echo (int) count($gallery_images); ?>
+					</div>
+				<?php endif; ?>
+
 				<!-- Navigation Buttons -->
-				<button class="dbw-gallery-nav dbw-gallery-nav--prev" aria-label="<?php esc_attr_e('Vorheriges Bild', 'dbw-immo-suite'); ?>" onclick="document.getElementById('dbwGallerySlider').scrollBy({left: -600, behavior: 'smooth'})">&#10094;</button>
-				<button class="dbw-gallery-nav dbw-gallery-nav--next" aria-label="<?php esc_attr_e('Nächstes Bild', 'dbw-immo-suite'); ?>" onclick="document.getElementById('dbwGallerySlider').scrollBy({left: 600, behavior: 'smooth'})">&#10095;</button>
+				<button class="dbw-gallery-nav dbw-gallery-nav--prev" aria-label="<?php esc_attr_e('Vorheriges Bild', 'dbw-immo-suite'); ?>">&#10094;</button>
+				<button class="dbw-gallery-nav dbw-gallery-nav--next" aria-label="<?php esc_attr_e('Nächstes Bild', 'dbw-immo-suite'); ?>">&#10095;</button>
 
 				<!-- Thumbnails Strip -->
 				<div class="dbw-gallery-thumbs">
 					<?php foreach ($gallery_images as $index => $img): ?>
-						<button type="button" class="dbw-gallery-thumb" onclick="document.getElementById('slide-<?php echo (int) $index; ?>').scrollIntoView({behavior: 'smooth', block: 'nearest'})" aria-label="<?php echo esc_attr(sprintf(__('Bild %d anzeigen', 'dbw-immo-suite'), $index + 1)); ?>">
+						<button type="button" class="dbw-gallery-thumb" aria-label="<?php echo esc_attr(sprintf(__('Bild %d anzeigen', 'dbw-immo-suite'), $index + 1)); ?>">
 							<?php echo wp_get_attachment_image($img['id'], 'thumbnail', false, array(
 								'loading' => 'lazy',
 								'decoding' => 'async',

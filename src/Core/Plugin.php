@@ -276,6 +276,7 @@ class Plugin
             }
 
             wp_enqueue_script('dbw-immo-lightbox', DBW_IMMO_SUITE_URL . 'assets/js/lightbox.js', array(), DBW_IMMO_SUITE_VERSION, true);
+            wp_enqueue_script('dbw-immo-gallery', DBW_IMMO_SUITE_URL . 'assets/js/gallery.js', array(), DBW_IMMO_SUITE_VERSION, true);
             wp_enqueue_script('dbw-immo-contact-modal', DBW_IMMO_SUITE_URL . 'assets/js/contact-modal.js', array(), DBW_IMMO_SUITE_VERSION, true);
             wp_localize_script('dbw-immo-contact-modal', 'dbwContactModal', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
