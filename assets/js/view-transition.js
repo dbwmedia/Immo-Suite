@@ -37,7 +37,10 @@
     // before the reveal snapshot is taken
     window.addEventListener('pagereveal', function () {
         var cardId = '';
-        try { cardId = sessionStorage.getItem('dbwVtCard') || ''; } catch (err) {}
+        try {
+            cardId = sessionStorage.getItem('dbwVtCard') || '';
+            sessionStorage.removeItem('dbwVtCard'); // one-shot — a stale ID would morph the wrong card later
+        } catch (err) {}
         if (!cardId) return;
         var img = document.querySelector('#' + CSS.escape(cardId) + ' .dbw-card-img');
         if (img) {

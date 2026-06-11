@@ -117,11 +117,20 @@ class AdminColumns
 
         $orderby = $query->get('orderby');
         if ($orderby === 'dbw_price') {
-            $query->set('meta_key', 'kaufpreis');
-            $query->set('orderby', 'meta_value_num');
+            // OR + NOT EXISTS keeps objects without the meta row in the list
+            $query->set('meta_query', array(
+                'relation'  => 'OR',
+                'dbw_price' => array('key' => 'kaufpreis', 'compare' => 'EXISTS', 'type' => 'NUMERIC'),
+                'no_price'  => array('key' => 'kaufpreis', 'compare' => 'NOT EXISTS'),
+            ));
+            $query->set('orderby', 'dbw_price');
         } elseif ($orderby === 'dbw_ort') {
-            $query->set('meta_key', 'ort');
-            $query->set('orderby', 'meta_value');
+            $query->set('meta_query', array(
+                'relation' => 'OR',
+                'dbw_ort'  => array('key' => 'ort', 'compare' => 'EXISTS'),
+                'no_ort'   => array('key' => 'ort', 'compare' => 'NOT EXISTS'),
+            ));
+            $query->set('orderby', 'dbw_ort');
         }
     }
 

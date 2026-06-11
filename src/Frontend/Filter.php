@@ -18,6 +18,11 @@ class Filter
         add_action('pre_get_posts', array($this, 'modify_query'));
         add_action('wp_ajax_dbw_immo_filter', array($this, 'ajax_filter'));
         add_action('wp_ajax_nopriv_dbw_immo_filter', array($this, 'ajax_filter'));
+
+        // Keep the price-slider histogram in sync with the portfolio
+        add_action('save_post_immobilie', function () {
+            delete_transient('dbw_immo_price_histogram');
+        });
     }
 
     /**
@@ -66,9 +71,11 @@ class Filter
             );
         }
 
-        if ($p['price_min'] !== null || $p['price_max'] !== null) {
-            $min = $p['price_min'] !== null ? $p['price_min'] : 0;
-            $max = $p['price_max'] !== null ? $p['price_max'] : 999999999;
+        $has_min = $p['price_min'] !== null && $p['price_min'] > 0;
+        $has_max = $p['price_max'] !== null && $p['price_max'] > 0;
+        if ($has_min || $has_max) {
+            $min = $has_min ? $p['price_min'] : 0;
+            $max = $has_max ? $p['price_max'] : 999999999;
             $meta_query[] = array(
                 'relation' => 'OR',
                 array(
@@ -248,11 +255,25 @@ class Filter
             $markers = ArchiveMap::collect_markers($args);
         }
 
+        // Base URL for chip fallback links (REQUEST_URI would be admin-ajax.php)
+        $chip_base_args = array();
+        foreach (array('location', 'marketing', 'type', 'sort') as $key) {
+            if (!empty($p[$key])) {
+                $chip_base_args[$key] = $p[$key];
+            }
+        }
+        foreach (array('price_min', 'price_max', 'area_min', 'rooms_min') as $key) {
+            if ($p[$key] !== null) {
+                $chip_base_args[$key] = $p[$key];
+            }
+        }
+        $chip_base = add_query_arg($chip_base_args, get_post_type_archive_link('immobilie'));
+
         wp_send_json_success(array(
             'count'      => (int) $query->found_posts,
             'html'       => $html,
             'pagination' => self::render_ajax_pagination((int) $query->max_num_pages, $paged),
-            'chips'      => self::render_chips($p),
+            'chips'      => self::render_chips($p, $chip_base),
             'markers'    => $markers,
         ));
     }
@@ -314,8 +335,12 @@ class Filter
 
     /**
      * Active-filter chips (removable). Returns HTML.
+     *
+     * @param array|null  $p        Filter params (default: from $_GET).
+     * @param string|null $base_url Base URL for the remove links. Required in
+     *                              AJAX context (REQUEST_URI is admin-ajax.php there).
      */
-    public static function render_chips($p = null)
+    public static function render_chips($p = null, $base_url = null)
     {
         if ($p === null) {
             $p = self::get_filter_params();
@@ -358,7 +383,8 @@ class Filter
         $html = '';
         foreach ($chips as $chip) {
             $keys = explode(',', $chip['param']);
-            $href = remove_query_arg(array_merge($keys, array('paged')));
+            $remove = array_merge($keys, array('paged'));
+            $href = $base_url !== null ? remove_query_arg($remove, $base_url) : remove_query_arg($remove);
             $html .= '<a href="' . esc_url($href) . '" class="dbw-chip" data-dbw-chip="' . esc_attr($chip['param']) . '">'
                 . '<span>' . esc_html($chip['label']) . '</span>'
                 . '<span class="dbw-chip__x" aria-hidden="true">&times;</span>'
@@ -366,7 +392,8 @@ class Filter
         }
 
         if (count($chips) >= 2) {
-            $reset = remove_query_arg(array('type', 'marketing', 'location', 'price_min', 'price_max', 'area_min', 'rooms_min', 'paged'));
+            $all = array('type', 'marketing', 'location', 'price_min', 'price_max', 'area_min', 'rooms_min', 'paged');
+            $reset = $base_url !== null ? remove_query_arg($all, $base_url) : remove_query_arg($all);
             $html .= '<a href="' . esc_url($reset) . '" class="dbw-chip dbw-chip--reset" data-dbw-chip="*">'
                 . esc_html__('Alle zurücksetzen', 'dbw-immo-suite')
                 . '</a>';
@@ -514,8 +541,15 @@ class Filter
             switch ($sort) {
                 case 'price_asc':
                 case 'price_desc':
-                    // Use both kaufpreis and kaltmiete for unified price sort
-                    add_filter('posts_clauses', self::price_sort_clauses($sort === 'price_asc' ? 'ASC' : 'DESC'), 10, 2);
+                    // Unified price sort (kaufpreis + kaltmiete); self-removing so
+                    // it only affects the main query, not later queries on the page
+                    $inner = self::price_sort_clauses($sort === 'price_asc' ? 'ASC' : 'DESC');
+                    $cb = null;
+                    $cb = function ($clauses, $q) use (&$cb, $inner) {
+                        remove_filter('posts_clauses', $cb, 10);
+                        return $inner($clauses, $q);
+                    };
+                    add_filter('posts_clauses', $cb, 10, 2);
                     break;
                 case 'size_desc':
                     $query->set('meta_key', 'wohnflaeche');

@@ -90,6 +90,11 @@
             } else if (html) {
                 grid.insertAdjacentHTML('afterend', html);
             }
+            // The fresh element must respect the map view (grid hidden)
+            var mapWrapper = document.getElementById('dbw-archive-map-wrapper');
+            if (mapWrapper && !mapWrapper.hidden) {
+                suite.querySelectorAll('.dbw-pagination').forEach(function (el) { el.hidden = true; });
+            }
         }
 
         function buildQueryString(params, paged) {
@@ -128,7 +133,11 @@
             fetch(cfg.ajaxurl, { method: 'POST', body: data })
                 .then(function (r) { return r.json(); })
                 .then(function (j) {
-                    if (id !== requestId || !j.success) return;
+                    if (id !== requestId) return;
+                    if (!j || !j.success) {
+                        form.submit(); // endpoint unavailable → graceful full reload
+                        return;
+                    }
                     var d = j.data;
 
                     grid.innerHTML = d.html || '<p class="dbw-no-results">' + (i18n.noResults || 'Keine Immobilien gefunden.') + '</p>';
@@ -307,6 +316,7 @@
         // Chips (delegated — chips are re-rendered by AJAX)
         if (chipsEl) {
             chipsEl.addEventListener('click', function (e) {
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
                 var chip = e.target.closest('[data-dbw-chip]');
                 if (!chip) return;
                 e.preventDefault();
@@ -330,6 +340,7 @@
 
         // Pagination (delegated: AJAX buttons and server-rendered links)
         suite.addEventListener('click', function (e) {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
             var pageBtn = e.target.closest('.dbw-pagination [data-page]');
             var pageLink = e.target.closest('.dbw-pagination a.page-numbers');
             var page = null;
@@ -353,7 +364,10 @@
             var params = {};
             qs.forEach(function (v, k) { params[k] = v; });
             setFormFromParams(params);
-            fetchResults(parseInt(params.paged || '1', 10), false);
+            // pretty pagination (/page/2/) wins over a missing ?paged
+            var prettyPage = location.pathname.match(/\/page\/(\d+)/);
+            var page = parseInt(params.paged || (prettyPage ? prettyPage[1] : '1'), 10);
+            fetchResults(page, false);
         });
     });
 })();
