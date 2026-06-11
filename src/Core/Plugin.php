@@ -220,7 +220,9 @@ class Plugin
             $frontend_deps[] = 'dbw-immo-favorites-js';
         }
 
-        wp_register_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), DBW_IMMO_SUITE_VERSION, 'all');
+        // dashicons as dependency: used for view switcher, filter and location pins —
+        // WP only auto-loads them for logged-in users (admin bar), not for visitors
+        wp_register_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array('dashicons'), DBW_IMMO_SUITE_VERSION, 'all');
         wp_register_script('dbw-immo-frontend-js', DBW_IMMO_SUITE_URL . 'assets/js/frontend.js', $frontend_deps, DBW_IMMO_SUITE_VERSION, true);
         wp_register_script('dbw-immo-view-switch-js', DBW_IMMO_SUITE_URL . 'assets/js/view-switch.js', array(), DBW_IMMO_SUITE_VERSION, true);
 

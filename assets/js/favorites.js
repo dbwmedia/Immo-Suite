@@ -134,6 +134,11 @@
                 if (!favMode) return; // user switched back while loading
                 if (j.success && j.data.html) {
                     grid.innerHTML = j.data.html;
+                    // AJAX-loaded cards bypass the entrance-animation observer
+                    // in frontend.js — show them immediately
+                    grid.querySelectorAll('.dbw-property-card').forEach(function (c) {
+                        c.classList.add('is-visible');
+                    });
                     // Prune IDs that no longer exist / are unpublished
                     // (safe: the request never exceeds MAX_IDS, see toggleFavorite)
                     if (Array.isArray(j.data.ids) && ids.length <= MAX_IDS) {

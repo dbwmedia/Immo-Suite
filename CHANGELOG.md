@@ -7,6 +7,22 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [1.18.1] — 2026-06-11
+
+### Behoben (Responsive / Mobile)
+- **Horizontaler Overflow im Archiv** — Die Archiv-Toolbar (Merkliste + View-Switcher + Sortierung) brach auf schmalen Screens nicht um und zwang die Seite auf ~540px Breite; der Browser zoomte raus und alles wirkte zu gross. Header-Bar und Controls wrappen jetzt, Sortier-Select wird auf Mobile flexibel.
+- **Dashicons fuer Besucher** — View-Switcher-, Filter- und Standort-Icons waren fuer nicht eingeloggte Besucher leere Kaestchen (WordPress laedt dashicons nur mit Admin-Bar). Dashicons sind jetzt Dependency des Frontend-Styles.
+- **Merkliste: unsichtbare Karten** — Per AJAX geladene Merklisten-Karten umgingen die Entrance-Animation (IntersectionObserver) und blieben bei opacity:0 haengen. Sie werden jetzt direkt sichtbar geschaltet.
+- **Titel-Groessen** — `dbw-single-title` und Archiv-`page-title` skalieren jetzt fluid per `clamp()` (vorher fix 2.5rem) inkl. Silbentrennung fuer lange deutsche Woerter.
+- **Doppelter Seitenrand** — Horizontales Container-Padding auf Detailseite entfernt; den Seitenrand liefert das Theme. Inline-Styles am Archiv-Container in CSS ueberfuehrt.
+- **Sticky-CTA-Bar** — Preis links, "Anfragen" rechts; WhatsApp-Icon aus der Bar entfernt (Floating-Button existiert weiterhin). Floating-Button rueckt auf Mobile ueber die Bar (96px Abstand).
+- **Kontakt-Modal mittig** — Bottom-Sheet-Verhalten auf Mobile entfernt; das Modal ist jetzt sauber zentriert (dvh-basierte Maximalhoehe).
+- **Energie-Sektion** — Label und Wert kollidierten in den Tabellenzeilen (fehlender Abstand); jetzt mit Gap und rechtsbuendigem Umbruch. Energieskala (A+ bis H) kompakter auf Mobile, Container-Padding reduziert.
+- **Key-Facts als 2er-Grid** — Wohnflaeche/Zimmer/Grundstueck/Nutzflaeche auf Mobile zweispaltig statt als lange Einzelspalten-Liste.
+- **Galerie-Pfeile** — Auf Mobile naeher am Rand (10px) fuer mehr Bildflaeche.
+
+---
+
 ## [1.18.0] — 2026-06-10
 
 ### Hinzugefuegt

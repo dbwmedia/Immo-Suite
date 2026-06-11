@@ -5,10 +5,9 @@
 
 get_header(); ?>
 
-<div id="dbw-immo-suite" class="dbw-immo-archive-container"
-	style="max-width: 1200px; min-width: 100%; margin: 0 auto;">
+<div id="dbw-immo-suite" class="dbw-immo-archive-container">
 	<header class="page-header">
-		<h1 class="page-title" style="margin-bottom: 1rem;"><?php post_type_archive_title(); ?></h1>
+		<h1 class="page-title"><?php post_type_archive_title(); ?></h1>
 	</header>
 
 	<?php

@@ -536,9 +536,25 @@
 	width: 100%;
 	max-width: 1200px;
 	margin: 0 auto;
-	padding: 2rem 1rem;
+	/* No horizontal padding — the surrounding theme already provides
+	   the page gutter; side padding here doubles the margin on mobile */
+	padding: 2rem 0;
 	box-sizing: border-box;
 	overflow: visible;
+}
+
+#dbw-immo-suite.dbw-immo-archive-container {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+#dbw-immo-suite .page-header .page-title {
+	font-size: clamp(1.6rem, 5vw, 2.25rem);
+	margin-bottom: 1rem;
+	overflow-wrap: break-word;
+	hyphens: auto;
 }
 
 #dbw-immo-suite .dbw-single-header {
@@ -546,15 +562,17 @@
 }
 
 #dbw-immo-suite .dbw-single-title {
-	font-size: 2.5rem;
+	font-size: clamp(1.5rem, 4.5vw, 2.5rem);
 	color: var(--dbw-primary);
 	margin-bottom: 0.5rem;
 	line-height: 1.2;
+	overflow-wrap: break-word;
+	hyphens: auto;
 }
 
 #dbw-immo-suite .dbw-single-address {
 	color: var(--dbw-gray);
-	font-size: 1.2rem;
+	font-size: clamp(1rem, 3vw, 1.2rem);
 }
 
 #dbw-immo-suite .dbw-gallery-grid {
@@ -1018,9 +1036,38 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
 	margin-bottom: 2rem;
 	padding-bottom: 1rem;
 	border-bottom: 1px solid var(--dbw-border-light);
+}
+
+/* Toolbar controls must be able to wrap on narrow screens —
+   otherwise they force horizontal overflow and the browser zooms out */
+#dbw-immo-suite .dbw-start-content-right {
+	flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+	#dbw-immo-suite .dbw-start-content-right {
+		width: 100%;
+		gap: 8px !important;
+	}
+
+	#dbw-immo-suite .dbw-sort-control {
+		flex: 1;
+		min-width: 0;
+	}
+
+	#dbw-immo-suite .dbw-sort-form {
+		display: block;
+	}
+
+	#dbw-immo-suite .dbw-sort-select {
+		width: 100%;
+		max-width: 100%;
+	}
 }
 
 #dbw-immo-suite .dbw-result-count {
@@ -1453,6 +1500,7 @@
 #dbw-immo-suite .dbw-energy-item {
 	display: flex;
 	justify-content: space-between;
+	gap: 1rem;
 	border-bottom: 1px solid #e0e0e0;
 	padding-bottom: 8px;
 }
@@ -1465,6 +1513,8 @@
 #dbw-immo-suite .dbw-energy-item strong {
 	color: #333;
 	font-size: 0.95rem;
+	text-align: right;
+	overflow-wrap: anywhere;
 }
 
 #dbw-immo-suite .dbw-scale-bar {
@@ -2611,21 +2661,11 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 
 /* Mobile: bottom sheet */
 @media (max-width: 600px) {
+	/* Centered modal on mobile (base styles already center via inset:0 + margin:auto) */
 	.dbw-modal {
-		max-width: 100%;
-		width: 100%;
-		max-height: 85vh;
-		border-radius: 16px 16px 0 0;
-		margin: 0;
-		margin-top: auto;
-		position: fixed;
-		inset: auto 0 0 0;
-		animation: dbw-slide-up 0.3s ease-out;
-	}
-
-	@keyframes dbw-slide-up {
-		from { transform: translateY(100%); }
-		to { transform: translateY(0); }
+		width: calc(100% - 24px);
+		max-height: 88vh;
+		max-height: 88dvh;
 	}
 
 	.dbw-modal__submit {
@@ -2665,8 +2705,10 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	white-space: nowrap;
 }
 
+/* Price left, button right */
 .dbw-sticky-cta-bar .dbw-cta {
-	flex: 1;
+	flex: 0 0 auto;
+	margin-left: auto;
 }
 
 .dbw-sticky-cta-bar .dbw-cta--compact {
@@ -3713,4 +3755,50 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	text-align: center;
 	padding: 3rem 1rem;
 	color: var(--dbw-gray, #5f6b6d);
+}
+
+/* ============================================================
+   Mobile Fixes — v1.18.1
+   ============================================================ */
+
+@media (max-width: 640px) {
+	/* Key facts: two tiles per row instead of a long single column */
+	#dbw-immo-suite .dbw-features-list {
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+	}
+
+	#dbw-immo-suite .dbw-feature-item {
+		padding: 0.85rem;
+	}
+
+	/* Energy section: tighter paddings, scale fits the viewport */
+	#dbw-immo-suite .dbw-energy-container {
+		padding: 1.25rem;
+	}
+
+	#dbw-immo-suite .dbw-scale-bar {
+		height: 24px;
+		border-radius: 12px;
+	}
+
+	#dbw-immo-suite .dbw-scale-segment {
+		font-size: 0.65rem;
+	}
+
+	/* Gallery nav buttons: smaller, closer to the edge */
+	#dbw-immo-suite .dbw-gallery-nav--prev {
+		left: 10px;
+	}
+
+	#dbw-immo-suite .dbw-gallery-nav--next {
+		right: 10px;
+	}
+}
+
+/* Floating WhatsApp button must clear the sticky CTA bar */
+@media (max-width: 768px) {
+	.dbw-whatsapp-floating {
+		bottom: 96px;
+	}
 }
