@@ -7,6 +7,40 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.0.0] — 2026-06-11
+
+Grosses UI/UX-Release: Das Frontend fuehlt sich jetzt wie eine moderne App an — Filtern ohne Reload, Micro-Interactions, nahtlose Uebergaenge. Jedes Feature wurde einzeln committet und ist gezielt revertierbar.
+
+### Filter 2.0 (Archiv)
+- **AJAX-Filterung ohne Seiten-Reload** — Ergebnisse aktualisieren live mit Skeleton-Loading und gestaffeltem Card-Reveal. URL wird per pushState synchronisiert (Vor/Zurueck funktioniert), ohne JS faellt alles auf das klassische GET-Formular zurueck.
+- **Preis-Slider mit Portfolio-Histogramm** — Dual-Range-Slider, dahinter die Preisverteilung der eigenen Objekte (20 Buckets, 6h-Cache, automatische Invalidierung beim Speichern). Wechselt den Datensatz je nach Kauf/Miete-Auswahl.
+- **Aktive Filter als Chips** — entfernbar per Klick, inkl. "Alle zuruecksetzen", auch serverseitig gerendert.
+- **Zimmer-Schnellauswahl** als Pills (Alle, 1+ bis 5+) statt Zahlenfeld.
+- **Ort-Autocomplete** ueber die Ort-Taxonomie (natives datalist).
+- **Live-Ergebniszahl** im Such-Button ("23 Objekte anzeigen").
+- **Kartenansicht synchronisiert** — Marker aktualisieren sich mit jedem Filtervorgang.
+- Sortierung und Pagination laufen ebenfalls per AJAX.
+
+### Detailseite
+- **Sticky Sektions-Navigation** mit Scroll-Spy (Beschreibung · Ausstattung · Lage · ...) und Lesefortschritts-Balken — automatisch aus den vorhandenen Sektionen gebaut.
+- **Galerie-Upgrade** — Bildzaehler "3/17", bildgenaue Pfeil-Navigation, aktives Thumbnail markiert + mitgescrollt, Pfeiltasten-Steuerung.
+- **Bild-Morph beim Seitenwechsel** — das geklickte Kartenbild morpht per Cross-Document View Transition in das Hero-Bild der Detailseite (und zurueck beim Back-Button). Kein Root-Crossfade (das war der Flicker von v1.15.4).
+- **Count-up-Animationen** — Eckdaten zaehlen beim Scrollen hoch; Finanzierungsrechner-Werte gleiten beim Slider-Ziehen statt zu springen.
+
+### Micro-Interactions & Feedback
+- **Toast-System** — dezente Benachrichtigungen unten ("Zur Merkliste hinzugefuegt", "Link kopiert"), aria-live, ueber der Sticky-Bar.
+- **Herz-Animation** — Bounce + Burst-Ring beim Merken (Twitter-Like-Style).
+- **Teilen-Button** — Clipboard-Fallback mit Toast statt alert() auf Desktop.
+- **Empty States** — "Keine Immobilien gefunden" mit Illustration, Reset-Button und 3 aktuellen Objekten als Vorschlag; Merkliste mit Herz-Illustration.
+
+### Admin
+- **Objektliste aufgewertet** — Vorschaubild, Status-Pill (Aktiv/Reserviert/Verkauft/Referenz), Preis, PLZ+Ort, Objektart und Vollstaendigkeits-Check (fehlendes Bild / Geo-Daten / Energieausweis). Preis und Ort sortierbar.
+- **Dashboard-Widget** — Portfolio-Zaehler nach Status, letzter Import mit Status-Ampel, Schnellzugriffe.
+
+Alle Animationen respektieren `prefers-reduced-motion`.
+
+---
+
 ## [1.18.1] — 2026-06-11
 
 ### Behoben (Responsive / Mobile)

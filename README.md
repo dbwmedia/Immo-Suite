@@ -26,15 +26,20 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Grid View** (Kachelansicht) + **List View** (horizontal) + **Karten-View** mit Live-Switcher
 - **Kartenansicht** — alle gefilterten Objekte als Marker auf OpenStreetMap (Leaflet lokal, Consent-faehig), Popups mit Bild/Titel/Preis, Auto-Zoom
 - **Merkliste (Favoriten)** — Herz auf jeder Karte, localStorage-basiert (kein Account, DSGVO-neutral), Merklisten-Ansicht mit Zaehler in der Toolbar
-- **Erweiterte Filterleiste** — Objekttyp, Standort (Ort/PLZ), Vermarktungsart, Preis, Flaeche, Zimmer
-- **Sortierung** — Datum, Preis (aufsteigend/absteigend inkl. Kauf+Miete gemischt), Flaeche
+- **AJAX-Filterung ohne Reload** — Skeleton-Loading, Live-Ergebniszahl, URL-Sync (pushState), No-JS-Fallback
+- **Erweiterte Filterleiste** — Objekttyp, Standort mit Autocomplete, Vermarktungsart, Preis-Slider mit Portfolio-Histogramm, Flaeche, Zimmer-Pills (1+ bis 5+)
+- **Aktive Filter als Chips** — entfernbar, inkl. "Alle zuruecksetzen"
+- **Sortierung** — Datum, Preis (aufsteigend/absteigend inkl. Kauf+Miete gemischt), Flaeche — per AJAX
 - **Pagination** mit konfigurierbarer Seitengroesse
 - **Energieeffizienz-Flags** im EnEV-Farbschema (A+ bis H)
 - **Dynamische Status-Tags** — "Haus zum Kauf", "Wohnung zur Miete", "Verkauft", "Reserviert", "Referenz"
 - **Intelligentes Preislabel** — zeigt automatisch "Kaufpreis" oder "Kaltmiete"
 
 #### Detailseiten
-- **Galerie-Slider** mit Thumbnail-Leiste, Prev/Next-Navigation und nativer Lightbox
+- **Galerie-Slider** mit Thumbnail-Leiste (aktives Thumb markiert), Bildzaehler, Pfeiltasten-Navigation und nativer Lightbox
+- **Sticky Sektions-Navigation** mit Scroll-Spy und Lesefortschritts-Balken
+- **Bild-Morph** — Kartenbild morpht per View Transition in das Hero-Bild der Detailseite
+- **Toast-Benachrichtigungen + Micro-Interactions** — Herz-Animation, Count-up-Eckdaten, "Link kopiert"-Toast
 - **Ausstattungs-Badges** — strukturierte Merkmale als Pill-Tags (Balkon, Garage, Kamin etc.)
 - **OpenStreetMap-Karte** via Leaflet.js (kein API-Key noetig) mit Marker
 - **Energieausweis-Skala** — grafische Darstellung mit Pfeil-Indikator
