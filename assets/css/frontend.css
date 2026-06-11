@@ -4216,3 +4216,34 @@ body.admin-bar #dbw-immo-suite .dbw-section-nav {
 #dbw-immo-suite .dbw-main-col .dbw-section {
 	scroll-margin-top: 90px;
 }
+
+/* ============================================================
+   Cross-document view transition: card image → hero (v2.0)
+   ============================================================ */
+
+@view-transition {
+	navigation: auto;
+}
+
+/* No full-page crossfade (caused visible flicker) — only the tagged
+   image morphs between the pages */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+}
+
+::view-transition-group(dbw-hero) {
+	animation-duration: 0.35s;
+	animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* The hero on the property page: first gallery image */
+#dbw-immo-suite .dbw-gallery-slide:first-child img {
+	view-transition-name: dbw-hero;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	@view-transition {
+		navigation: none;
+	}
+}

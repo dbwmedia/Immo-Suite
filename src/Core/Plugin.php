@@ -209,7 +209,9 @@ class Plugin
             'copyManual' => __('Link kopieren:', 'dbw-immo-suite'),
         ));
 
-        $frontend_deps = array('dbw-immo-toast');
+        wp_register_script('dbw-immo-view-transition', DBW_IMMO_SUITE_URL . 'assets/js/view-transition.js', array(), DBW_IMMO_SUITE_VERSION, true);
+
+        $frontend_deps = array('dbw-immo-toast', 'dbw-immo-view-transition');
         if (\DBW\ImmoSuite\Frontend\Favorites::is_enabled()) {
             wp_register_script('dbw-immo-favorites-js', DBW_IMMO_SUITE_URL . 'assets/js/favorites.js', array('dbw-immo-toast'), DBW_IMMO_SUITE_VERSION, true);
             wp_localize_script('dbw-immo-favorites-js', 'dbwFavorites', array(
