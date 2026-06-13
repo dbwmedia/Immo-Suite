@@ -7,6 +7,18 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.0.4] — 2026-06-13
+
+### Behoben
+- **Referenzen-Block: Status-Filter zeigte nicht alle Immobilien** — Die Sortierung nach Verkaufsdatum erzeugte einen INNER JOIN, der Immobilien ohne Verkaufsdatum (Status "Reserviert" oder "Referenz") ausschloss. Sortierung jetzt nach Veroeffentlichungsdatum, alle gefilterten Status werden korrekt angezeigt.
+- **Referenzen-Block: Leere Seite ohne Hinweis** — Wenn keine Referenzen vorhanden sind, wird im Frontend jetzt "Aktuell sind keine Referenzen verfuegbar." angezeigt statt einer leeren Seite.
+
+### Geaendert
+- **Block-Titel gekuerzt** — "DBW Immo Referenzen" und "DBW Immo Grid" heissen jetzt "Immo Referenzen" und "Immo Grid".
+- **Block-Icons mit Marken-Gradient** — Beide Bloecke verwenden jetzt Custom-SVG-Icons mit dem dbw-media-Gradient (5-Stop, rot bis blau) statt generischer Dashicons.
+
+---
+
 ## [2.0.3] — 2026-06-11
 
 ### Geaendert
