@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.0.5] — 2026-06-13
+
+### Geaendert
+- **Editor-Platzhalter statt leerer Vorschau** — Beide Bloecke (Immo Referenzen, Immo Grid) zeigen im Editor jetzt einen sauberen Platzhalter mit Titel und Hinweis statt eines leeren weissen Feldes. Die Immobilien-Karten werden weiterhin im Frontend gerendert.
+- **Kategorie-Icon entfernt** — Das Haus-Icon neben "Immo Suite" im Block-Inserter wurde entfernt, da die einzelnen Bloecke bereits eigene Gradient-Icons haben.
+
+---
+
 ## [2.0.4] — 2026-06-13
 
 ### Behoben
