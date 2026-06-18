@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.1.1] — 2026-06-18
+
+### Behoben
+- **Empty-State fuer Grid-Block & Shortcodes** — Wenn keine Immobilien fuer den aktuellen Filter/Ort vorhanden sind, wird jetzt eine gestylte Hinweismeldung angezeigt statt leerer Ausgabe.
+
+---
+
 ## [2.1.0] — 2026-06-18
 
 ### Hinzugefuegt

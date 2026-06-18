@@ -3,7 +3,7 @@
  * Plugin Name:       Immo Suite
  * Plugin URI:        https://dennisbuchwald.de/apps/immo-suite
  * Description:       Die Brücke zwischen Maklersoftware und moderner Website. Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
- * Version:           2.1.0
+ * Version:           2.1.1
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Dennis Buchwald
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define Constants
-define('DBW_IMMO_SUITE_VERSION', '2.1.0');
+define('DBW_IMMO_SUITE_VERSION', '2.1.1');
 define('DBW_IMMO_SUITE_PATH', plugin_dir_path(__FILE__));
 define('DBW_IMMO_SUITE_URL', plugin_dir_url(__FILE__));
 
