@@ -74,6 +74,7 @@ Zeigt aktuelle Immobilien in einem konfigurierbaren Grid an.
 **Inspector Controls:**
 - Anzahl (1-24) und Spalten (1-4)
 - Filter nach Ort/Stadt, Vermarktungsart, Objektart
+- **Ort automatisch aus aktueller Seite** — Toggle fuer dynamische Ort-Aufloesung aus dem Seitenkontext (ideal fuer Standort-Templates mit GP Elements o.Ae.)
 - Nur Highlights anzeigen
 - Preis ausblenden, Datum anzeigen
 
@@ -83,6 +84,7 @@ Zeigt verkaufte und Referenz-Objekte an.
 **Inspector Controls:**
 - Anzahl und Spalten
 - Filter nach Ort/Stadt
+- **Ort automatisch aus aktueller Seite** — wie beim Grid-Block
 - Status-Filter (Verkauft, Referenz, Reserviert)
 - Preis ausblenden, Verkaufsdatum anzeigen
 
@@ -97,9 +99,10 @@ Zeigt verkaufte und Referenz-Objekte an.
 [dbw_immo_references]
 [dbw_immo_references location="muenchen" count="6" columns="2"]
 [dbw_immo_references status="verkauft" hide_price="yes"]
+[dbw_immo_references location="current" count="6"]
 ```
 
-**Geo-Landing-Pages:** Kombiniere beide Shortcodes mit `location="ort-slug"` um stadtspezifische Immobilien-Seiten zu erstellen.
+**Geo-Landing-Pages:** Kombiniere beide Shortcodes mit `location="ort-slug"` um stadtspezifische Immobilien-Seiten zu erstellen. Mit `location="current"` wird der Ort automatisch aus der aktuellen Seite bezogen - ideal fuer Standort-Templates (z.B. GP Elements auf einem `standort`-CPT).
 
 ### Referenz-System
 - **Status-Management** — Aktiv, Reserviert, Verkauft, Referenz (per Dropdown im Editor)
@@ -185,6 +188,7 @@ src/
     Filter.php              # Filterleiste + Query-Modifikation + Sortierung
     TemplateLoader.php      # Theme/Plugin Template-Fallback
     Shortcode.php           # [dbw_immo_grid] + [dbw_immo_references]
+    LocationResolver.php    # Dynamische Ort-Aufloesung aus Seitenkontext
     EnergyRenderer.php      # Energieausweis-Skala + Energiekosten-Rechner
     ContactForm.php         # AJAX-Kontaktformular
     ContactModal.php        # Multi-Step Contact Modal (Typeform-Style)

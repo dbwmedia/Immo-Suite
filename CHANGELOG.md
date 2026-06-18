@@ -7,6 +7,17 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.1.0] — 2026-06-18
+
+### Hinzugefuegt
+- **Dynamische Ort-Quelle fuer Grid & Referenzen** — Neuer Toggle "Ort automatisch aus aktueller Seite" im Inspector. Der Ort wird zur Laufzeit aus der aufgerufenen Seite ermittelt (Taxonomie-Archiv, Post-Meta/ACF-Feld oder zugewiesener Ort-Term). Ideal fuer GP-Elements-Templates auf `standort`-CPTs, bei denen ein Template automatisch die Immobilien des jeweiligen Standorts anzeigt.
+- **Shortcode-Parameter `location="current"`** — Fuer `[dbw_immo_grid]` und `[dbw_immo_references]`: Statt eines festen Ort-Slugs wird der Ort dynamisch aus dem Seitenkontext bezogen.
+- **Zentraler LocationResolver** (`src/Frontend/LocationResolver.php`) — Wiederverwendbare Klasse mit 3-stufiger Aufloesung (Tax-Archiv → Meta/ACF → zugewiesener Term). Ohne ACF funktionsfaehig via `get_post_meta()`.
+- **Filter `dbw_immo_resolved_location`** — Erlaubt Themes/Kunden, den aufgeloesten Ort-Slug zu ueberschreiben.
+- **Filter `dbw_immo_location_meta_key`** — Aendert den gelesenen Meta-Key (Default: `ort_name`).
+
+---
+
 ## [2.0.5] — 2026-06-13
 
 ### Geaendert

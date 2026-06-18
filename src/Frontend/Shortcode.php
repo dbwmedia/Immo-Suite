@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) { exit; }
  *     columns   - Grid columns 1-4 (default: 3)
  *     marketing - Filter by Vermarktungsart slug (e.g. "kauf", "miete")
  *     type      - Filter by Objektart slug (e.g. "haus", "wohnung")
- *     location  - Filter by Ort slug (e.g. "muenchen", "berlin")
+ *     location  - Filter by Ort slug (e.g. "muenchen", "berlin") or "current" for auto-resolve
  *     highlights - "yes" to show only highlighted properties
  *     hide_price - "yes" to hide prices
  *     show_date  - "yes" to show listing date
@@ -26,7 +26,7 @@ if (!defined('ABSPATH')) { exit; }
  *   Attributes:
  *     count     - Number of properties (default: 12)
  *     columns   - Grid columns 1-4 (default: 3)
- *     location  - Filter by Ort slug
+ *     location  - Filter by Ort slug or "current" for auto-resolve from page context
  *     status    - Comma-separated statuses (default: "verkauft,referenz")
  *     hide_price - "yes"/"no" (default: from settings)
  *     show_date  - "yes"/"no" (default: from settings)
@@ -98,11 +98,20 @@ class Shortcode
             );
         }
 
-        if (!empty($atts['location'])) {
+        // Resolve location: "current" = dynamic from page context
+        $location_value = $atts['location'];
+        if ($location_value === 'current') {
+            $location_value = LocationResolver::resolve();
+            if (empty($location_value)) {
+                return '';
+            }
+        }
+
+        if (!empty($location_value)) {
             $tax_query[] = array(
                 'taxonomy' => 'ort',
                 'field'    => 'slug',
-                'terms'    => sanitize_text_field($atts['location']),
+                'terms'    => sanitize_text_field($location_value),
             );
         }
 
@@ -230,13 +239,21 @@ class Shortcode
             'order'    => 'DESC',
         );
 
-        // Location filter
-        if (!empty($atts['location'])) {
+        // Resolve location: "current" = dynamic from page context
+        $location_value = $atts['location'];
+        if ($location_value === 'current') {
+            $location_value = LocationResolver::resolve();
+            if (empty($location_value)) {
+                return '';
+            }
+        }
+
+        if (!empty($location_value)) {
             $args['tax_query'] = array(
                 array(
                     'taxonomy' => 'ort',
                     'field'    => 'slug',
-                    'terms'    => sanitize_text_field($atts['location']),
+                    'terms'    => sanitize_text_field($location_value),
                 )
             );
         }

@@ -44,8 +44,19 @@ class GridBlock
         $property_type = isset($attributes['propertyType']) ? $attributes['propertyType'] : '';
         $hide_price = isset($attributes['hidePrice']) ? $attributes['hidePrice'] : false;
         $show_date = isset($attributes['showDate']) ? $attributes['showDate'] : false;
-        $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         $columns = isset($attributes['columns']) ? intval($attributes['columns']) : 3;
+
+        // Resolve location: dynamic from current page or manual selection
+        $location_source = isset($attributes['locationSource']) ? $attributes['locationSource'] : 'manual';
+        if ($location_source === 'current') {
+            $location_filter = \DBW\ImmoSuite\Frontend\LocationResolver::resolve();
+            // Empty resolver on a location page = render nothing (avoid unfiltered full grid)
+            if (empty($location_filter) && !is_admin()) {
+                return '';
+            }
+        } else {
+            $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
+        }
 
         $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
@@ -93,7 +104,7 @@ class GridBlock
         }
 
         // Meta Query to exclude sold items by default from regular grid?
-        // Let's exclude "referenz" and "verkauft" using the global setting if necessary, 
+        // Let's exclude "referenz" and "verkauft" using the global setting if necessary,
         // or just outright from the active listing block.
         $meta_query = array('relation' => 'AND'); // Default to AND if we add multiple constraints
 
@@ -117,7 +128,7 @@ class GridBlock
         $query = new \WP_Query($args);
 
         ob_start();
-        
+
         if ($query->have_posts()) {
             $grid_style = ($columns !== 3) ? ' style="grid-template-columns: repeat(' . $columns . ', 1fr);"' : '';
 
@@ -168,13 +179,13 @@ class GridBlock
 
             echo '</div>'; // block container
             echo '</div>'; // #dbw-immo-suite
-            
+
         } else {
             if (is_admin()) {
                 echo '<p>' . __('Keine Immobilien für diesen Filter gefunden (Vorschau).', 'dbw-immo-suite') . '</p>';
             }
         }
-        
+
         wp_reset_postdata();
 
         return ob_get_clean();

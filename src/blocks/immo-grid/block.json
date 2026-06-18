@@ -42,6 +42,10 @@
             "type": "string",
             "default": ""
         },
+        "locationSource": {
+            "type": "string",
+            "default": "manual"
+        },
         "columns": {
             "type": "number",
             "default": 3

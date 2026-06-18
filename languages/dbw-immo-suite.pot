@@ -615,8 +615,23 @@ msgstr ""
 msgid "Anrede umgestellt. Falls Caching aktiv ist, bitte einmal leeren."
 msgstr ""
 
-#: ../src/blocks/GridBlock.php:155
+#: ../src/blocks/GridBlock.php
 msgid "Keine Immobilien für diesen Filter gefunden (Vorschau)."
+msgstr ""
+
+#: ../src/blocks/immo-grid/edit.js
+#: ../src/blocks/immo-references/edit.js
+msgid "Ort automatisch aus aktueller Seite"
+msgstr ""
+
+#: ../src/blocks/immo-grid/edit.js
+#: ../src/blocks/immo-references/edit.js
+msgid "Der Ort wird automatisch aus der aufgerufenen Standort- oder Term-Seite uebernommen."
+msgstr ""
+
+#: ../src/blocks/immo-grid/edit.js
+#: ../src/blocks/immo-references/edit.js
+msgid "Aktivieren, um den Ort dynamisch aus der aktuellen Seite zu beziehen (z.B. fuer Standort-Templates)."
 msgstr ""
 
 #: ../src/blocks/ReferencesBlock.php:120

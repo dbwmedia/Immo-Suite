@@ -44,8 +44,19 @@ class ReferencesBlock
         $settings = get_option('dbw_immo_suite_settings');
         $hide_price = isset($attributes['hidePrice']) ? $attributes['hidePrice'] : !empty($settings['hide_price_sold']);
         $show_date = isset($attributes['showDate']) ? $attributes['showDate'] : !empty($settings['show_sold_date']);
-        $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         $columns = isset($attributes['columns']) ? intval($attributes['columns']) : 3;
+
+        // Resolve location: dynamic from current page or manual selection
+        $location_source = isset($attributes['locationSource']) ? $attributes['locationSource'] : 'manual';
+        if ($location_source === 'current') {
+            $location_filter = \DBW\ImmoSuite\Frontend\LocationResolver::resolve();
+            // Empty resolver on a location page = render empty state (avoid unfiltered full grid)
+            if (empty($location_filter) && !is_admin()) {
+                return '';
+            }
+        } else {
+            $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
+        }
 
         $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
@@ -81,14 +92,14 @@ class ReferencesBlock
         $query = new \WP_Query($args);
 
         ob_start();
-        
+
         if ($query->have_posts()) {
             $grid_style = ($columns !== 3) ? ' style="grid-template-columns: repeat(' . $columns . ', 1fr);"' : '';
 
             echo '<div id="dbw-immo-suite">';
             echo '<div class="dbw-immo-references-block">';
             echo '<div class="dbw-property-grid"' . $grid_style . '>';
-            
+
             while ($query->have_posts()) {
                 $query->the_post();
                 \DBW\ImmoSuite\Frontend\CardRenderer::render(array(

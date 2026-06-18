@@ -4,7 +4,7 @@ import { PanelBody, ToggleControl, RangeControl, SelectControl, TextControl, Pla
 import { useSelect } from '@wordpress/data';
 
 export default function Edit({ attributes, setAttributes }) {
-    const { postsPerPage, marketing, propertyType, hidePrice, showDate, onlyHighlights, location, columns, showCtaButton, ctaButtonText, ctaButtonUrl } = attributes;
+    const { postsPerPage, marketing, propertyType, hidePrice, showDate, onlyHighlights, location, locationSource, columns, showCtaButton, ctaButtonText, ctaButtonUrl } = attributes;
     const blockProps = useBlockProps();
 
     // Fetch taxonomy terms dynamically
@@ -47,6 +47,8 @@ export default function Edit({ attributes, setAttributes }) {
         });
     }
 
+    const isLocationAuto = locationSource === 'current';
+
     return (
         <div {...blockProps}>
             <InspectorControls>
@@ -84,13 +86,27 @@ export default function Edit({ attributes, setAttributes }) {
                         checked={onlyHighlights}
                         onChange={(value) => setAttributes({ onlyHighlights: value })}
                     />
-                    <SelectControl
-                        label={__('Ort / Stadt', 'dbw-immo-suite')}
-                        help={__('Ideal fuer Geo-Landing-Pages: Zeige nur Immobilien in einer bestimmten Stadt.', 'dbw-immo-suite')}
-                        value={location}
-                        options={locationOptions}
-                        onChange={(value) => setAttributes({ location: value })}
+                    <ToggleControl
+                        label={__('Ort automatisch aus aktueller Seite', 'dbw-immo-suite')}
+                        help={isLocationAuto
+                            ? __('Der Ort wird automatisch aus der aufgerufenen Standort- oder Term-Seite uebernommen.', 'dbw-immo-suite')
+                            : __('Aktivieren, um den Ort dynamisch aus der aktuellen Seite zu beziehen (z.B. fuer Standort-Templates).', 'dbw-immo-suite')
+                        }
+                        checked={isLocationAuto}
+                        onChange={(value) => setAttributes({
+                            locationSource: value ? 'current' : 'manual',
+                            location: value ? '' : location,
+                        })}
                     />
+                    {!isLocationAuto && (
+                        <SelectControl
+                            label={__('Ort / Stadt', 'dbw-immo-suite')}
+                            help={__('Ideal fuer Geo-Landing-Pages: Zeige nur Immobilien in einer bestimmten Stadt.', 'dbw-immo-suite')}
+                            value={location}
+                            options={locationOptions}
+                            onChange={(value) => setAttributes({ location: value })}
+                        />
+                    )}
                     <SelectControl
                         label={__('Vermarktungsart', 'dbw-immo-suite')}
                         value={marketing}

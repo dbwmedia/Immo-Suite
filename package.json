@@ -1,6 +1,6 @@
 {
     "name": "dbw-immo-suite",
-    "version": "1.10.0",
+    "version": "2.1.0",
     "description": "WordPress Plugin for Real Estate Management",
     "scripts": {
         "build": "wp-scripts build",

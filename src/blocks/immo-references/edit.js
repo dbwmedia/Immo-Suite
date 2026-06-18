@@ -4,7 +4,7 @@ import { PanelBody, ToggleControl, RangeControl, CheckboxControl, SelectControl,
 import { useSelect } from '@wordpress/data';
 
 export default function Edit({ attributes, setAttributes }) {
-    const { status, hidePrice, showDate, postsPerPage, location, columns } = attributes;
+    const { status, hidePrice, showDate, postsPerPage, location, locationSource, columns } = attributes;
 
     const blockProps = useBlockProps();
 
@@ -31,6 +31,8 @@ export default function Edit({ attributes, setAttributes }) {
         }
         setAttributes({ status: newStatus });
     };
+
+    const isLocationAuto = locationSource === 'current';
 
     return (
         <div {...blockProps}>
@@ -62,13 +64,27 @@ export default function Edit({ attributes, setAttributes }) {
                     />
                 </PanelBody>
                 <PanelBody title={__('Filter', 'dbw-immo-suite')} initialOpen={true}>
-                    <SelectControl
-                        label={__('Ort / Stadt', 'dbw-immo-suite')}
-                        help={__('Ideal fuer Geo-Landing-Pages: Zeige nur Referenzen aus einer bestimmten Stadt.', 'dbw-immo-suite')}
-                        value={location}
-                        options={locationOptions}
-                        onChange={(value) => setAttributes({ location: value })}
+                    <ToggleControl
+                        label={__('Ort automatisch aus aktueller Seite', 'dbw-immo-suite')}
+                        help={isLocationAuto
+                            ? __('Der Ort wird automatisch aus der aufgerufenen Standort- oder Term-Seite uebernommen.', 'dbw-immo-suite')
+                            : __('Aktivieren, um den Ort dynamisch aus der aktuellen Seite zu beziehen (z.B. fuer Standort-Templates).', 'dbw-immo-suite')
+                        }
+                        checked={isLocationAuto}
+                        onChange={(value) => setAttributes({
+                            locationSource: value ? 'current' : 'manual',
+                            location: value ? '' : location,
+                        })}
                     />
+                    {!isLocationAuto && (
+                        <SelectControl
+                            label={__('Ort / Stadt', 'dbw-immo-suite')}
+                            help={__('Ideal fuer Geo-Landing-Pages: Zeige nur Referenzen aus einer bestimmten Stadt.', 'dbw-immo-suite')}
+                            value={location}
+                            options={locationOptions}
+                            onChange={(value) => setAttributes({ location: value })}
+                        />
+                    )}
                 </PanelBody>
                 <PanelBody title={__('Status Filter', 'dbw-immo-suite')} initialOpen={false}>
                     <p className="components-base-control__help">{__('Welche Status sollen angezeigt werden?', 'dbw-immo-suite')}</p>
