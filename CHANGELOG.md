@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.1.3] — 2026-06-18
+
+### Behoben
+- **Fatal Error in Grid-Block Empty-State** — `self::render_empty_state()` korrigiert zu `CardRenderer::render_empty_state()` (Methode liegt in CardRenderer, nicht im GridBlock).
+
+---
+
 ## [2.1.2] — 2026-06-18
 
 ### Geaendert

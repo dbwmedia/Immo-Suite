@@ -185,7 +185,7 @@ class GridBlock
                 wp_enqueue_style('dbw-immo-frontend');
                 echo '<div id="dbw-immo-suite">';
                 echo '<div class="dbw-immo-suite-block dbw-immo-grid-block">';
-                echo self::render_empty_state(__('Keine Immobilien verfuegbar', 'dbw-immo-suite'), __('Aktuell sind fuer diesen Standort keine Angebote vorhanden. Schauen Sie bald wieder vorbei.', 'dbw-immo-suite'));
+                echo \DBW\ImmoSuite\Frontend\CardRenderer::render_empty_state(__('Keine Immobilien verfuegbar', 'dbw-immo-suite'), __('Aktuell sind fuer diesen Standort keine Angebote vorhanden. Schauen Sie bald wieder vorbei.', 'dbw-immo-suite'));
                 echo '</div>';
                 echo '</div>';
             }
