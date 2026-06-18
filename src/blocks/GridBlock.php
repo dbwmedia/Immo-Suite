@@ -47,13 +47,11 @@ class GridBlock
         $columns = isset($attributes['columns']) ? intval($attributes['columns']) : 3;
 
         // Resolve location: dynamic from current page or manual selection
+        // Resolve location: dynamic from current page or manual selection
         $location_source = isset($attributes['locationSource']) ? $attributes['locationSource'] : 'manual';
-        if ($location_source === 'current') {
+        $is_dynamic_location = ($location_source === 'current');
+        if ($is_dynamic_location) {
             $location_filter = \DBW\ImmoSuite\Frontend\LocationResolver::resolve();
-            // Empty resolver on a location page = render nothing (avoid unfiltered full grid)
-            if (empty($location_filter) && !is_admin()) {
-                return '';
-            }
         } else {
             $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         }
@@ -183,6 +181,12 @@ class GridBlock
         } else {
             if (is_admin()) {
                 echo '<p>' . __('Keine Immobilien für diesen Filter gefunden (Vorschau).', 'dbw-immo-suite') . '</p>';
+            } elseif ($is_dynamic_location || !empty($location_filter)) {
+                echo '<div id="dbw-immo-suite">';
+                echo '<div class="dbw-immo-suite-block dbw-immo-grid-block">';
+                echo '<p class="dbw-no-results">' . __('Aktuell sind keine Immobilien verfuegbar.', 'dbw-immo-suite') . '</p>';
+                echo '</div>';
+                echo '</div>';
             }
         }
 

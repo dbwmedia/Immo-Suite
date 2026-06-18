@@ -100,11 +100,9 @@ class Shortcode
 
         // Resolve location: "current" = dynamic from page context
         $location_value = $atts['location'];
-        if ($location_value === 'current') {
+        $is_dynamic_location = ($location_value === 'current');
+        if ($is_dynamic_location) {
             $location_value = LocationResolver::resolve();
-            if (empty($location_value)) {
-                return '';
-            }
         }
 
         if (!empty($location_value)) {
@@ -182,7 +180,11 @@ class Shortcode
             echo '</div>';
             echo '</div>';
         } else {
-            echo '<p>' . __('Keine Immobilien gefunden.', 'dbw-immo-suite') . '</p>';
+            echo '<div id="dbw-immo-suite">';
+            echo '<div class="dbw-immo-suite-block dbw-immo-grid-block">';
+            echo '<p class="dbw-no-results">' . __('Aktuell sind keine Immobilien verfuegbar.', 'dbw-immo-suite') . '</p>';
+            echo '</div>';
+            echo '</div>';
         }
 
         wp_reset_postdata();
@@ -241,11 +243,9 @@ class Shortcode
 
         // Resolve location: "current" = dynamic from page context
         $location_value = $atts['location'];
-        if ($location_value === 'current') {
+        $is_dynamic_location = ($location_value === 'current');
+        if ($is_dynamic_location) {
             $location_value = LocationResolver::resolve();
-            if (empty($location_value)) {
-                return '';
-            }
         }
 
         if (!empty($location_value)) {
@@ -283,7 +283,11 @@ class Shortcode
             echo '</div>';
             echo '</div>';
         } else {
-            echo '<p>' . __('Keine Referenzen gefunden.', 'dbw-immo-suite') . '</p>';
+            echo '<div id="dbw-immo-suite">';
+            echo '<div class="dbw-immo-references-container">';
+            echo '<p class="dbw-no-results">' . __('Aktuell sind keine Referenzen verfuegbar.', 'dbw-immo-suite') . '</p>';
+            echo '</div>';
+            echo '</div>';
         }
 
         wp_reset_postdata();

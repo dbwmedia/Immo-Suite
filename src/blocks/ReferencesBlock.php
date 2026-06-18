@@ -48,12 +48,9 @@ class ReferencesBlock
 
         // Resolve location: dynamic from current page or manual selection
         $location_source = isset($attributes['locationSource']) ? $attributes['locationSource'] : 'manual';
-        if ($location_source === 'current') {
+        $is_dynamic_location = ($location_source === 'current');
+        if ($is_dynamic_location) {
             $location_filter = \DBW\ImmoSuite\Frontend\LocationResolver::resolve();
-            // Empty resolver on a location page = render empty state (avoid unfiltered full grid)
-            if (empty($location_filter) && !is_admin()) {
-                return '';
-            }
         } else {
             $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         }

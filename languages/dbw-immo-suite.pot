@@ -619,6 +619,11 @@ msgstr ""
 msgid "Keine Immobilien für diesen Filter gefunden (Vorschau)."
 msgstr ""
 
+#: ../src/blocks/GridBlock.php
+#: ../src/Frontend/Shortcode.php
+msgid "Aktuell sind keine Immobilien verfuegbar."
+msgstr ""
+
 #: ../src/blocks/immo-grid/edit.js
 #: ../src/blocks/immo-references/edit.js
 msgid "Ort automatisch aus aktueller Seite"
