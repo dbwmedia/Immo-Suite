@@ -278,6 +278,24 @@ class CardRenderer
     }
 
     /**
+     * Render a styled empty-state box (SaaS-style: icon + title + description).
+     *
+     * @param string $title   Headline text.
+     * @param string $text    Description text.
+     * @return string HTML output.
+     */
+    public static function render_empty_state($title, $text)
+    {
+        $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5"/><path d="M19 13v6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-6"/></svg>';
+
+        return '<div class="dbw-no-results">'
+            . '<div class="dbw-no-results__icon">' . $icon . '</div>'
+            . '<p class="dbw-no-results__title">' . esc_html($title) . '</p>'
+            . '<p class="dbw-no-results__text">' . esc_html($text) . '</p>'
+            . '</div>';
+    }
+
+    /**
      * Helper: Build meta_query to exclude sold/reference items.
      * Used by Filter.php and GridBlock.php to avoid duplication.
      */

@@ -182,7 +182,7 @@ class Shortcode
         } else {
             echo '<div id="dbw-immo-suite">';
             echo '<div class="dbw-immo-suite-block dbw-immo-grid-block">';
-            echo '<p class="dbw-no-results">' . __('Aktuell sind keine Immobilien verfuegbar.', 'dbw-immo-suite') . '</p>';
+            echo CardRenderer::render_empty_state(__('Keine Immobilien verfuegbar', 'dbw-immo-suite'), __('Aktuell sind fuer diesen Standort keine Angebote vorhanden. Schauen Sie bald wieder vorbei.', 'dbw-immo-suite'));
             echo '</div>';
             echo '</div>';
         }
@@ -285,7 +285,7 @@ class Shortcode
         } else {
             echo '<div id="dbw-immo-suite">';
             echo '<div class="dbw-immo-references-container">';
-            echo '<p class="dbw-no-results">' . __('Aktuell sind keine Referenzen verfuegbar.', 'dbw-immo-suite') . '</p>';
+            echo CardRenderer::render_empty_state(__('Keine Referenzen verfuegbar', 'dbw-immo-suite'), __('Fuer diesen Standort liegen aktuell keine Referenz-Objekte vor.', 'dbw-immo-suite'));
             echo '</div>';
             echo '</div>';
         }

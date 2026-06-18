@@ -128,9 +128,10 @@ class ReferencesBlock
             if (is_admin()) {
                 echo '<p>' . __('Keine Referenzen gefunden (Vorschau).', 'dbw-immo-suite') . '</p>';
             } else {
+                wp_enqueue_style('dbw-immo-frontend');
                 echo '<div id="dbw-immo-suite">';
                 echo '<div class="dbw-immo-references-block">';
-                echo '<p class="dbw-no-results">' . __('Aktuell sind keine Referenzen verfuegbar.', 'dbw-immo-suite') . '</p>';
+                echo \DBW\ImmoSuite\Frontend\CardRenderer::render_empty_state(__('Keine Referenzen verfuegbar', 'dbw-immo-suite'), __('Fuer diesen Standort liegen aktuell keine Referenz-Objekte vor.', 'dbw-immo-suite'));
                 echo '</div>';
                 echo '</div>';
             }

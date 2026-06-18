@@ -3754,8 +3754,48 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 #dbw-immo-suite .dbw-no-results {
 	grid-column: 1 / -1;
 	text-align: center;
-	padding: 3rem 1rem;
-	color: var(--dbw-gray, #5f6b6d);
+	padding: 3.5rem 2rem;
+	max-width: 480px;
+	margin: 1rem auto;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: var(--dbw-radius, 12px);
+}
+
+#dbw-immo-suite .dbw-no-results__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	margin: 0 auto 1.25rem;
+	background: #f1f5f9;
+	border-radius: 50%;
+	color: #94a3b8;
+}
+
+#dbw-immo-suite .dbw-no-results__icon svg {
+	width: 28px;
+	height: 28px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+#dbw-immo-suite .dbw-no-results__title {
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: #1e293b;
+	margin: 0 0 0.4rem;
+}
+
+#dbw-immo-suite .dbw-no-results__text {
+	font-size: 0.9rem;
+	color: #64748b;
+	margin: 0;
+	line-height: 1.5;
 }
 
 /* ============================================================

@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.1.2] — 2026-06-18
+
+### Geaendert
+- **Gestylte Empty-State-Box** — Wenn keine Immobilien oder Referenzen fuer einen Standort vorhanden sind, wird jetzt eine SaaS-artige Box mit Icon, Titel und Beschreibungstext angezeigt statt eines einfachen Textabsatzes. Zentrale `CardRenderer::render_empty_state()`-Methode fuer alle Bloecke und Shortcodes.
+
+---
+
 ## [2.1.1] — 2026-06-18
 
 ### Behoben

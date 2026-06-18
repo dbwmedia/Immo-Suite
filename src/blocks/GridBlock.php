@@ -182,9 +182,10 @@ class GridBlock
             if (is_admin()) {
                 echo '<p>' . __('Keine Immobilien für diesen Filter gefunden (Vorschau).', 'dbw-immo-suite') . '</p>';
             } elseif ($is_dynamic_location || !empty($location_filter)) {
+                wp_enqueue_style('dbw-immo-frontend');
                 echo '<div id="dbw-immo-suite">';
                 echo '<div class="dbw-immo-suite-block dbw-immo-grid-block">';
-                echo '<p class="dbw-no-results">' . __('Aktuell sind keine Immobilien verfuegbar.', 'dbw-immo-suite') . '</p>';
+                echo self::render_empty_state(__('Keine Immobilien verfuegbar', 'dbw-immo-suite'), __('Aktuell sind fuer diesen Standort keine Angebote vorhanden. Schauen Sie bald wieder vorbei.', 'dbw-immo-suite'));
                 echo '</div>';
                 echo '</div>';
             }
