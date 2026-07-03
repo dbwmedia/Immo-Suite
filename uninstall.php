@@ -11,8 +11,9 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 // Remove plugin options
 delete_option('dbw_immo_suite_settings');
 delete_option('dbw_immo_import_history');
+delete_option('dbw_immo_xml_hashes');
 
-// Remove all hash options for ZIP files
+// Remove legacy per-ZIP hash options (pre v2.2.0)
 global $wpdb;
 $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", 'dbw\_immo\_last\_xml\_hash\_%'));
 
@@ -21,6 +22,20 @@ delete_transient('dbw_immo_import_lock');
 delete_transient('dbw_immo_batch_zips');
 delete_transient('dbw_immo_batch_processed_ids');
 delete_transient('dbw_immo_import_progress');
+delete_transient('dbw_immo_price_histogram');
+
+// Remove dynamic-key transients (price/sqm comparison cache, rate limits) incl. timeout rows
+$transient_patterns = array(
+    '\_transient\_dbw\_avg\_sqm\_%',
+    '\_transient\_timeout\_dbw\_avg\_sqm\_%',
+    '\_transient\_dbw\_contact\_%',
+    '\_transient\_timeout\_dbw\_contact\_%',
+    '\_transient\_dbw\_expose\_%',
+    '\_transient\_timeout\_dbw\_expose\_%',
+);
+foreach ($transient_patterns as $pattern) {
+    $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $pattern));
+}
 
 // Remove license options
 delete_option('dbw_immo_license_key');

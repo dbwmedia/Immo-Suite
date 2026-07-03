@@ -37,6 +37,47 @@ class Importer
     }
 
     /**
+     * ZIP hashes live in ONE non-autoloaded option. Timestamped ZIP names from
+     * broker software used to create one autoloaded option per file — an
+     * unbounded autoload blob that slowed every request over time.
+     */
+    private function get_xml_hashes()
+    {
+        $hashes = get_option('dbw_immo_xml_hashes', null);
+        if (!is_array($hashes)) {
+            // One-time migration: collect and remove legacy per-file options
+            global $wpdb;
+            $legacy = $wpdb->get_results(
+                "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE 'dbw\_immo\_last\_xml\_hash\_%'"
+            );
+            $hashes = array();
+            foreach ((array) $legacy as $row) {
+                $hashes[substr($row->option_name, strlen('dbw_immo_last_xml_hash_'))] = $row->option_value;
+            }
+            $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'dbw\_immo\_last\_xml\_hash\_%'");
+            add_option('dbw_immo_xml_hashes', $hashes, '', false);
+        }
+        return $hashes;
+    }
+
+    private function get_last_xml_hash($zip_basename)
+    {
+        $hashes = $this->get_xml_hashes();
+        return isset($hashes[$zip_basename]) ? $hashes[$zip_basename] : '';
+    }
+
+    private function set_last_xml_hash($zip_basename, $hash)
+    {
+        $hashes = $this->get_xml_hashes();
+        unset($hashes[$zip_basename]);
+        $hashes[$zip_basename] = $hash;
+        if (count($hashes) > 20) {
+            $hashes = array_slice($hashes, -20, null, true);
+        }
+        update_option('dbw_immo_xml_hashes', $hashes, false);
+    }
+
+    /**
      * IDs of properties processed in the current run (for GC).
      * @var array
      */
@@ -138,7 +179,7 @@ class Importer
                             }
                             $hash = md5($hash);
 
-                            $last_hash = get_option('dbw_immo_last_xml_hash_' . basename($zip_file), '');
+                            $last_hash = $this->get_last_xml_hash(basename($zip_file));
 
                             if ($hash === $last_hash && !empty($hash)) {
                                 $this->log_debug('ZIP übersprungen (XML Hash identisch): ' . basename($zip_file));
@@ -158,7 +199,7 @@ class Importer
                                 $xmls_processed++;
                             }
 
-                            update_option('dbw_immo_last_xml_hash_' . basename($zip_file), $hash);
+                            $this->set_last_xml_hash(basename($zip_file), $hash);
                         }
                         else {
                             $this->log_debug('Keine XML in ZIP gefunden: ' . basename($zip_file));
@@ -245,7 +286,7 @@ class Importer
             $history = array_slice($history, -50);
         }
 
-        update_option('dbw_immo_import_history', $history);
+        update_option('dbw_immo_import_history', $history, false);
     }
 
     /**
@@ -976,7 +1017,7 @@ class Importer
                                 $hash .= md5_file($xml_file);
                             }
                             $hash = md5($hash);
-                            $last_hash = get_option('dbw_immo_last_xml_hash_' . basename($zip_file), '');
+                            $last_hash = $this->get_last_xml_hash(basename($zip_file));
 
                             if ($hash === $last_hash && !empty($hash)) {
                                 $this->log_debug('ZIP übersprungen (XML Hash identisch): ' . basename($zip_file));
@@ -1176,7 +1217,7 @@ class Importer
             $active_zips = get_transient('dbw_immo_batch_zips');
             if (is_array($active_zips)) {
                 foreach ($active_zips as $az) {
-                    update_option('dbw_immo_last_xml_hash_' . basename($az['file']), $az['hash']);
+                    $this->set_last_xml_hash(basename($az['file']), $az['hash']);
                     $this->delete_directory($az['temp_dir']);
                     rename($az['file'], $az['file'] . '.processed');
                     $this->log_debug('ZIP erfolgreich verarbeitet: ' . basename($az['file']));
