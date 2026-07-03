@@ -57,6 +57,13 @@ class Plugin
         $inquiry_admin = new \DBW\ImmoSuite\Admin\InquiryAdmin();
         $this->loader->add_action('init', $inquiry_admin, 'init');
 
+        // Setup checklist + import health monitoring
+        $onboarding = new \DBW\ImmoSuite\Admin\Onboarding();
+        $this->loader->add_action('init', $onboarding, 'init');
+
+        $import_monitor = new \DBW\ImmoSuite\Core\ImportMonitor();
+        $this->loader->add_action('init', $import_monitor, 'init');
+
         $plugin_tax_objektart = new \DBW\ImmoSuite\Taxonomies\PropertyType();
         $this->loader->add_action('init', $plugin_tax_objektart, 'register_taxonomy');
 

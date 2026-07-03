@@ -52,9 +52,17 @@ class ImportDashboard
             <h1 class="wp-heading-inline"><?php _e('OpenImmo Import Zentrale', 'dbw-immo-suite'); ?></h1>
             <hr class="wp-header-end">
 
+            <?php
+            if (class_exists('DBW\ImmoSuite\Admin\Onboarding')) {
+                Onboarding::render_panel();
+            }
+            ?>
+
             <!-- Status Card -->
             <div class="card" style="max-width: 100%; margin-top: 20px; padding: 20px;">
                 <h2 class="title"><?php _e('Import', 'dbw-immo-suite'); ?></h2>
+
+                <?php $this->render_cron_status($history); ?>
 
                 <div style="margin-top: 10px;">
                     <button id="dbw-immo-trigger-import" type="button" class="button button-primary button-hero">
@@ -112,6 +120,50 @@ class ImportDashboard
             </div>
 
         </div>
+        <?php
+    }
+
+    /**
+     * "Next cron run / last run" status line above the import button —
+     * answers "does the automation work?" without reading the history table.
+     */
+    private function render_cron_status($history)
+    {
+        $next = wp_next_scheduled('dbw_immo_cron_hook');
+        $last = !empty($history) ? $history[0] : null; // history arrives newest-first
+
+        $parts = array();
+
+        if ($next) {
+            $parts[] = sprintf(
+                /* translators: 1: time, 2: human diff */
+                __('Naechster automatischer Import: %1$s (in %2$s)', 'dbw-immo-suite'),
+                wp_date(get_option('time_format'), $next),
+                human_time_diff(time(), $next)
+            );
+        } else {
+            $parts[] = __('Automatischer Import: nicht geplant (WP-Cron pruefen)', 'dbw-immo-suite');
+        }
+
+        if ($last) {
+            $ok = in_array($last['status'], array('success', 'skipped'), true) && empty($last['errors']);
+            $parts[] = sprintf(
+                /* translators: 1: human diff, 2: created, 3: updated */
+                __('Letzter Lauf: vor %1$s — %2$d neu, %3$d aktualisiert', 'dbw-immo-suite'),
+                human_time_diff(strtotime($last['date']), current_time('timestamp')),
+                (int) $last['created'],
+                (int) $last['updated']
+            ) . ($ok ? '' : ' · ' . __('mit Fehlern', 'dbw-immo-suite'));
+            $dot = $ok ? '#00a32a' : '#d63638';
+        } else {
+            $parts[] = __('Noch kein Import gelaufen.', 'dbw-immo-suite');
+            $dot = '#c3c4c7';
+        }
+        ?>
+        <p style="display: flex; align-items: center; gap: 8px; margin: 4px 0 0; color: #50575e;">
+            <span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 50%; background: <?php echo esc_attr($dot); ?>; flex-shrink: 0;"></span>
+            <span><?php echo esc_html(implode(' · ', $parts)); ?></span>
+        </p>
         <?php
     }
 

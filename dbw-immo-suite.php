@@ -56,6 +56,7 @@ register_activation_hook(__FILE__, function () {
 register_deactivation_hook(__FILE__, function () {
 	wp_clear_scheduled_hook('dbw_immo_cron_hook');
 	wp_clear_scheduled_hook('dbw_immo_inquiry_cleanup');
+	wp_clear_scheduled_hook('dbw_immo_monitor_check');
 	flush_rewrite_rules();
 });
 
