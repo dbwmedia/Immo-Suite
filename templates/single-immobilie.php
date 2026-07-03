@@ -363,7 +363,9 @@ get_header(); ?>
 						<?php endif; ?>
 
 						<?php if ($lat && $lng):
-							$map_consent = get_theme_mod('dbw_immo_single_map_consent', false);
+							// Default must match Customizer + ArchiveMap (true): without a saved
+							// theme_mod a false default would load OSM tiles without consent.
+							$map_consent = get_theme_mod('dbw_immo_single_map_consent', true);
 						?>
 						<?php if ($map_consent): ?>
 						<div id="dbw-map-consent" class="dbw-map-placeholder"
