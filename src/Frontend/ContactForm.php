@@ -14,6 +14,21 @@ class ContactForm
     {
         add_action('wp_ajax_dbw_immo_contact', array($this, 'handle_submission'));
         add_action('wp_ajax_nopriv_dbw_immo_contact', array($this, 'handle_submission'));
+        add_action('wp_ajax_dbw_immo_get_nonce', array($this, 'ajax_get_nonce'));
+        add_action('wp_ajax_nopriv_dbw_immo_get_nonce', array($this, 'ajax_get_nonce'));
+    }
+
+    /**
+     * Return fresh form nonces. Pages are often served from a page cache for
+     * longer than a nonce lives (12-24h) — the modals fetch a fresh nonce on
+     * open so submissions keep working on cached pages.
+     */
+    public function ajax_get_nonce()
+    {
+        wp_send_json_success(array(
+            'contact' => wp_create_nonce('dbw_immo_contact_nonce'),
+            'expose'  => wp_create_nonce('dbw_immo_expose_nonce'),
+        ));
     }
 
     /**
@@ -21,10 +36,15 @@ class ContactForm
      */
     public function handle_submission()
     {
-        check_ajax_referer('dbw_immo_contact_nonce', 'nonce');
+        if (!check_ajax_referer('dbw_immo_contact_nonce', 'nonce', false)) {
+            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
+                __('Die Sitzung ist abgelaufen. Bitte laden Sie die Seite neu und versuchen Sie es erneut.', 'dbw-immo-suite'),
+                __('Die Sitzung ist abgelaufen. Bitte lade die Seite neu und versuch es erneut.', 'dbw-immo-suite')
+            ));
+        }
 
-        // Rate limiting — 1 submission per email per 2 minutes
-        $rate_key = 'dbw_contact_' . md5(sanitize_email($_POST['email'] ?? '') . $_SERVER['REMOTE_ADDR']);
+        // Rate limiting (keyed by IP only — email would be attacker-controlled)
+        $rate_key = 'dbw_contact_' . md5($_SERVER['REMOTE_ADDR'] ?? '');
         if (get_transient($rate_key)) {
             wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
                 __('Bitte warten Sie einen Moment, bevor Sie erneut absenden.', 'dbw-immo-suite'),
@@ -57,9 +77,9 @@ class ContactForm
             wp_send_json_error(__('Bitte alle Pflichtfelder ausfuellen.', 'dbw-immo-suite'));
         }
 
-        // Verify property exists and is public
+        // Verify property exists and is public (blocks enumeration of drafts/private posts)
         $property = get_post($post_id);
-        if (!$property || $property->post_type !== 'immobilie' || $property->post_status === 'trash') {
+        if (!$property || $property->post_type !== 'immobilie' || $property->post_status !== 'publish') {
             wp_send_json_error(__('Immobilie nicht gefunden.', 'dbw-immo-suite'));
         }
 
