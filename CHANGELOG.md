@@ -7,6 +7,45 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.2.0] — 2026-07-03
+
+Audit-Release: Ergebnis des Voll-Audits (Sicherheit, Performance, DSGVO, Frontend/UX) vom 2026-07-03. Alle kritischen und wichtigen Findings behoben.
+
+### Sicherheit / Datenschutz
+- **Karten-Consent-Default korrigiert (wichtig)** — Die Objektkarte auf der Detailseite lud OpenStreetMap-Tiles ohne Einwilligung, solange der Customizer nie gespeichert wurde (Template-Default `false` statt `true`). Jetzt greift die Zwei-Klick-Loesung auch auf frischen Installationen.
+- **Kontaktformular gehaertet** — Anfragen sind nur noch fuer veroeffentlichte Objekte moeglich (vorher liessen sich Entwuerfe/private Objekte enumerieren); Rate-Limit haengt jetzt nur an der IP und ist nicht mehr per wechselnder E-Mail-Adresse umgehbar.
+- **Consent-Protokollierung** — Anfrage-Mails (Kontakt + Expose) enthalten jetzt einen Zeitstempel der Datenschutz-Zustimmung als Nachweis nach Art. 7 DSGVO.
+- **Neuer Einstellungs-Tab "Datenschutz"** — Uebersicht, was das Plugin technisch macht, kopierbarer Textbaustein fuer die Datenschutzerklaerung der Website und Betreiber-Hinweise (AVV, Speicherdauer).
+
+### Behoben
+- **Kontaktformular & PDF-Expose funktionieren jetzt auf gecachten Seiten** — Nonces im Seiten-HTML liefen nach 12-24h ab; mit Page-Caching (WP Rocket etc.) schlugen Anfragen und der PDF-Download danach still fehl. Die Modals holen sich beim Oeffnen einen frischen Nonce per AJAX, der PDF-Link nutzt eine nicht ablaufende HMAC-Signatur (alte Nonce-Links bleiben uebergangsweise gueltig). Bei abgelaufener Sitzung gibt es jetzt eine verstaendliche Fehlermeldung statt "-1".
+- **Autoload-Leak beim Import** — Pro ZIP-Dateiname wurde eine dauerhaft autogeladene Option angelegt (bei Zeitstempel-Dateinamen der Maklersoftware unbegrenzt wachsend). Alle Hashes liegen jetzt in EINER nicht autogeladenen Option (max. 20 Eintraege), Altbestand wird automatisch migriert. Import-Historie ebenfalls auf autoload=false.
+- **uninstall.php vervollstaendigt** — Preis-Histogramm- und Preis/m²-Transients (inkl. Timeout-Zeilen) und Rate-Limit-Transients werden jetzt entfernt.
+- **Preis-Histogramm invalidiert jetzt auch bei Papierkorb/Loeschen** (vorher bis zu 6h veraltet).
+- **Ansichts-Wiederherstellung ohne Aufblitzen (FOUC)** — Gespeicherte Listen-/Kartenansicht wird jetzt vor dem ersten Paint angewendet statt nach DOMContentLoaded.
+- **Skeleton-Karten haben jetzt exakt die Hoehe echter Karten** (280px statt 220px) — kein Layout-Sprung mehr beim Filtern.
+- **Merkliste synchronisiert zwischen Tabs** (storage-Event).
+- **Lightbox: schnelles Blaettern laedt keine Zwischenbilder mehr** (Timeout-Cleanup); Bildzaehler mit aria-live.
+
+### Geaendert (Performance)
+- **Import 5-10x schneller** — Pro AJAX-Request werden jetzt 8 Immobilien verarbeitet statt 1 (weniger WP-Bootstrap- und XML-Parse-Overhead); Fortschrittsanzeige unveraendert live.
+- **Dashicons-Font entfernt** — Alle Frontend-Icons sind jetzt Inline-SVGs. Spart ~85KB (Icon-Font + CSS) und einen Request fuer jeden Besucher.
+- **Alle Frontend-Scripts laden mit defer** (WP 6.3 Script-Strategie).
+- **Karten-Marker nur noch bei sichtbarer Kartenansicht** — Filter-Requests berechnen die bis zu 200 Marker-Payloads nicht mehr mit, wenn niemand die Karte nutzt; beim Oeffnen der Karte werden sie nachgeladen.
+- **"Aehnliche Objekte" spart ~10 Queries pro Detailseite** (Meta/Term-Cache-Priming wieder aktiv, no_found_rows).
+- **Garbage Collection ohne N+1** — Eine Meta-Cache-Query statt einer Query pro Objekt.
+
+### Geaendert (UX / A11y)
+- **AJAX-Filter: Retry + Toast statt hartem Reload** — Bei Netzwerk-Hicksern wird einmal still erneut versucht, danach werden die letzten Ergebnisse wiederhergestellt und ein Hinweis angezeigt. Ueberholte Requests werden per AbortController abgebrochen.
+- **Ergebniszaehler mit aria-live** — Screenreader bekommen "23 Immobilien gefunden" jetzt mit.
+- **Status-Badges WCAG-AA-konform** — Verkauft/Referenz/Reserviert und Preis/m²-Badges mit dunkleren Farben (Kontrast >= 4.5:1).
+- **Filter-Chips mit aria-label** ("Filter X entfernen"), Sortier-Select mit Label, Sektions-Nav-Label uebersetzbar.
+- **Modal-Inputs mit sichtbarem Tastatur-Fokus** (:focus-visible).
+- **Smooth-Scrolling respektiert prefers-reduced-motion** (Filter, Galerie, Sektions-Navigation).
+- **Scroll-Spy ohne Jank** — Aktiver Nav-Punkt wird nur noch bei Wechsel gescrollt statt in jedem Frame.
+
+---
+
 ## [2.1.3] — 2026-06-18
 
 ### Behoben
