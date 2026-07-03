@@ -1153,6 +1153,9 @@ class Importer
 
             $file = isset($_POST['file']) ? sanitize_text_field(wp_unslash($_POST['file'])) : '';
             $index = isset($_POST['index']) ? intval($_POST['index']) : 0;
+            // Batch size: each request bootstraps WP and re-parses the XML, so
+            // processing several properties per request cuts that overhead 5-10x
+            $limit = isset($_POST['limit']) ? max(1, min(20, intval($_POST['limit']))) : 1;
 
             // Validate file path is within allowed import directory
             $options = get_option('dbw_immo_suite_settings');
@@ -1174,15 +1177,21 @@ class Importer
                 wp_send_json_error('Immobilie nicht gefunden bei Index ' . $index);
             }
 
-            $node = $xml->anbieter->immobilie[$index];
             $stats = array('created' => 0, 'updated' => 0, 'errors' => 0);
+            $processed = 0;
 
-            $this->import_property($node, $stats);
+            for ($i = $index; $i < $index + $limit; $i++) {
+                if (!isset($xml->anbieter->immobilie[$i])) {
+                    break;
+                }
+                $this->import_property($xml->anbieter->immobilie[$i], $stats);
+                $processed++;
+            }
 
             // Update progress transient for live polling
             $progress = get_transient('dbw_immo_import_progress');
             if (is_array($progress)) {
-                $progress['processed']++;
+                $progress['processed'] += $processed;
                 $progress['current_file'] = basename($file);
                 $progress['created']  += $stats['created'];
                 $progress['updated']  += $stats['updated'];
@@ -1191,10 +1200,13 @@ class Importer
             }
 
             if ($stats['errors'] > 0) {
-                wp_send_json_error('Fehler beim Import der Immobilie Index ' . $index);
+                wp_send_json_error('Fehler beim Import ab Immobilie Index ' . $index . ' (' . $stats['errors'] . ' Fehler im Batch).');
             }
 
-            wp_send_json_success(array('message' => 'Immobilie ' . ($index + 1) . ' importiert.'));
+            wp_send_json_success(array(
+                'message'   => $processed . ' Immobilie(n) importiert.',
+                'processed' => $processed,
+            ));
 
         }
         catch (\Throwable $e) {

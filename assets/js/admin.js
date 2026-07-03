@@ -140,17 +140,18 @@ jQuery(document).ready(function ($) {
             }
 
             var files = response.data.files;
+            var BATCH_SIZE = 8; // properties per request (server caps at 20)
             var flattenQueue = [];
             var looseFiles = [];
+            var total = 0;
 
             $.each(files, function (i, f) {
                 if (f.loose) looseFiles.push(f.file);
-                for (var j = 0; j < f.count; j++) {
-                    flattenQueue.push({ file: f.file, index: j });
+                total += f.count;
+                for (var j = 0; j < f.count; j += BATCH_SIZE) {
+                    flattenQueue.push({ file: f.file, index: j, limit: Math.min(BATCH_SIZE, f.count - j) });
                 }
             });
-
-            var total = flattenQueue.length;
             if (total === 0) {
                 $title.text('Keine neuen Immobilien. Räume auf...');
                 finalizeImport(looseFiles, 0);
@@ -161,16 +162,16 @@ jQuery(document).ready(function ($) {
             startPolling();
 
             // Step 2: Process queue
-            processBatchQueue(0, flattenQueue, looseFiles);
+            processBatchQueue(0, flattenQueue, looseFiles, total);
 
         }).fail(function (xhr, textStatus, error) {
             showError('Server Fehler: ' + textStatus + ' ' + error);
         });
     });
 
-    function processBatchQueue(currentIdx, queue, looseFiles) {
+    function processBatchQueue(currentIdx, queue, looseFiles, total) {
         if (currentIdx >= queue.length) {
-            finalizeImport(looseFiles, queue.length);
+            finalizeImport(looseFiles, total);
             return;
         }
 
@@ -180,15 +181,16 @@ jQuery(document).ready(function ($) {
             action: 'dbw_immo_process_batch',
             nonce: nonce,
             file: item.file,
-            index: item.index
+            index: item.index,
+            limit: item.limit
         }, function (response) {
             if (!response.success) {
-                console.error('Batch Error at index ' + currentIdx + ': ' + response.data);
+                console.error('Batch Error at index ' + item.index + ': ' + response.data);
             }
-            processBatchQueue(currentIdx + 1, queue, looseFiles);
+            processBatchQueue(currentIdx + 1, queue, looseFiles, total);
         }).fail(function () {
-            console.error('Server Failure at index ' + currentIdx);
-            processBatchQueue(currentIdx + 1, queue, looseFiles);
+            console.error('Server Failure at index ' + item.index);
+            processBatchQueue(currentIdx + 1, queue, looseFiles, total);
         });
     }
 
