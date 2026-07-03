@@ -29,9 +29,18 @@ class PdfExpose
             exit;
         }
 
-        // Verify nonce for bot protection
+        // Verify signature for bot protection. A non-expiring HMAC instead of a
+        // nonce: cached pages outlive the 12-24h nonce lifetime, which silently
+        // broke the PDF button on sites with page caching.
         $post_id = get_queried_object_id();
-        if (empty($_GET['_wpnonce']) || !wp_verify_nonce(sanitize_text_field($_GET['_wpnonce']), 'dbw_immo_expose_' . $post_id)) {
+        $valid = false;
+        if (!empty($_GET['sig'])) {
+            $valid = hash_equals(self::get_signature($post_id), sanitize_text_field($_GET['sig']));
+        } elseif (!empty($_GET['_wpnonce'])) {
+            // Backward compat: nonce links rendered before v2.2.0 may live on in page caches
+            $valid = (bool) wp_verify_nonce(sanitize_text_field($_GET['_wpnonce']), 'dbw_immo_expose_' . $post_id);
+        }
+        if (!$valid) {
             wp_die(__('Ungueltiger Link.', 'dbw-immo-suite'), 403);
         }
 
@@ -234,13 +243,21 @@ class PdfExpose
     }
 
     /**
-     * Generate a nonce-protected expose URL for a property.
+     * Non-expiring HMAC signature for the expose URL (bot protection, cache-safe).
+     */
+    private static function get_signature($post_id)
+    {
+        return substr(hash_hmac('sha256', 'dbw_immo_expose_' . (int) $post_id, wp_salt('nonce')), 0, 16);
+    }
+
+    /**
+     * Generate a signature-protected expose URL for a property.
      */
     public static function get_expose_url($post_id)
     {
-        return wp_nonce_url(
-            add_query_arg('expose', '1', get_permalink($post_id)),
-            'dbw_immo_expose_' . $post_id
+        return add_query_arg(
+            array('expose' => '1', 'sig' => self::get_signature($post_id)),
+            get_permalink($post_id)
         );
     }
 }

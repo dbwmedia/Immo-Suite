@@ -1,6 +1,34 @@
 (function () {
     'use strict';
 
+    var cfg = window.dbwContactModal || {};
+
+    // Cached pages can carry an expired nonce (nonce lifetime 12-24h vs. page
+    // cache lifespans). Fetch fresh nonces when a modal opens so submissions
+    // keep working; the server-rendered nonce stays as fallback.
+    var refreshNonces = function () {
+        if (!cfg.ajaxurl || !window.fetch) return;
+        var data = new FormData();
+        data.append('action', 'dbw_immo_get_nonce');
+        fetch(cfg.ajaxurl, { method: 'POST', body: data })
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+                if (!j.success || !j.data) return;
+                var setNonce = function (formEl, value) {
+                    if (!formEl || !value) return;
+                    var field = formEl.querySelector('[name="nonce"]');
+                    if (field) {
+                        field.value = value;
+                        // Keep the attribute in sync so form.reset() cannot revert to a stale nonce
+                        field.setAttribute('value', value);
+                    }
+                };
+                setNonce(document.getElementById('dbw-contact-form'), j.data.contact);
+                setNonce(document.getElementById('dbw-expose-form'), j.data.expose);
+            })
+            .catch(function () { /* keep server-rendered nonce */ });
+    };
+
     // --- Contact Modal (multi-step) ---
     var modal = document.getElementById('dbw-contact-modal');
     var form = modal ? modal.querySelector('#dbw-contact-form') : null;
@@ -81,6 +109,7 @@
                 var err = form.querySelector('.dbw-modal__error');
                 if (err) err.remove();
 
+                refreshNonces();
                 goToStep(1);
                 modal.showModal();
             });
@@ -100,15 +129,15 @@
         // --- Submit (AJAX) ---
         form.addEventListener('submit', function (e) {
             e.preventDefault();
-            if (form.website.value) return; // honeypot
+            if (form.website && form.website.value) return; // honeypot
 
             submitBtn.disabled = true;
-            submitBtn.textContent = (window.dbwContactModal.i18n && window.dbwContactModal.i18n.sending) || 'Senden…';
+            submitBtn.textContent = (cfg.i18n && cfg.i18n.sending) || 'Senden…';
 
             var data = new FormData(form);
             data.append('action', 'dbw_immo_contact');
 
-            fetch(window.dbwContactModal.ajaxurl, {
+            fetch(cfg.ajaxurl, {
                 method: 'POST',
                 body: data
             })
@@ -129,7 +158,7 @@
             .catch(function (err) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
-                var msg = err.message || (window.dbwContactModal.i18n && window.dbwContactModal.i18n.network_error) || 'Netzwerkfehler';
+                var msg = err.message || (cfg.i18n && cfg.i18n.network_error) || 'Netzwerkfehler';
                 var existing = form.querySelector('.dbw-modal__error');
                 if (existing) existing.remove();
                 var errEl = document.createElement('div');
@@ -164,6 +193,7 @@
                 exposeModal.querySelectorAll('[data-expose-step="form"]').forEach(function (el) { el.hidden = false; });
                 exposeModal.querySelectorAll('[data-expose-step="success"]').forEach(function (el) { el.hidden = true; });
 
+                refreshNonces();
                 exposeModal.showModal();
             });
         });
@@ -180,15 +210,15 @@
         if (exposeForm) {
             exposeForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                if (exposeForm.website.value) return;
+                if (exposeForm.website && exposeForm.website.value) return;
 
                 exposeSubmitBtn.disabled = true;
-                exposeSubmitBtn.textContent = (window.dbwContactModal.i18n && window.dbwContactModal.i18n.sending) || 'Senden…';
+                exposeSubmitBtn.textContent = (cfg.i18n && cfg.i18n.sending) || 'Senden…';
 
                 var data = new FormData(exposeForm);
                 data.append('action', 'dbw_immo_expose_request');
 
-                fetch(window.dbwContactModal.ajaxurl, {
+                fetch(cfg.ajaxurl, {
                     method: 'POST',
                     body: data
                 })
@@ -211,7 +241,7 @@
                 .catch(function (err) {
                     exposeSubmitBtn.disabled = false;
                     exposeSubmitBtn.textContent = exposeOriginalText;
-                    var msg = err.message || (window.dbwContactModal.i18n && window.dbwContactModal.i18n.network_error) || 'Netzwerkfehler';
+                    var msg = err.message || (cfg.i18n && cfg.i18n.network_error) || 'Netzwerkfehler';
                     var existing = exposeForm.querySelector('.dbw-modal__error');
                     if (existing) existing.remove();
                     var errEl = document.createElement('div');

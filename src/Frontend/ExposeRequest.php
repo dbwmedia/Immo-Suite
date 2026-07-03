@@ -184,7 +184,12 @@ class ExposeRequest
      */
     public function handle_submission()
     {
-        check_ajax_referer('dbw_immo_expose_nonce', 'nonce');
+        if (!check_ajax_referer('dbw_immo_expose_nonce', 'nonce', false)) {
+            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
+                __('Die Sitzung ist abgelaufen. Bitte laden Sie die Seite neu und versuchen Sie es erneut.', 'dbw-immo-suite'),
+                __('Die Sitzung ist abgelaufen. Bitte lade die Seite neu und versuch es erneut.', 'dbw-immo-suite')
+            ));
+        }
 
         // Rate limiting (keyed by IP only — email would be attacker-controlled)
         $rate_key = 'dbw_expose_' . md5($_SERVER['REMOTE_ADDR'] ?? '');
