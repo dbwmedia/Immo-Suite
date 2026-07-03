@@ -154,6 +154,10 @@ class ContactForm
             $body .= "\nNachricht:\n" . $message . "\n";
         }
 
+        // Consent record (Art. 7 Abs. 1 DSGVO): the mail in the broker's inbox
+        // doubles as proof of the privacy-checkbox consent
+        $body .= "\nDatenschutzerklaerung akzeptiert: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Kontaktformular Objektseite)\n";
+
         // Determine recipient
         $contact_email = get_post_meta($post_id, 'kontaktperson_email', true);
         $to = is_email($contact_email) ? $contact_email : get_option('admin_email');

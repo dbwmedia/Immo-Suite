@@ -42,6 +42,7 @@ class Settings
 			'calculator'  => __('Rechner', 'dbw-immo-suite'),
 			'references'  => __('Referenzen & Verkauf', 'dbw-immo-suite'),
 			'seo'         => __('Maklerfirma (SEO)', 'dbw-immo-suite'),
+			'privacy'     => __('Datenschutz', 'dbw-immo-suite'),
 			'shortcodes'  => __('Shortcodes', 'dbw-immo-suite'),
 			'license'     => __('Lizenz', 'dbw-immo-suite'),
 		);
@@ -85,6 +86,10 @@ class Settings
 				<?php submit_button(); ?>
 			</form>
 
+			<div class="dbw-tab-panel" id="tab-privacy" style="display:none;">
+				<?php $this->render_privacy_tab(); ?>
+			</div>
+
 			<div class="dbw-tab-panel" id="tab-shortcodes" style="display:none;">
 				<?php $this->render_shortcode_reference(); ?>
 			</div>
@@ -108,7 +113,7 @@ class Settings
 				});
 				// Hide submit button on non-form tabs
 				var submit = document.querySelector('.wrap .submit');
-				if (submit) submit.style.display = (slug === 'shortcodes' || slug === 'license') ? 'none' : '';
+				if (submit) submit.style.display = (slug === 'shortcodes' || slug === 'license' || slug === 'privacy') ? 'none' : '';
 			}
 
 			tabs.forEach(function(tab) {
@@ -125,6 +130,82 @@ class Settings
 			if (hash && document.getElementById('tab-' + hash)) {
 				activate(hash);
 			}
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Render the privacy tab: what the plugin does data-wise, plus a
+	 * copyable privacy-policy text block for the customer's website.
+	 */
+	private function render_privacy_tab()
+	{
+		$policy_text = 'Immobilienangebote und Kontaktanfragen' . "\n\n"
+			. 'Auf dieser Website werden Immobilienangebote dargestellt. Die eingesetzte Software arbeitet datensparsam: Sie setzt keine Cookies, bindet keine externen Schriftarten oder Skripte ein und speichert keine Anfragedaten in der Datenbank der Website.' . "\n\n"
+			. 'Kontakt- und Exposé-Anfragen' . "\n"
+			. 'Wenn Sie über ein Formular eine Anfrage zu einer Immobilie stellen, verarbeiten wir die von Ihnen angegebenen Daten (Name, E-Mail-Adresse, ggf. Telefonnummer sowie Ihre Nachricht und Angaben zu Ihrem Anliegen) ausschließlich zur Bearbeitung Ihrer Anfrage (Art. 6 Abs. 1 lit. b DSGVO). Die Daten werden per E-Mail an uns übermittelt und nicht auf der Website gespeichert; sie verbleiben in unserem E-Mail-Postfach, bis die Anfrage abgeschlossen ist und gesetzliche Aufbewahrungspflichten erfüllt sind. Zur Abwehr von Missbrauch (Spam-Schutz) wird Ihre IP-Adresse in pseudonymisierter Form (Hashwert) für maximal zwei Minuten zwischengespeichert (Art. 6 Abs. 1 lit. f DSGVO).' . "\n\n"
+			. 'Karten (OpenStreetMap)' . "\n"
+			. 'Zur Darstellung von Objektstandorten nutzen wir OpenStreetMap. Die Karte wird erst geladen, wenn Sie sie aktiv per Klick freigeben (Art. 6 Abs. 1 lit. a DSGVO). Erst dann wird Ihre IP-Adresse an die OpenStreetMap Foundation (Vereinigtes Königreich; Angemessenheitsbeschluss der EU-Kommission) übertragen.' . "\n\n"
+			. 'WhatsApp-Kontakt' . "\n"
+			. 'Sofern ein WhatsApp-Kontaktbutton angeboten wird, findet eine Datenübertragung an WhatsApp (Meta Platforms) erst statt, wenn Sie den Button aktiv anklicken und WhatsApp öffnen.' . "\n\n"
+			. 'Merkliste' . "\n"
+			. 'Die Merkliste speichert die von Ihnen gemerkten Objekte ausschließlich lokal in Ihrem Browser (localStorage). Es werden dabei keine Daten an uns oder Dritte übertragen (§ 25 Abs. 2 TDDDG).';
+		?>
+		<h2><?php esc_html_e('Datenschutz', 'dbw-immo-suite'); ?></h2>
+
+		<p style="max-width: 800px;">
+			<?php esc_html_e('Die Immo Suite ist datenschutzfreundlich by design. Diese Uebersicht zeigt, was technisch passiert, und liefert einen fertigen Textbaustein fuer die Datenschutzerklaerung der Website.', 'dbw-immo-suite'); ?>
+		</p>
+
+		<h3><?php esc_html_e('Was das Plugin technisch macht', 'dbw-immo-suite'); ?></h3>
+		<ul style="list-style: disc; padding-left: 20px; max-width: 800px;">
+			<li><?php esc_html_e('Keine Cookies, keine externen Schriftarten, keine externen Skripte (Leaflet liegt lokal).', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Kontakt- und Expose-Anfragen werden nur per E-Mail zugestellt und nicht in der Datenbank gespeichert.', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Spam-Schutz speichert die IP-Adresse nur als Hashwert fuer maximal 2 Minuten.', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('OpenStreetMap-Karten laden erst nach aktivem Klick (Zwei-Klick-Loesung, Borlabs-kompatibel).', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('WhatsApp-Button: Datenuebertragung an Meta erst beim Klick auf den Link.', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Merkliste liegt ausschliesslich im Browser des Besuchers (localStorage).', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Anfrage-Mails enthalten einen Zeitstempel der Datenschutz-Zustimmung (Nachweis nach Art. 7 DSGVO).', 'dbw-immo-suite'); ?></li>
+		</ul>
+
+		<h3><?php esc_html_e('Textbaustein fuer die Datenschutzerklaerung', 'dbw-immo-suite'); ?></h3>
+		<p style="max-width: 800px;">
+			<?php esc_html_e('Diesen Baustein in die Datenschutzerklaerung der Website uebernehmen und bei Bedarf anpassen (z.B. Abschnitte entfernen, deren Features deaktiviert sind). Er ersetzt keine Rechtsberatung.', 'dbw-immo-suite'); ?>
+		</p>
+		<textarea id="dbw-privacy-text" readonly rows="18" style="width: 100%; max-width: 800px; font-family: monospace; font-size: 12px;"><?php echo esc_textarea($policy_text); ?></textarea>
+		<p>
+			<button type="button" class="button button-primary" id="dbw-privacy-copy">
+				<?php esc_html_e('Text kopieren', 'dbw-immo-suite'); ?>
+			</button>
+			<span id="dbw-privacy-copied" style="display:none; margin-left: 8px; color: #00a32a;"><?php esc_html_e('Kopiert!', 'dbw-immo-suite'); ?></span>
+		</p>
+
+		<h3><?php esc_html_e('Hinweise fuer den Betreiber', 'dbw-immo-suite'); ?></h3>
+		<ul style="list-style: disc; padding-left: 20px; max-width: 800px;">
+			<li><?php esc_html_e('AV-Vertraege: Das Plugin selbst verarbeitet keine Daten fuer Dritte. AV-Vertraege werden aber mit dem Hosting-Anbieter und ggf. dem E-Mail-/SMTP-Dienst benoetigt, ueber die die Anfrage-Mails laufen.', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Speicherdauer: Anfragedaten liegen nur im E-Mail-Postfach. Eine Loeschfrist fuer erledigte Anfragen im Postfach festlegen.', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Die Karten-Einwilligung (Zwei-Klick) ist im Customizer unter "Immobilien Suite" steuerbar und sollte aktiviert bleiben.', 'dbw-immo-suite'); ?></li>
+		</ul>
+
+		<script>
+		(function() {
+			var btn = document.getElementById('dbw-privacy-copy');
+			var ta = document.getElementById('dbw-privacy-text');
+			var ok = document.getElementById('dbw-privacy-copied');
+			if (!btn || !ta) return;
+			btn.addEventListener('click', function() {
+				var done = function() {
+					if (ok) { ok.style.display = 'inline'; setTimeout(function() { ok.style.display = 'none'; }, 2000); }
+				};
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(ta.value).then(done);
+				} else {
+					ta.select();
+					document.execCommand('copy');
+					done();
+				}
+			});
 		})();
 		</script>
 		<?php

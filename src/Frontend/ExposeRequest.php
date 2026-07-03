@@ -247,6 +247,9 @@ class ExposeRequest
         $body .= "E-Mail:    " . $email . "\n";
         $body .= "Telefon:   " . ($phone ?: '-') . "\n\n";
         $body .= "Provisionshinweis akzeptiert: Ja\n";
+        // Consent record (Art. 7 Abs. 1 DSGVO): the mail in the broker's inbox
+        // doubles as proof of the privacy-checkbox consent
+        $body .= "Datenschutzerklaerung akzeptiert: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Expose-Anfrage)\n";
 
         // Recipient
         $contact_email = get_post_meta($post_id, 'kontaktperson_email', true);
