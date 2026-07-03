@@ -251,6 +251,19 @@ class ExposeRequest
         // doubles as proof of the privacy-checkbox consent
         $body .= "Datenschutzerklaerung akzeptiert: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Expose-Anfrage)\n";
 
+        // Store in the inbox first — a failed/spam-filtered mail must not lose the lead
+        if (class_exists('DBW\ImmoSuite\PostTypes\Inquiry')) {
+            \DBW\ImmoSuite\PostTypes\Inquiry::save(array(
+                'name'           => $name,
+                'email'          => $email,
+                'phone'          => $phone,
+                'intent'         => 'expose',
+                'intent_details' => 'Provisionshinweis akzeptiert: Ja',
+                'property_id'    => $post_id,
+                'source'         => 'expose',
+            ));
+        }
+
         // Recipient
         $contact_email = get_post_meta($post_id, 'kontaktperson_email', true);
         $to = is_email($contact_email) ? $contact_email : get_option('admin_email');

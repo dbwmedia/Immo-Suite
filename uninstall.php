@@ -43,6 +43,13 @@ delete_option('dbw_immo_license_status');
 
 // Remove scheduled cron
 wp_clear_scheduled_hook('dbw_immo_cron_hook');
+wp_clear_scheduled_hook('dbw_immo_inquiry_cleanup');
+
+// Delete stored inquiries incl. meta (PII — must not survive an uninstall)
+$inquiry_ids = $wpdb->get_col("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'immo_anfrage'");
+foreach ($inquiry_ids as $inquiry_id) {
+    wp_delete_post((int) $inquiry_id, true);
+}
 
 // Remove Customizer theme_mods
 $mods_to_remove = array(

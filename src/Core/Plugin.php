@@ -50,6 +50,13 @@ class Plugin
         $plugin_post_types = new \DBW\ImmoSuite\PostTypes\Property();
         $this->loader->add_action('init', $plugin_post_types, 'register_post_type');
 
+        // Inquiry inbox (stores contact/expose requests as leads)
+        $plugin_inquiries = new \DBW\ImmoSuite\PostTypes\Inquiry();
+        $this->loader->add_action('init', $plugin_inquiries, 'register_post_type');
+
+        $inquiry_admin = new \DBW\ImmoSuite\Admin\InquiryAdmin();
+        $this->loader->add_action('init', $inquiry_admin, 'init');
+
         $plugin_tax_objektart = new \DBW\ImmoSuite\Taxonomies\PropertyType();
         $this->loader->add_action('init', $plugin_tax_objektart, 'register_taxonomy');
 

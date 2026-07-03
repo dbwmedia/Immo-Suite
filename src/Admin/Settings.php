@@ -141,10 +141,24 @@ class Settings
 	 */
 	private function render_privacy_tab()
 	{
+		$inbox_on  = \DBW\ImmoSuite\PostTypes\Inquiry::is_enabled();
+		$retention = \DBW\ImmoSuite\PostTypes\Inquiry::get_retention_days();
+
+		if ($inbox_on) {
+			$storage_sentence = 'Die Daten werden per E-Mail an uns übermittelt und zusätzlich zur Bearbeitung im zugriffsgeschützten Backend der Website gespeichert. '
+				. ($retention > 0
+					? 'Gespeicherte Anfragen werden nach spätestens ' . $retention . ' Tagen automatisch gelöscht.'
+					: 'Gespeicherte Anfragen werden gelöscht, sobald die Bearbeitung abgeschlossen ist und keine gesetzlichen Aufbewahrungspflichten entgegenstehen.');
+			$intro_storage = 'Anfragedaten werden nur zur Bearbeitung gespeichert und automatisch wieder gelöscht.';
+		} else {
+			$storage_sentence = 'Die Daten werden per E-Mail an uns übermittelt und nicht auf der Website gespeichert; sie verbleiben in unserem E-Mail-Postfach, bis die Anfrage abgeschlossen ist und gesetzliche Aufbewahrungspflichten erfüllt sind.';
+			$intro_storage = 'Sie speichert keine Anfragedaten in der Datenbank der Website.';
+		}
+
 		$policy_text = 'Immobilienangebote und Kontaktanfragen' . "\n\n"
-			. 'Auf dieser Website werden Immobilienangebote dargestellt. Die eingesetzte Software arbeitet datensparsam: Sie setzt keine Cookies, bindet keine externen Schriftarten oder Skripte ein und speichert keine Anfragedaten in der Datenbank der Website.' . "\n\n"
+			. 'Auf dieser Website werden Immobilienangebote dargestellt. Die eingesetzte Software arbeitet datensparsam: Sie setzt keine Cookies und bindet keine externen Schriftarten oder Skripte ein. ' . $intro_storage . "\n\n"
 			. 'Kontakt- und Exposé-Anfragen' . "\n"
-			. 'Wenn Sie über ein Formular eine Anfrage zu einer Immobilie stellen, verarbeiten wir die von Ihnen angegebenen Daten (Name, E-Mail-Adresse, ggf. Telefonnummer sowie Ihre Nachricht und Angaben zu Ihrem Anliegen) ausschließlich zur Bearbeitung Ihrer Anfrage (Art. 6 Abs. 1 lit. b DSGVO). Die Daten werden per E-Mail an uns übermittelt und nicht auf der Website gespeichert; sie verbleiben in unserem E-Mail-Postfach, bis die Anfrage abgeschlossen ist und gesetzliche Aufbewahrungspflichten erfüllt sind. Zur Abwehr von Missbrauch (Spam-Schutz) wird Ihre IP-Adresse in pseudonymisierter Form (Hashwert) für maximal zwei Minuten zwischengespeichert (Art. 6 Abs. 1 lit. f DSGVO).' . "\n\n"
+			. 'Wenn Sie über ein Formular eine Anfrage zu einer Immobilie stellen, verarbeiten wir die von Ihnen angegebenen Daten (Name, E-Mail-Adresse, ggf. Telefonnummer sowie Ihre Nachricht und Angaben zu Ihrem Anliegen) ausschließlich zur Bearbeitung Ihrer Anfrage (Art. 6 Abs. 1 lit. b DSGVO). ' . $storage_sentence . ' Zur Abwehr von Missbrauch (Spam-Schutz) wird Ihre IP-Adresse in pseudonymisierter Form (Hashwert) für maximal zwei Minuten zwischengespeichert (Art. 6 Abs. 1 lit. f DSGVO).' . "\n\n"
 			. 'Karten (OpenStreetMap)' . "\n"
 			. 'Zur Darstellung von Objektstandorten nutzen wir OpenStreetMap. Die Karte wird erst geladen, wenn Sie sie aktiv per Klick freigeben (Art. 6 Abs. 1 lit. a DSGVO). Erst dann wird Ihre IP-Adresse an die OpenStreetMap Foundation (Vereinigtes Königreich; Angemessenheitsbeschluss der EU-Kommission) übertragen.' . "\n\n"
 			. 'WhatsApp-Kontakt' . "\n"
@@ -161,7 +175,18 @@ class Settings
 		<h3><?php esc_html_e('Was das Plugin technisch macht', 'dbw-immo-suite'); ?></h3>
 		<ul style="list-style: disc; padding-left: 20px; max-width: 800px;">
 			<li><?php esc_html_e('Keine Cookies, keine externen Schriftarten, keine externen Skripte (Leaflet liegt lokal).', 'dbw-immo-suite'); ?></li>
-			<li><?php esc_html_e('Kontakt- und Expose-Anfragen werden nur per E-Mail zugestellt und nicht in der Datenbank gespeichert.', 'dbw-immo-suite'); ?></li>
+			<li><?php
+				if ($inbox_on) {
+					if ($retention > 0) {
+						printf(esc_html__('Kontakt- und Expose-Anfragen gehen per E-Mail raus und liegen zusaetzlich in der Anfragen-Inbox; dort werden sie nach %d Tagen automatisch geloescht.', 'dbw-immo-suite'), (int) $retention);
+					} else {
+						esc_html_e('Kontakt- und Expose-Anfragen gehen per E-Mail raus und liegen zusaetzlich in der Anfragen-Inbox (automatische Loeschung deaktiviert - bitte Frist setzen).', 'dbw-immo-suite');
+					}
+				} else {
+					esc_html_e('Kontakt- und Expose-Anfragen werden nur per E-Mail zugestellt und nicht in der Datenbank gespeichert.', 'dbw-immo-suite');
+				}
+			?></li>
+			<li><?php esc_html_e('Gespeicherte Anfragen sind in den WordPress-Datenschutz-Export und die Loeschung nach Art. 15/17 DSGVO eingebunden.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('Spam-Schutz speichert die IP-Adresse nur als Hashwert fuer maximal 2 Minuten.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('OpenStreetMap-Karten laden erst nach aktivem Klick (Zwei-Klick-Loesung, Borlabs-kompatibel).', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('WhatsApp-Button: Datenuebertragung an Meta erst beim Klick auf den Link.', 'dbw-immo-suite'); ?></li>
@@ -362,6 +387,8 @@ class Settings
 		// ── Kontakt / E-Mail ──
 		add_settings_section('section_contact', __('Kontaktanfragen', 'dbw-immo-suite'), array($this, 'print_contact_section_info'), 'dbw-settings-display');
 		add_settings_field('contact_cc_email', __('CC-Adresse (optional)', 'dbw-immo-suite'), array($this, 'contact_cc_email_callback'), 'dbw-settings-display', 'section_contact');
+		add_settings_field('inquiry_store', __('Anfragen-Inbox', 'dbw-immo-suite'), array($this, 'inquiry_store_callback'), 'dbw-settings-display', 'section_contact');
+		add_settings_field('inquiry_retention_days', __('Anfragen loeschen nach (Tage)', 'dbw-immo-suite'), array($this, 'inquiry_retention_callback'), 'dbw-settings-display', 'section_contact');
 
 		// ── Preis pro m² ──
 		add_settings_section('section_price_sqm', __('Preis pro m²', 'dbw-immo-suite'), array($this, 'print_price_sqm_section_info'), 'dbw-settings-display');
@@ -570,6 +597,10 @@ class Settings
 
 		// Contact CC
 		$new_input['contact_cc_email'] = sanitize_email($input['contact_cc_email'] ?? '');
+
+		// Inquiry inbox
+		$new_input['inquiry_store'] = isset($input['inquiry_store']) ? 1 : 0;
+		$new_input['inquiry_retention_days'] = isset($input['inquiry_retention_days']) ? absint($input['inquiry_retention_days']) : 180;
 
 		// Trigger Page Generation if enabled and changed
 		$old_options = get_option($this->option_name);
@@ -783,6 +814,32 @@ class Settings
 	public function print_contact_section_info()
 	{
 		print __('Anfragen werden an die Kontaktperson der jeweiligen Immobilie gesendet. Ist keine hinterlegt, geht die Mail an die WordPress-Admin-Adresse.', 'dbw-immo-suite');
+	}
+
+	public function inquiry_store_callback()
+	{
+		$options = get_option($this->option_name);
+		// Default ON: the inbox is the safety net against lost/spam-filtered mails
+		$checked = (!isset($options['inquiry_store']) || (int) $options['inquiry_store'] === 1) ? 'checked' : '';
+		printf(
+			'<input type="checkbox" id="inquiry_store" name="%s[inquiry_store]" value="1" %s /> <label for="inquiry_store">%s</label>',
+			esc_attr($this->option_name),
+			$checked,
+			esc_html__('Anfragen zusaetzlich im Backend speichern (Menue "Anfragen"). Schutz vor verlorenen E-Mails.', 'dbw-immo-suite')
+		);
+		echo '<p class="description">' . esc_html__('Bei Aktivierung den Datenschutz-Textbaustein verwenden (Tab "Datenschutz") — er erwaehnt die Speicherung.', 'dbw-immo-suite') . '</p>';
+	}
+
+	public function inquiry_retention_callback()
+	{
+		$options = get_option($this->option_name);
+		$val = isset($options['inquiry_retention_days']) ? absint($options['inquiry_retention_days']) : 180;
+		printf(
+			'<input type="number" id="inquiry_retention_days" name="%s[inquiry_retention_days]" value="%d" min="0" step="1" class="small-text" />',
+			esc_attr($this->option_name),
+			$val
+		);
+		echo '<p class="description">' . esc_html__('Anfragen werden nach dieser Frist automatisch geloescht (DSGVO-Speicherbegrenzung). 0 = nie automatisch loeschen.', 'dbw-immo-suite') . '</p>';
 	}
 
 	public function contact_cc_email_callback()

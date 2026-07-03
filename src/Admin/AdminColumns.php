@@ -197,10 +197,12 @@ class AdminColumns
             return isset($rows[$key]) ? (int) $rows[$key]->cnt : 0;
         };
         ?>
+        <?php $new_inquiries = class_exists('DBW\ImmoSuite\PostTypes\Inquiry') ? \DBW\ImmoSuite\PostTypes\Inquiry::count_new() : 0; ?>
         <div class="dbw-dash-stats">
             <div class="dbw-dash-stat"><strong><?php echo $count('aktiv'); ?></strong><span><?php esc_html_e('Aktiv', 'dbw-immo-suite'); ?></span></div>
             <div class="dbw-dash-stat"><strong><?php echo $count('reserviert'); ?></strong><span><?php esc_html_e('Reserviert', 'dbw-immo-suite'); ?></span></div>
             <div class="dbw-dash-stat"><strong><?php echo $count('verkauft') + $count('referenz'); ?></strong><span><?php esc_html_e('Verkauft/Referenz', 'dbw-immo-suite'); ?></span></div>
+            <div class="dbw-dash-stat"><strong<?php echo $new_inquiries > 0 ? ' style="color:#d63638;"' : ''; ?>><?php echo (int) $new_inquiries; ?></strong><span><?php esc_html_e('Neue Anfragen', 'dbw-immo-suite'); ?></span></div>
         </div>
         <?php
         // Last import
@@ -228,7 +230,8 @@ class AdminColumns
         }
         ?>
         <p>
-            <a class="button button-primary" href="<?php echo esc_url(admin_url('edit.php?post_type=immobilie&page=dbw-immo-import')); ?>"><?php esc_html_e('Import', 'dbw-immo-suite'); ?></a>
+            <a class="button button-primary" href="<?php echo esc_url(admin_url('edit.php?post_type=immo_anfrage')); ?>"><?php esc_html_e('Anfragen', 'dbw-immo-suite'); ?></a>
+            <a class="button" href="<?php echo esc_url(admin_url('edit.php?post_type=immobilie&page=dbw-immo-import')); ?>"><?php esc_html_e('Import', 'dbw-immo-suite'); ?></a>
             <a class="button" href="<?php echo esc_url(admin_url('edit.php?post_type=immobilie')); ?>"><?php esc_html_e('Alle Objekte', 'dbw-immo-suite'); ?></a>
             <a class="button" href="<?php echo esc_url(admin_url('edit.php?post_type=immobilie&page=dbw-immo-suite-settings')); ?>"><?php esc_html_e('Einstellungen', 'dbw-immo-suite'); ?></a>
         </p>

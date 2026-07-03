@@ -7,6 +7,20 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.3.0] — 2026-07-03
+
+### Hinzugefuegt
+- **Anfragen-Inbox** — Kontakt- und Expose-Anfragen werden jetzt zusaetzlich zur E-Mail im Backend gespeichert (neuer Menuepunkt "Anfragen" unter Immobilien). Landet eine Mail im Spam, ist der Lead nicht mehr verloren. Die Speicherung passiert VOR dem Mailversand.
+  - **Listenansicht** mit Kontaktdaten, farbigem Anliegen-Badge (Besichtigung, Mehr Infos, Preis/Finanzierung, Rueckruf, Expose), Objekt-Link und Status-Dropdown direkt in der Liste (AJAX, ohne Seitenwechsel). Status-Filter oberhalb der Liste.
+  - **Status-Workflow** — Neu / Kontaktiert / Erledigt. Neue Anfragen sind rot markiert; Zaehler-Badge am Menuepunkt und neue Kachel "Neue Anfragen" im Dashboard-Widget (inkl. Anfragen-Button).
+  - **Detailansicht** mit allen Anfrage-Daten (inkl. Wunschtermin/Rueckrufzeit/Finanzierungsstatus, bevorzugtem Kontaktweg, Quelle und Consent-Zeitstempel), Objekt-Verlinkung und Status-Pflege.
+  - **DSGVO eingebaut**: Automatische Loeschung nach konfigurierbarer Frist (Standard 180 Tage, 0 = nie; taeglicher Cron). Gespeicherte Anfragen sind an den WordPress-Datenschutz-Export und die Loeschung nach Art. 15/17 DSGVO angebunden (Privacy-Exporter/Eraser jetzt mit echten Daten). Bei Deinstallation werden alle Anfragen geloescht.
+  - **Einstellungen** unter Darstellung > Kontaktanfragen: Inbox an/aus (Standard: an) und Loeschfrist in Tagen.
+  - **Datenschutz-Tab angepasst** — Der kopierbare Textbaustein erwaehnt die Speicherung und Loeschfrist automatisch passend zur Einstellung.
+- Anfragen koennen nicht manuell angelegt werden (nur durch die Formulare) — die Inbox bleibt eine saubere Lead-Liste.
+
+---
+
 ## [2.2.0] — 2026-07-03
 
 Audit-Release: Ergebnis des Voll-Audits (Sicherheit, Performance, DSGVO, Frontend/UX) vom 2026-07-03. Alle kritischen und wichtigen Findings behoben.

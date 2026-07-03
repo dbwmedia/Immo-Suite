@@ -158,6 +158,21 @@ class ContactForm
         // doubles as proof of the privacy-checkbox consent
         $body .= "\nDatenschutzerklaerung akzeptiert: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Kontaktformular Objektseite)\n";
 
+        // Store in the inbox first — a failed/spam-filtered mail must not lose the lead
+        if (class_exists('DBW\ImmoSuite\PostTypes\Inquiry')) {
+            \DBW\ImmoSuite\PostTypes\Inquiry::save(array(
+                'name'           => $name,
+                'email'          => $email,
+                'phone'          => $phone,
+                'message'        => $message,
+                'intent'         => $intent,
+                'intent_details' => implode("\n", $intent_lines),
+                'property_id'    => $post_id,
+                'source'         => 'kontakt',
+                'preferred'      => $preferred,
+            ));
+        }
+
         // Determine recipient
         $contact_email = get_post_meta($post_id, 'kontaktperson_email', true);
         $to = is_email($contact_email) ? $contact_email : get_option('admin_email');
