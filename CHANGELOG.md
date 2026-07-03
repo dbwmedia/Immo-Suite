@@ -7,6 +7,26 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.4.0] — 2026-07-03
+
+Polish-Release: Das Kauf- und Bedienerlebnis zieht mit dem Frontend gleich.
+
+### Hinzugefuegt
+- **Einrichtungs-Checkliste** — Nach der Aktivierung fuehrt eine Checkliste im Import-Dashboard durch die 4 Schritte (Lizenz aktivieren, Import-Pfad pruefen, ersten Import ausfuehren, Design im Customizer anpassen) mit Live-Haekchen und Direktlinks. Ausblendbar; dezenter Hinweis in der Objektliste, solange die Einrichtung offen ist.
+- **Import-Monitoring mit Alarm** — Schlaegt der letzte Import fehl oder kam laenger als 48h kein Feed an (Filter `dbw_immo_import_stale_hours`), erscheint eine Admin-Warnung auf allen Immo-Seiten und der Admin bekommt max. 1 Mail pro Tag. Ein kaputter FTP-Upload faellt damit sofort auf statt nach Wochen.
+- **Cron-Status im Import-Dashboard** — "Naechster automatischer Import: 14:00 (in 23 Minuten) · Letzter Lauf: vor 2 Stunden — 3 neu, 1 aktualisiert" mit Status-Ampel direkt ueber dem Import-Button.
+- **Merkliste auf der Detailseite** — Herz-Button neben Teilen/PDF in der Galerie, gleiche Liste und Tab-Sync wie auf den Karten.
+- **Intent-Vorauswahl im Kontakt-Modal** — Buttons koennen das Modal direkt mit vorgewaehltem Anliegen in Schritt 2 oeffnen (`data-dbw-intent`). Der Finanzierungsrechner hat jetzt einen CTA "Finanzierung unverbindlich anfragen", der das Modal mit Anliegen "Preis/Finanzierung" oeffnet.
+- **CTA in der Highlights-Box** — "Immobilie anfragen" direkt in der sticky Sidebar-Box: Preis und Aktion in einem Blickfeld.
+
+### Geaendert
+- **Minifizierte Assets** — Alle Frontend-Scripts und das Stylesheet laden als .min-Builds (JS ~50% kleiner). Neuer Build-Schritt `npm run minify` (esbuild); mit `SCRIPT_DEBUG` laden weiterhin die lesbaren Quellen.
+- **Inline-Styles ausgelagert** — ~40 style-Attribute und der Style-Block aus dem Single-Template sind in benannte Klassen in frontend.css umgezogen (Highlights-Box ueber CSS Custom Properties, Galerie-Buttons, Ansprechpartner-Karte, Lightbox). Detailseite ist damit sauber per Child-Theme/Customizer stylebar.
+- **Breakpoints vereinheitlicht** — Media Queries nutzen jetzt durchgaengig die Stufen 480/640/768/1024 (vorher zusaetzlich 600/900); konsistenteres Umbruchverhalten auf Tablets.
+- **Preisfilter kontextsensitiv** — Die von/bis-Eingabefelder steppen bei Miet-Portfolios in 100er- statt 1000er-Schritten (folgt der Histogramm-Skala).
+
+---
+
 ## [2.3.0] — 2026-07-03
 
 ### Hinzugefuegt
