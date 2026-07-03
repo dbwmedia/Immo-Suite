@@ -168,6 +168,12 @@ get_header(); ?>
 
 				<!-- Floating Buttons - Top Right -->
 				<div style="position: absolute; top: 20px; right: 20px; z-index: 1; display:flex; gap: 10px;">
+					<?php
+					// Heart on the detail page too — same list, same sync as the cards
+					if (class_exists('DBW\ImmoSuite\Frontend\Favorites')) {
+						\DBW\ImmoSuite\Frontend\Favorites::render_card_button($id, 'dbw-fav-btn--single');
+					}
+					?>
 					<?php if (get_theme_mod('dbw_immo_single_show_share', true)): ?>
 						<button
 							data-dbw-share
@@ -612,6 +618,15 @@ get_header(); ?>
 							</li>
 						<?php endif; ?>
 					</ul>
+
+					<?php if (get_theme_mod('dbw_immo_single_show_contact', true)): ?>
+						<!-- CTA inside the sticky box: price + action in one glance -->
+						<button type="button"
+								class="dbw-cta dbw-cta--invert dbw-highlights-cta"
+								data-dbw-open-modal="<?php echo esc_attr($id); ?>">
+							<?php esc_html_e('Immobilie anfragen', 'dbw-immo-suite'); ?>
+						</button>
+					<?php endif; ?>
 				</div>
 
 				<?php

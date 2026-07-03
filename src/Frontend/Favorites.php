@@ -27,16 +27,17 @@ class Favorites
     }
 
     /**
-     * Heart button rendered on every property card (called from CardRenderer).
+     * Heart button rendered on every property card (called from CardRenderer)
+     * and, with the --single modifier, in the gallery toolbar of the detail page.
      */
-    public static function render_card_button($post_id)
+    public static function render_card_button($post_id, $extra_class = '')
     {
         if (!self::is_enabled()) {
             return;
         }
         ?>
         <button type="button"
-                class="dbw-fav-btn"
+                class="dbw-fav-btn<?php echo $extra_class ? ' ' . esc_attr($extra_class) : ''; ?>"
                 data-dbw-fav="<?php echo (int) $post_id; ?>"
                 aria-pressed="false"
                 aria-label="<?php esc_attr_e('Zur Merkliste hinzufuegen', 'dbw-immo-suite'); ?>">

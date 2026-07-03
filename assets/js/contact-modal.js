@@ -110,7 +110,22 @@
                 if (err) err.remove();
 
                 refreshNonces();
-                goToStep(1);
+
+                // Intent preselect (e.g. finance calculator opens with "preis")
+                var preset = btn.dataset.dbwIntent || '';
+                var presetRadio = preset ? form.querySelector('input[name="intent"][value="' + preset + '"]') : null;
+                if (presetRadio) {
+                    presetRadio.checked = true;
+                    intents.forEach(function (i) {
+                        i.classList.toggle('is-selected', i.dataset.intent === preset);
+                    });
+                    modal.querySelectorAll('[data-context]').forEach(function (el) {
+                        el.hidden = el.dataset.context !== preset;
+                    });
+                    goToStep(2);
+                } else {
+                    goToStep(1);
+                }
                 modal.showModal();
             });
         });

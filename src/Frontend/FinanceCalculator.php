@@ -214,6 +214,18 @@ class FinanceCalculator
             </div>
 
             <p class="dbw-calc-hinweis" id="dbw-calc-hinweis"></p>
+
+            <?php if (get_theme_mod('dbw_immo_single_show_contact', true)): ?>
+            <div class="dbw-calc-cta">
+                <button type="button"
+                        class="dbw-cta dbw-cta--primary"
+                        data-dbw-open-modal="<?php echo esc_attr($post_id); ?>"
+                        data-dbw-intent="preis">
+                    <svg class="dbw-cta__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span class="dbw-cta__text"><?php esc_html_e('Finanzierung unverbindlich anfragen', 'dbw-immo-suite'); ?></span>
+                </button>
+            </div>
+            <?php endif; ?>
         </div>
         <?php
     }

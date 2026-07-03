@@ -240,6 +240,9 @@
             if (!ds || !histEl) return;
             scaleMax = ds.max || 0;
             scaleStep = scaleMax > 50000 ? 1000 : (scaleMax > 5000 ? 100 : 10);
+            // Context-sensitive number inputs: rent portfolios step in 100s, not 1000s
+            if (inputMin) inputMin.step = scaleStep;
+            if (inputMax) inputMax.step = scaleStep;
             histEl.innerHTML = '';
             ds.buckets.forEach(function (h) {
                 var bar = document.createElement('div');
