@@ -117,6 +117,20 @@ class Plugin
     }
 
     /**
+     * Asset URL, preferring the .min build when present (skipped with SCRIPT_DEBUG).
+     */
+    private static function asset_url($rel)
+    {
+        if (!(defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)) {
+            $min = preg_replace('/\\.(js|css)$/', '.min.$1', $rel);
+            if ($min !== $rel && file_exists(DBW_IMMO_SUITE_PATH . $min)) {
+                return DBW_IMMO_SUITE_URL . $min;
+            }
+        }
+        return DBW_IMMO_SUITE_URL . $rel;
+    }
+
+    /**
      * Enqueue Admin Scripts
      */
     public function enqueue_admin_scripts($hook)
@@ -133,7 +147,7 @@ class Plugin
 
         if (!in_array($screen->id, $allowed, true)) return;
 
-        wp_enqueue_script('dbw-immo-admin', DBW_IMMO_SUITE_URL . 'assets/js/admin.js', array('jquery'), DBW_IMMO_SUITE_VERSION, false);
+        wp_enqueue_script('dbw-immo-admin', self::asset_url('assets/js/admin.js'), array('jquery'), DBW_IMMO_SUITE_VERSION, false);
         wp_localize_script('dbw-immo-admin', 'dbwImmoAdmin', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce'   => wp_create_nonce('dbw_immo_import_nonce'),
@@ -220,17 +234,17 @@ class Plugin
         // Register assets so blocks/shortcodes can enqueue them on-demand.
         // favorites.js is a dependency of frontend.js so heart buttons work
         // everywhere cards render (archive, blocks, shortcodes).
-        wp_register_script('dbw-immo-toast', DBW_IMMO_SUITE_URL . 'assets/js/toast.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+        wp_register_script('dbw-immo-toast', self::asset_url('assets/js/toast.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
         wp_localize_script('dbw-immo-toast', 'dbwToastI18n', array(
             'copied'     => __('Link kopiert', 'dbw-immo-suite'),
             'copyManual' => __('Link kopieren:', 'dbw-immo-suite'),
         ));
 
-        wp_register_script('dbw-immo-view-transition', DBW_IMMO_SUITE_URL . 'assets/js/view-transition.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+        wp_register_script('dbw-immo-view-transition', self::asset_url('assets/js/view-transition.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
 
         $frontend_deps = array('dbw-immo-toast', 'dbw-immo-view-transition');
         if (\DBW\ImmoSuite\Frontend\Favorites::is_enabled()) {
-            wp_register_script('dbw-immo-favorites-js', DBW_IMMO_SUITE_URL . 'assets/js/favorites.js', array('dbw-immo-toast'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_register_script('dbw-immo-favorites-js', self::asset_url('assets/js/favorites.js'), array('dbw-immo-toast'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
             wp_localize_script('dbw-immo-favorites-js', 'dbwFavorites', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'i18n'    => array(
@@ -248,9 +262,9 @@ class Plugin
         }
 
         // Icons are inline SVGs since v2.2.0 — no dashicons font needed for visitors
-        wp_register_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), DBW_IMMO_SUITE_VERSION, 'all');
-        wp_register_script('dbw-immo-frontend-js', DBW_IMMO_SUITE_URL . 'assets/js/frontend.js', $frontend_deps, DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
-        wp_register_script('dbw-immo-view-switch-js', DBW_IMMO_SUITE_URL . 'assets/js/view-switch.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+        wp_register_style('dbw-immo-frontend', self::asset_url('assets/css/frontend.css'), array(), DBW_IMMO_SUITE_VERSION, 'all');
+        wp_register_script('dbw-immo-frontend-js', self::asset_url('assets/js/frontend.js'), $frontend_deps, DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+        wp_register_script('dbw-immo-view-switch-js', self::asset_url('assets/js/view-switch.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
 
         // Auto-enqueue on immobilie CPT pages, archives, and taxonomy pages
         if (is_singular('immobilie') || is_post_type_archive('immobilie') || is_tax(array('objektart', 'vermarktungsart', 'ort'))) {
@@ -261,7 +275,7 @@ class Plugin
 
         // AJAX filtering on archive + taxonomy pages
         if (is_post_type_archive('immobilie') || is_tax(array('objektart', 'vermarktungsart', 'ort'))) {
-            wp_enqueue_script('dbw-immo-filter-ajax', DBW_IMMO_SUITE_URL . 'assets/js/filter-ajax.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-filter-ajax', self::asset_url('assets/js/filter-ajax.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
             wp_localize_script('dbw-immo-filter-ajax', 'dbwImmoFilter', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'i18n'    => array(
@@ -277,7 +291,7 @@ class Plugin
             && \DBW\ImmoSuite\Frontend\ArchiveMap::is_enabled()) {
             wp_enqueue_style('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.css', array(), '1.9.4');
             wp_enqueue_script('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true);
-            wp_enqueue_script('dbw-immo-archive-map-js', DBW_IMMO_SUITE_URL . 'assets/js/archive-map.js', array('leaflet'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-archive-map-js', self::asset_url('assets/js/archive-map.js'), array('leaflet'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
         }
 
         // Single property page scripts (lightbox + contact modal)
@@ -294,15 +308,15 @@ class Plugin
                 wp_enqueue_script('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true);
             }
 
-            wp_enqueue_script('dbw-immo-lightbox', DBW_IMMO_SUITE_URL . 'assets/js/lightbox.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
-            wp_enqueue_script('dbw-immo-gallery', DBW_IMMO_SUITE_URL . 'assets/js/gallery.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
-            wp_enqueue_script('dbw-immo-section-nav', DBW_IMMO_SUITE_URL . 'assets/js/section-nav.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-lightbox', self::asset_url('assets/js/lightbox.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-gallery', self::asset_url('assets/js/gallery.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-section-nav', self::asset_url('assets/js/section-nav.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
             wp_localize_script('dbw-immo-section-nav', 'dbwSectionNav', array(
                 'position' => get_theme_mod('dbw_immo_single_section_nav', 'top'),
                 'label'    => __('Abschnitte', 'dbw-immo-suite'),
             ));
-            wp_enqueue_script('dbw-immo-count-up', DBW_IMMO_SUITE_URL . 'assets/js/count-up.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
-            wp_enqueue_script('dbw-immo-contact-modal', DBW_IMMO_SUITE_URL . 'assets/js/contact-modal.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-count-up', self::asset_url('assets/js/count-up.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            wp_enqueue_script('dbw-immo-contact-modal', self::asset_url('assets/js/contact-modal.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
             wp_localize_script('dbw-immo-contact-modal', 'dbwContactModal', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'i18n'    => array(
@@ -326,7 +340,7 @@ class Plugin
     {
         // In the editor, always load so blocks render correctly; on the frontend, conditional loading is handled by enqueue_public_scripts
         if (is_admin()) {
-            wp_enqueue_style('dbw-immo-frontend', DBW_IMMO_SUITE_URL . 'assets/css/frontend.css', array(), filemtime(DBW_IMMO_SUITE_PATH . 'assets/css/frontend.css'), 'all');
+            wp_enqueue_style('dbw-immo-frontend', self::asset_url('assets/css/frontend.css'), array(), filemtime(DBW_IMMO_SUITE_PATH . 'assets/css/frontend.css'), 'all');
         }
     }
 
