@@ -195,6 +195,13 @@
         }
     }
 
+    // Keep hearts and counter in sync across open tabs
+    window.addEventListener('storage', function (e) {
+        if (e.key !== STORAGE_KEY) return;
+        syncAllButtons();
+        updateCount();
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         syncAllButtons();
         updateCount();

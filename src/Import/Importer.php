@@ -1427,6 +1427,8 @@ class Importer
         $archived_count = 0;
 
         if ($all_properties->have_posts()) {
+            // One query instead of one get_post_meta query per property
+            update_meta_cache('post', $all_properties->posts);
             $processed_flip = array_flip($this->processed_openimmo_ids);
             foreach ($all_properties->posts as $post_id) {
                 $oid = get_post_meta($post_id, 'openimmo_id', true);

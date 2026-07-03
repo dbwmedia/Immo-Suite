@@ -21,6 +21,11 @@
         var sortSelect = suite.querySelector('.dbw-sort-select');
         var requestId = 0;
         var currentPage = 1;
+        var activeController = null;   // abort superseded requests
+        var lastGoodHtml = null;       // restore point when a request fails
+        var markersDirty = false;      // filters changed while the map was hidden
+        var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var scrollBehavior = reducedMotion ? 'auto' : 'smooth';
 
         // ── Helpers ─────────────────────────────────────────────
 
@@ -115,11 +120,39 @@
 
         // ── Fetch ───────────────────────────────────────────────
 
-        function fetchResults(paged, push) {
+        function handleFailure(id, paged, push, attempt) {
+            if (id !== requestId) return;
+            if (attempt < 1) {
+                // transient hiccup (flaky connection, brief 502) → one silent retry
+                fetchResults(paged, push, attempt + 1);
+                return;
+            }
+            // Restore the previous results instead of a hard page reload —
+            // a full reload mid-typing feels broken, not graceful
+            if (lastGoodHtml !== null) {
+                grid.innerHTML = lastGoodHtml;
+                revealCards();
+                if (typeof window.dbwToast === 'function') {
+                    window.dbwToast(i18n.networkError || 'Verbindung fehlgeschlagen. Bitte erneut versuchen.');
+                }
+            } else {
+                form.submit(); // nothing to restore → classic GET fallback
+            }
+        }
+
+        function fetchResults(paged, push, attempt) {
+            attempt = attempt || 0;
             var params = getParams();
             var id = ++requestId;
             currentPage = paged;
 
+            if (activeController) activeController.abort();
+            activeController = ('AbortController' in window) ? new AbortController() : null;
+
+            // Keep a restore point (only real results, never the skeleton)
+            if (!grid.querySelector('.dbw-skeleton-card')) {
+                lastGoodHtml = grid.innerHTML;
+            }
             grid.innerHTML = skeleton(Math.min(6, Math.max(3, grid.children.length || 6)));
             grid.classList.remove('is-loading');
 
@@ -130,17 +163,23 @@
             if (container.dataset.ctxTax) data.append('ctx_tax', container.dataset.ctxTax);
             if (container.dataset.ctxTerm) data.append('ctx_term', container.dataset.ctxTerm);
 
-            fetch(cfg.ajaxurl, { method: 'POST', body: data })
+            // Marker payloads (up to 200 objects) only when the map is visible
+            var mapWrapper = document.getElementById('dbw-archive-map-wrapper');
+            var mapVisible = mapWrapper && !mapWrapper.hidden;
+            if (mapVisible) data.append('with_markers', '1');
+
+            fetch(cfg.ajaxurl, { method: 'POST', body: data, signal: activeController ? activeController.signal : undefined })
                 .then(function (r) { return r.json(); })
                 .then(function (j) {
                     if (id !== requestId) return;
                     if (!j || !j.success) {
-                        form.submit(); // endpoint unavailable → graceful full reload
+                        handleFailure(id, paged, push, attempt);
                         return;
                     }
                     var d = j.data;
 
                     grid.innerHTML = d.html || '<p class="dbw-no-results">' + (i18n.noResults || 'Keine Immobilien gefunden.') + '</p>';
+                    lastGoodHtml = grid.innerHTML;
                     revealCards();
                     if (countEl) countEl.textContent = d.count;
                     if (searchLabel) {
@@ -150,14 +189,26 @@
                     updatePagination(d.pagination || '');
                     if (window.dbwArchiveMap && Array.isArray(d.markers)) {
                         window.dbwArchiveMap.refresh(d.markers);
+                        markersDirty = false;
+                    } else {
+                        markersDirty = true;
                     }
                     if (push !== false) pushUrl(params, paged);
                     document.dispatchEvent(new CustomEvent('dbw:grid-updated'));
                 })
-                .catch(function () {
-                    if (id === requestId) form.submit(); // graceful fallback: full reload
+                .catch(function (err) {
+                    if (err && err.name === 'AbortError') return; // superseded on purpose
+                    handleFailure(id, paged, push, attempt);
                 });
         }
+
+        // Filters changed while the map was hidden → refresh markers on entry
+        document.addEventListener('dbw:enter-map-view', function () {
+            if (markersDirty) {
+                markersDirty = false;
+                fetchResults(currentPage, false);
+            }
+        });
 
         var debounceTimer = null;
         function debouncedFetch(delay) {
@@ -270,7 +321,7 @@
             e.preventDefault();
             fetchResults(1, true);
             var bar = suite.querySelector('.dbw-archive-header-bar');
-            if (bar) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (bar) bar.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
         });
 
         form.querySelectorAll('select[name="type"], select[name="marketing"]').forEach(function (sel) {
@@ -355,7 +406,7 @@
             e.preventDefault();
             fetchResults(page, true);
             var bar = suite.querySelector('.dbw-archive-header-bar');
-            if (bar) bar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (bar) bar.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
         });
 
         // Back/forward navigation

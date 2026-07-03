@@ -251,8 +251,9 @@ class Plugin
             wp_localize_script('dbw-immo-filter-ajax', 'dbwImmoFilter', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'i18n'    => array(
-                    'showResults' => __('%d Objekte anzeigen', 'dbw-immo-suite'),
-                    'noResults'   => __('Keine Immobilien gefunden.', 'dbw-immo-suite'),
+                    'showResults'  => __('%d Objekte anzeigen', 'dbw-immo-suite'),
+                    'noResults'    => __('Keine Immobilien gefunden.', 'dbw-immo-suite'),
+                    'networkError' => __('Verbindung fehlgeschlagen. Bitte erneut versuchen.', 'dbw-immo-suite'),
                 ),
             ));
         }
@@ -284,6 +285,7 @@ class Plugin
             wp_enqueue_script('dbw-immo-section-nav', DBW_IMMO_SUITE_URL . 'assets/js/section-nav.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
             wp_localize_script('dbw-immo-section-nav', 'dbwSectionNav', array(
                 'position' => get_theme_mod('dbw_immo_single_section_nav', 'top'),
+                'label'    => __('Abschnitte', 'dbw-immo-suite'),
             ));
             wp_enqueue_script('dbw-immo-count-up', DBW_IMMO_SUITE_URL . 'assets/js/count-up.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
             wp_enqueue_script('dbw-immo-contact-modal', DBW_IMMO_SUITE_URL . 'assets/js/contact-modal.js', array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));

@@ -10,6 +10,8 @@
         var thumbs = document.querySelectorAll('.dbw-gallery-thumb');
         var counterEl = document.querySelector('[data-dbw-gal-current]');
         var current = 0;
+        var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var scrollBehavior = reducedMotion ? 'auto' : 'smooth';
 
         if (slides.length < 2) return;
 
@@ -33,14 +35,14 @@
                 var active = i === current;
                 thumb.classList.toggle('is-active', active);
                 if (active && thumb.scrollIntoView) {
-                    thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                    thumb.scrollIntoView({ behavior: scrollBehavior, block: 'nearest', inline: 'nearest' });
                 }
             });
         }
 
         function goTo(idx) {
             idx = Math.max(0, Math.min(slides.length - 1, idx));
-            slider.scrollTo({ left: slides[idx].offsetLeft, behavior: 'smooth' });
+            slider.scrollTo({ left: slides[idx].offsetLeft, behavior: scrollBehavior });
         }
 
         // Track scroll position (native swipe included) via rAF throttle

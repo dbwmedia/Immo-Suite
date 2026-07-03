@@ -6,6 +6,9 @@
 
     if (POSITION === 'off') return;
 
+    var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var scrollBehavior = reducedMotion ? 'auto' : 'smooth';
+
     document.addEventListener('DOMContentLoaded', function () {
         var suite = document.getElementById('dbw-immo-suite');
         if (!suite || !suite.classList.contains('dbw-single-property-container')) return;
@@ -28,7 +31,7 @@
         // Build the nav
         var nav = document.createElement('nav');
         nav.className = 'dbw-section-nav' + (POSITION === 'bottom' ? ' dbw-section-nav--bottom' : '');
-        nav.setAttribute('aria-label', 'Abschnitte');
+        nav.setAttribute('aria-label', cfg.label || 'Abschnitte');
 
         var inner = document.createElement('div');
         inner.className = 'dbw-section-nav__inner';
@@ -41,7 +44,7 @@
             link.textContent = s.title;
             link.addEventListener('click', function (e) {
                 e.preventDefault();
-                s.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                s.el.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
                 try { history.replaceState(null, '', '#' + s.id); } catch (err) {}
             });
             inner.appendChild(link);
@@ -107,13 +110,17 @@
         }
 
         // ── Scroll handling: spy, progress, offset re-measurement ──
+        var lastActiveIdx = -1;
         function setActive(idx) {
+            // guard: restarting the smooth scroll every frame causes jank on mobile
+            if (idx === lastActiveIdx) return;
+            lastActiveIdx = idx;
             links.forEach(function (l, i) {
                 l.classList.toggle('is-active', i === idx);
             });
             var active = links[idx];
             if (active && active.scrollIntoView) {
-                active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                active.scrollIntoView({ behavior: scrollBehavior, block: 'nearest', inline: 'nearest' });
             }
         }
 

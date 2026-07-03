@@ -48,6 +48,14 @@
         }, opts.duration || 3000);
     };
 
+    // Create the aria-live region up front — screen readers often miss the
+    // first announcement when the live region is injected together with it
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', getContainer);
+    } else {
+        getContainer();
+    }
+
     // Share buttons: Web Share API with clipboard fallback (no alert())
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-dbw-share]');

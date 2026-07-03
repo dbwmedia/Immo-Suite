@@ -8,7 +8,7 @@
 	if (typeof dbwFinanceCalc === 'undefined') return;
 
 	var data = dbwFinanceCalc;
-	var i18n = data.i18n;
+	var i18n = data.i18n || {};
 	var kaufpreis = parseFloat(data.kaufpreis) || 0;
 	if (kaufpreis <= 0) return;
 

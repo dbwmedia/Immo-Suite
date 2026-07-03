@@ -12,6 +12,9 @@
 	var currentSet = [];
 	var currentIdx = 0;
 	var previousFocus = null;
+	var showTimer = null;
+
+	if (lbCounter) lbCounter.setAttribute('aria-live', 'polite');
 
 	// Focus trap: keep Tab within lightbox
 	var focusableEls = overlay.querySelectorAll('button');
@@ -51,7 +54,9 @@
 		},
 		show: function () {
 			lbImage.style.opacity = '0';
-			setTimeout(function () {
+			// rapid prev/next: cancel the pending swap so intermediate images never load
+			clearTimeout(showTimer);
+			showTimer = setTimeout(function () {
 				var item = currentSet[currentIdx];
 				var src = (typeof item === 'string') ? item : item.url;
 				var alt = (typeof item === 'string') ? '' : (item.alt || '');

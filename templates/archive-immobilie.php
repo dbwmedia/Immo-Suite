@@ -54,6 +54,25 @@ get_header(); ?>
 		\DBW\ImmoSuite\Frontend\ArchiveMap::render();
 	}
 	?>
+
+	<script>
+	/* Apply the saved view synchronously — waiting for DOMContentLoaded
+	   flashes the grid before switching to list/map (FOUC). */
+	(function () {
+		try {
+			var v = localStorage.getItem('dbw_immo_view');
+			if (!v || v === 'grid') return;
+			var g = document.querySelector('#dbw-immo-suite .dbw-property-grid');
+			if (!g) return;
+			if (v === 'list') {
+				g.classList.add('is-list-view');
+			} else if (v === 'map') {
+				var mw = document.getElementById('dbw-archive-map-wrapper');
+				if (mw) { g.hidden = true; mw.hidden = false; }
+			}
+		} catch (e) {}
+	})();
+	</script>
 </div>
 
 <?php
