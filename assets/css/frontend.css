@@ -740,7 +740,7 @@
 	/* Attempt to keep single line on desktop */
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
 	#dbw-immo-suite .dbw-filter-toolbar {
 		flex-wrap: wrap;
 		gap: 0.5rem;
@@ -2670,7 +2670,7 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 }
 
 /* Mobile: bottom sheet */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
 	/* Centered modal on mobile (base styles already center via inset:0 + margin:auto) */
 	.dbw-modal {
 		width: calc(100% - 24px);
@@ -2998,14 +2998,14 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 }
 
 /* Tablet: stack cards */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
 	.dbw-calc-grid {
 		grid-template-columns: 1fr;
 	}
 }
 
 /* Mobile */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
 	.dbw-calc-card {
 		padding: 1.25rem 1rem;
 	}
@@ -3387,7 +3387,7 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 }
 
 /* Responsive: stack on mobile */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
 	.dbw-infra-score-layout {
 		flex-direction: column;
 		align-items: center;
@@ -4489,4 +4489,339 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	#dbw-immo-suite .dbw-section-nav--bottom {
 		bottom: 84px;
 	}
+}
+
+/* =========================================
+   Single template — extracted inline styles (v2.4.0)
+   Property values moved 1:1 from templates/single-immobilie.php.
+   Dynamic values stay inline: background-image (floorplans),
+   --dbw-hl-* custom properties (highlights card),
+   display:none on #dbwLightboxOverlay (toggled by lightbox.js),
+   display toggle on #dbw-map (consent mode).
+   ========================================= */
+
+/* -- Gallery floating buttons -- */
+#dbw-immo-suite .dbw-gallery-btn--back {
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	text-decoration: none;
+}
+
+#dbw-immo-suite .dbw-gallery-actions {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	z-index: 1;
+	display: flex;
+	gap: 10px;
+}
+
+#dbw-immo-suite .dbw-gallery-btn--action {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	text-decoration: none;
+}
+
+#dbw-immo-suite .dbw-gallery-floorplan-link {
+	position: absolute;
+	bottom: 100px;
+	left: 20px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	border-radius: 8px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	font-weight: 700;
+	font-size: 0.9rem;
+	text-decoration: none;
+}
+
+/* Image caption overlay in slider */
+#dbw-immo-suite .dbw-slide-caption {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+	color: white;
+	padding: 20px;
+	font-size: 0.9rem;
+}
+
+/* -- Floorplans section -- */
+#dbw-immo-suite #dbw-floorplans {
+	scroll-margin-top: 100px;
+}
+
+#dbw-immo-suite .dbw-gallery-grid--floorplans {
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	height: auto;
+	gap: 1rem;
+}
+
+/* background-image stays inline (dynamic URL) */
+#dbw-immo-suite .dbw-gallery-item--floorplan {
+	height: 200px;
+	display: block;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	border: 1px solid #ddd;
+	cursor: pointer;
+	border-radius: var(--dbw-radius, 8px);
+	transition: box-shadow 0.2s;
+	width: 100%;
+	padding: 0;
+}
+
+/* -- Key facts row -- */
+#dbw-immo-suite .dbw-features-list--key-facts {
+	margin-bottom: 2rem;
+}
+
+/* -- Features badges container -- */
+#dbw-immo-suite .dbw-features-badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 1.5rem;
+}
+
+/* -- Highlights card --
+   Colors come from the Customizer via inline custom properties:
+   style="--dbw-hl-bg: ...; --dbw-hl-text: ...;" */
+#dbw-immo-suite .dbw-highlights-card {
+	position: relative;
+	background-color: var(--dbw-hl-bg, var(--dbw-primary, #0073aa));
+	color: var(--dbw-hl-text, #ffffff);
+	border-radius: var(--dbw-radius, 12px);
+	padding: 1.5rem;
+	margin-bottom: 1.5rem;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+	overflow: hidden;
+}
+
+#dbw-immo-suite .dbw-highlights-card h3 {
+	color: var(--dbw-hl-text, #ffffff);
+	margin-top: 0;
+	margin-bottom: 1.8rem;
+	font-size: 1.6rem;
+	letter-spacing: -0.5px;
+	border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+	padding-bottom: 10px;
+}
+
+#dbw-immo-suite .dbw-highlights-card ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#dbw-immo-suite .dbw-highlights-card ul li {
+	display: flex;
+	justify-content: space-between;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	padding: 8px 0;
+	margin-bottom: 4px;
+}
+
+/* Replaces the former inline <style> block (theme-proof coloring) */
+#dbw-immo-suite .dbw-highlights-card ul li span,
+#dbw-immo-suite .dbw-highlights-card ul li strong {
+	color: var(--dbw-hl-text, #ffffff) !important;
+}
+
+/* Modifier: energy class row */
+#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-energy {
+	align-items: center;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+	padding: 10px 0;
+}
+
+/* Modifier: buyer commission row (stacked) */
+#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-provision {
+	flex-direction: column;
+}
+
+#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-provision span {
+	display: block;
+	margin-bottom: 4px;
+}
+
+/* Modifier: "price on request" row */
+#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-request {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+	padding: 10px 0;
+}
+
+#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-request strong {
+	font-size: 1.1em;
+}
+
+/* -- Agent card (single template variant) --
+   Overrides the generic .dbw-agent-card base above (later in file wins).
+   box-shadow intentionally not reset — the base shadow applied before too. */
+#dbw-immo-suite .dbw-agent-card {
+	background-color: transparent;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	border-radius: var(--dbw-radius, 12px);
+	padding: 1.5rem;
+}
+
+#dbw-immo-suite .dbw-agent-card h4 {
+	margin-top: 0;
+	margin-bottom: 1rem;
+}
+
+#dbw-immo-suite .dbw-contact-flex {
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	margin-bottom: 1.5rem;
+}
+
+#dbw-immo-suite .dbw-contact-avatar {
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+#dbw-immo-suite .dbw-contact-avatar-placeholder {
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	background: #eee;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.5rem;
+	color: #ccc;
+}
+
+#dbw-immo-suite .dbw-contact-name {
+	font-weight: bold;
+}
+
+#dbw-immo-suite .dbw-contact-tel {
+	font-size: 0.9rem;
+	color: #666;
+}
+
+/* Mailto fallback button (only when ContactModal is unavailable) */
+#dbw-immo-suite .dbw-mailto-fallback {
+	display: block;
+	width: 100%;
+	padding: 12px;
+	height: auto;
+	font-size: 1rem;
+	text-transform: uppercase;
+	font-weight: bold;
+	background-color: var(--dbw-accent, #0073aa);
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	border-radius: 4px;
+	text-decoration: none;
+	text-align: center;
+}
+
+/* -- Lightbox (outside #dbw-immo-suite container) --
+   display is controlled inline by lightbox.js ('none'/'flex'),
+   so no display property here. */
+#dbwLightboxOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.92);
+	z-index: 99999;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+}
+
+#dbwLightboxOverlay .dbw-lightbox-btn--close {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	background: none;
+	border: none;
+	color: #fff;
+	font-size: 2rem;
+	cursor: pointer;
+	z-index: 100001;
+	width: 48px;
+	height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	transition: background 0.2s;
+}
+
+#dbwLbPrev,
+#dbwLbNext {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(4px);
+	border: none;
+	color: #fff;
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 100001;
+	transition: background 0.2s;
+}
+
+#dbwLbPrev {
+	left: 15px;
+}
+
+#dbwLbNext {
+	right: 15px;
+}
+
+#dbwLbImage {
+	max-width: 90vw;
+	max-height: 85vh;
+	object-fit: contain;
+	border-radius: 4px;
+	user-select: none;
+	transition: opacity 0.25s ease;
+}
+
+#dbwLbCounter {
+	position: absolute;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 0.9rem;
+	font-family: inherit;
 }

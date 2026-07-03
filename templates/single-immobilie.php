@@ -155,10 +155,9 @@ get_header(); ?>
 			<div class="dbw-gallery-wrapper">
 
 				<!-- Floating Buttons - Top Left -->
-				<a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-gallery-btn"
+				<a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-gallery-btn dbw-gallery-btn--back"
 					onclick="if(history.length>1){history.back();return false;}"
-					aria-label="<?php esc_attr_e('Zurueck zur Uebersicht', 'dbw-immo-suite'); ?>"
-					style="position: absolute; top: 20px; left: 20px; z-index: 1; display:flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none;">
+					aria-label="<?php esc_attr_e('Zurueck zur Uebersicht', 'dbw-immo-suite'); ?>">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 						stroke-linecap="round" stroke-linejoin="round">
 						<line x1="19" y1="12" x2="5" y2="12"></line>
@@ -167,7 +166,7 @@ get_header(); ?>
 				</a>
 
 				<!-- Floating Buttons - Top Right -->
-				<div style="position: absolute; top: 20px; right: 20px; z-index: 1; display:flex; gap: 10px;">
+				<div class="dbw-gallery-actions">
 					<?php
 					// Heart on the detail page too — same list, same sync as the cards
 					if (class_exists('DBW\ImmoSuite\Frontend\Favorites')) {
@@ -177,9 +176,8 @@ get_header(); ?>
 					<?php if (get_theme_mod('dbw_immo_single_show_share', true)): ?>
 						<button
 							data-dbw-share
-							class="dbw-gallery-btn"
-							aria-label="<?php esc_attr_e('Teilen', 'dbw-immo-suite'); ?>"
-							style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: none; cursor:pointer; padding:0;">
+							class="dbw-gallery-btn dbw-gallery-btn--action"
+							aria-label="<?php esc_attr_e('Teilen', 'dbw-immo-suite'); ?>">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 								stroke-linecap="round" stroke-linejoin="round">
 								<circle cx="18" cy="5" r="3"></circle>
@@ -194,10 +192,9 @@ get_header(); ?>
 					<?php if (get_theme_mod('dbw_immo_single_show_print', true)): ?>
 						<a href="<?php echo esc_url(\DBW\ImmoSuite\Frontend\PdfExpose::get_expose_url($id)); ?>"
 							target="_blank" rel="noopener"
-							class="dbw-gallery-btn"
+							class="dbw-gallery-btn dbw-gallery-btn--action"
 							aria-label="<?php esc_attr_e('Expose als PDF herunterladen', 'dbw-immo-suite'); ?>"
-							title="<?php esc_attr_e('Expose als PDF', 'dbw-immo-suite'); ?>"
-							style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: none; cursor:pointer; padding:0; text-decoration:none;">
+							title="<?php esc_attr_e('Expose als PDF', 'dbw-immo-suite'); ?>">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 								stroke-linecap="round" stroke-linejoin="round">
 								<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -210,8 +207,7 @@ get_header(); ?>
 
 				<!-- Floating Block - Bottom Left -->
 				<?php if (!empty($floor_plans)): ?>
-					<a href="#dbw-floorplans" class="dbw-gallery-btn"
-						style="position: absolute; bottom: 100px; left: 20px; ; display:flex; align-items:center; gap: 8px; padding: 6px 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-weight: 700; font-size: 0.9rem; text-decoration: none;">
+					<a href="#dbw-floorplans" class="dbw-gallery-btn dbw-gallery-floorplan-link">
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 							stroke-linecap="round" stroke-linejoin="round">
 							<path
@@ -235,8 +231,7 @@ get_header(); ?>
 								<?php if ($img['width'] && $img['height']): ?>width="<?php echo esc_attr($img['width']); ?>" height="<?php echo esc_attr($img['height']); ?>"<?php endif; ?>
 								<?php echo ($index > 0) ? 'loading="lazy" decoding="async"' : 'fetchpriority="high"'; ?>>
 							<?php if ($img['alt']): ?>
-								<div
-									style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 20px; font-size: 0.9rem;">
+								<div class="dbw-slide-caption">
 									<?php echo esc_html($img['alt']); ?>
 								</div>
 								<?php
@@ -281,7 +276,7 @@ get_header(); ?>
 			<div class="dbw-main-col">
 
 				<!-- Key Facts Row -->
-				<div class="dbw-features-list" style="margin-bottom: 2rem;">
+				<div class="dbw-features-list dbw-features-list--key-facts">
 					<?php if ($area > 0): ?>
 						<div class="dbw-feature-item">
 							<span class="dbw-meta-label"><?php esc_html_e('Wohnfläche', 'dbw-immo-suite'); ?></span><br>
@@ -339,7 +334,7 @@ get_header(); ?>
 						<h3 class="dbw-section-title"><?php esc_html_e('Ausstattung', 'dbw-immo-suite'); ?></h3>
 
 						<?php if (!empty($features)): ?>
-						<div class="dbw-features-badges" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:1.5rem;">
+						<div class="dbw-features-badges">
 							<?php foreach ($features as $feature): ?>
 								<span class="dbw-feature-badge"><?php echo esc_html($feature); ?></span>
 							<?php endforeach; ?>
@@ -458,14 +453,13 @@ get_header(); ?>
 				endif; ?>
 
 				<?php if (!empty($floor_plans)): ?>
-					<div class="dbw-section" id="dbw-floorplans" style="scroll-margin-top: 100px;">
+					<div class="dbw-section" id="dbw-floorplans">
 						<h3 class="dbw-section-title"><?php esc_html_e('Grundrisse', 'dbw-immo-suite'); ?></h3>
-						<div class="dbw-gallery-grid"
-							style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); height:auto; gap:1rem;">
+						<div class="dbw-gallery-grid dbw-gallery-grid--floorplans">
 							<?php foreach ($floor_plans as $fp_index => $fp): ?>
-								<button type="button" class="dbw-gallery-item" onclick="dbwLightbox.open('floorplan', <?php echo (int) $fp_index; ?>)"
+								<button type="button" class="dbw-gallery-item dbw-gallery-item--floorplan" onclick="dbwLightbox.open('floorplan', <?php echo (int) $fp_index; ?>)"
 									aria-label="<?php echo esc_attr(sprintf(__('Grundriss %d oeffnen', 'dbw-immo-suite'), $fp_index + 1)); ?>"
-									style="height:200px; display:block; background-image: url(<?php echo esc_url($fp['url']); ?>); background-size: contain; background-repeat:no-repeat; background-position: center; border:1px solid #ddd; cursor: pointer; border-radius: var(--dbw-radius, 8px); transition: box-shadow 0.2s; width:100%; padding:0;">
+									style="background-image: url(<?php echo esc_url($fp['url']); ?>);">
 								</button>
 								<?php
 							endforeach; ?>
@@ -495,50 +489,37 @@ get_header(); ?>
 				$hl_bg_color = ($hl_bg_choice === 'accent') ? 'var(--dbw-accent, #2ecc71)' : 'var(--dbw-primary, #0073aa)';
 				$hl_text_color = get_theme_mod('dbw_immo_highlights_text_color', '#ffffff');
 				?>
-				<style>
-					.dbw-highlights-card ul li span,
-					.dbw-highlights-card ul li strong {
-						color:
-							<?php echo esc_attr($hl_text_color); ?>
-							!important;
-					}
-				</style>
 				<div class="dbw-highlights-card"
-					style="position: relative; background-color: <?php echo esc_attr($hl_bg_color); ?>; color: <?php echo esc_attr($hl_text_color); ?>; border-radius: var(--dbw-radius, 12px); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15); overflow: hidden;">
+					style="--dbw-hl-bg: <?php echo esc_attr($hl_bg_color); ?>; --dbw-hl-text: <?php echo esc_attr($hl_text_color); ?>;">
 
 
-					<h3
-						style="color: <?php echo esc_attr($hl_text_color); ?>; margin-top: 0; margin-bottom: 1.8rem; font-size: 1.6rem; letter-spacing: -0.5px; border-bottom: 2px solid rgba(255,255,255,0.15); padding-bottom: 10px;">
+					<h3>
 						<?php esc_html_e('Highlights', 'dbw-immo-suite'); ?></h3>
 
-					<ul style="list-style: none; padding: 0; margin: 0;">
+					<ul>
 						<?php if ($area > 0): ?>
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+							<li>
 								<span><?php esc_html_e('Wohnfläche', 'dbw-immo-suite'); ?></span>
 								<strong><?php esc_html_e('ca.', 'dbw-immo-suite'); ?> <?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($area, 'flaeche')); ?> m²</strong>
 							</li>
 						<?php endif; ?>
 
 						<?php if ($rooms > 0): ?>
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+							<li>
 								<span><?php esc_html_e('Anzahl Zimmer', 'dbw-immo-suite'); ?></span>
 								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer')); ?></strong>
 							</li>
 						<?php endif; ?>
 
 						<?php if ($bedrooms > 0): ?>
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+							<li>
 								<span><?php esc_html_e('Anzahl Schlafzimmer', 'dbw-immo-suite'); ?></span>
 								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($bedrooms, 'zimmer')); ?></strong>
 							</li>
 						<?php endif; ?>
 
 						<?php if ($bathrooms > 0): ?>
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+							<li>
 								<span><?php esc_html_e('Anzahl Badezimmer', 'dbw-immo-suite'); ?></span>
 								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($bathrooms, 'zimmer')); ?></strong>
 							</li>
@@ -548,8 +529,7 @@ get_header(); ?>
 						$energy_class_hl = $energy_class;
 						if (!empty($energy_class_hl)):
 							?>
-							<li class="dbw-highlights-energy"
-								style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 10px 0; margin-bottom: 4px;">
+							<li class="dbw-highlights-energy">
 								<span><?php esc_html_e('Energieklasse', 'dbw-immo-suite'); ?></span>
 								<?php
 								if (class_exists('DBW\ImmoSuite\Frontend\EnergyRenderer')) {
@@ -561,22 +541,19 @@ get_header(); ?>
 
 						<?php if ($price_kauf > 0): ?>
 							<!-- KAUF -->
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+							<li>
 								<span><?php esc_html_e('Kaufpreis', 'dbw-immo-suite'); ?></span>
 								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_kauf, 'preis')); ?> €</strong>
 							</li>
 							<?php if ($hausgeld > 0): ?>
-								<li
-									style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+								<li>
 									<span><?php esc_html_e('Hausgeld', 'dbw-immo-suite'); ?></span>
 									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis')); ?> €</strong>
 								</li>
 							<?php endif; ?>
 							<?php if ($provision): ?>
-								<li
-									style="display: flex; flex-direction: column; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
-									<span style="display: block; margin-bottom: 4px;"><?php esc_html_e('Käuferprovision', 'dbw-immo-suite'); ?></span>
+								<li class="dbw-highlights-provision">
+									<span><?php esc_html_e('Käuferprovision', 'dbw-immo-suite'); ?></span>
 									<strong><?php
 									echo esc_html($provision);
 									// Optionale Prüfung, falls XML nur "3,57%" schickt ohne "inkl. MwSt"
@@ -589,21 +566,18 @@ get_header(); ?>
 
 						<?php elseif ($price_miete > 0): ?>
 							<!-- MIETE -->
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+							<li>
 								<span><?php esc_html_e('Kaltmiete', 'dbw-immo-suite'); ?></span>
 								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_miete, 'preis')); ?> €</strong>
 							</li>
 							<?php if ($nebenkosten > 0): ?>
-								<li
-									style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+								<li>
 									<span><?php esc_html_e('Nebenkosten', 'dbw-immo-suite'); ?></span>
 									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($nebenkosten, 'preis')); ?> €</strong>
 								</li>
 							<?php endif; ?>
 							<?php if ($price_warm > 0): ?>
-								<li
-									style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px 0; margin-bottom: 4px;">
+								<li>
 									<span><?php esc_html_e('Warmmiete', 'dbw-immo-suite'); ?></span>
 									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_warm, 'preis')); ?> €</strong>
 								</li>
@@ -611,10 +585,9 @@ get_header(); ?>
 
 						<?php else: ?>
 							<!-- AUF ANFRAGE -->
-							<li
-								style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15); padding: 10px 0; margin-bottom: 4px;">
+							<li class="dbw-highlights-request">
 								<span><?php esc_html_e('Preis', 'dbw-immo-suite'); ?></span>
-								<strong style="font-size: 1.1em;"><?php esc_html_e('Auf Anfrage', 'dbw-immo-suite'); ?></strong>
+								<strong><?php esc_html_e('Auf Anfrage', 'dbw-immo-suite'); ?></strong>
 							</li>
 						<?php endif; ?>
 					</ul>
@@ -636,37 +609,34 @@ get_header(); ?>
 				}
 				?>
 
-				<div class="dbw-agent-card"
-					style="background-color: transparent; border: 1px solid rgba(0,0,0,0.08); border-radius: var(--dbw-radius, 12px); padding: 1.5rem;">
+				<div class="dbw-agent-card">
 					<?php if (get_theme_mod('dbw_immo_single_show_contact', true)): ?>
 						<!-- Contact Person -->
-						<h4 style="margin-top: 0; margin-bottom: 1rem;"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
+						<h4><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
 							__('Ihr Ansprechpartner', 'dbw-immo-suite'),
 							__('Dein Ansprechpartner', 'dbw-immo-suite')
 						)); ?></h4>
 
-						<div class="dbw-contact-flex"
-							style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.5rem;">
+						<div class="dbw-contact-flex">
 							<?php if ($contact_img_url): ?>
 								<img src="<?php echo esc_url($contact_img_url); ?>" alt="<?php echo esc_attr($contact_name); ?>"
 									width="60" height="60" loading="lazy"
-									style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+									class="dbw-contact-avatar">
 								<?php
 							else: ?>
-								<div
-									style="width: 60px; height: 60px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #ccc;">
+								<div class="dbw-contact-avatar-placeholder">
 									<span class="dbw-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
 								</div>
 								<?php
 							endif; ?>
 
 							<div>
-								<div style="font-weight: bold;">
+								<div class="dbw-contact-name">
 									<?php echo esc_html($contact_firstname . ' ' . $contact_name); ?>
 								</div>
 								<?php if ($contact_tel): ?>
 									<?php $phone = \DBW\ImmoSuite\dbw_format_phone($contact_tel); ?>
-									<div style="font-size: 0.9rem; color: #666;">
+									<div class="dbw-contact-tel">
 										<a href="tel:<?php echo esc_attr($phone['tel']); ?>" class="dbw-phone-link"><?php echo esc_html($phone['display']); ?></a>
 									</div>
 									<?php
@@ -680,7 +650,7 @@ get_header(); ?>
 							\DBW\ImmoSuite\Frontend\ContactModal::render_cta_buttons($id);
 						} elseif ($contact_email) {
 							// Fallback: simple mailto link
-							echo '<a href="mailto:' . esc_attr($contact_email) . '?subject=' . esc_attr(__('Anfrage:', 'dbw-immo-suite')) . ' ' . rawurlencode(get_the_title()) . '" class="button button-primary" style="display:block; width:100%; padding:12px; height:auto; font-size:1rem; text-transform:uppercase; font-weight:bold; background-color:var(--dbw-accent,#0073aa); border:none; color:#fff; cursor:pointer; border-radius:4px; text-decoration:none; text-align:center;">' . esc_html__('Anfrage senden', 'dbw-immo-suite') . '</a>';
+							echo '<a href="mailto:' . esc_attr($contact_email) . '?subject=' . esc_attr(__('Anfrage:', 'dbw-immo-suite')) . ' ' . rawurlencode(get_the_title()) . '" class="button button-primary dbw-mailto-fallback">' . esc_html__('Anfrage senden', 'dbw-immo-suite') . '</a>';
 						}
 						?>
 						<?php
@@ -772,10 +742,9 @@ get_header(); ?>
 
 <!-- Lightbox Overlay -->
 <div id="dbwLightboxOverlay" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e('Bildergalerie', 'dbw-immo-suite'); ?>"
-	style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.92); z-index:99999; align-items:center; justify-content:center; flex-direction:column;">
+	style="display:none;">
 	<!-- Close -->
-	<button onclick="dbwLightbox.close()" class="dbw-lightbox-btn dbw-lightbox-btn--close" aria-label="<?php esc_attr_e('Schliessen', 'dbw-immo-suite'); ?>"
-		style="position:absolute; top:20px; right:20px; background:none; border:none; color:#fff; font-size:2rem; cursor:pointer; z-index:100001; width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:50%; transition: background 0.2s;">
+	<button onclick="dbwLightbox.close()" class="dbw-lightbox-btn dbw-lightbox-btn--close" aria-label="<?php esc_attr_e('Schliessen', 'dbw-immo-suite'); ?>">
 		<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 			stroke-linecap="round" stroke-linejoin="round">
 			<line x1="18" y1="6" x2="6" y2="18"></line>
@@ -783,27 +752,23 @@ get_header(); ?>
 		</svg>
 	</button>
 	<!-- Prev -->
-	<button id="dbwLbPrev" onclick="dbwLightbox.prev()" class="dbw-lightbox-btn" aria-label="<?php esc_attr_e('Vorheriges Bild', 'dbw-immo-suite'); ?>"
-		style="position:absolute; left:15px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.1); backdrop-filter:blur(4px); border:none; color:#fff; width:48px; height:48px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:100001; transition: background 0.2s;">
+	<button id="dbwLbPrev" onclick="dbwLightbox.prev()" class="dbw-lightbox-btn" aria-label="<?php esc_attr_e('Vorheriges Bild', 'dbw-immo-suite'); ?>">
 		<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 			stroke-linecap="round" stroke-linejoin="round">
 			<polyline points="15 18 9 12 15 6"></polyline>
 		</svg>
 	</button>
 	<!-- Next -->
-	<button id="dbwLbNext" onclick="dbwLightbox.next()" class="dbw-lightbox-btn" aria-label="<?php esc_attr_e('Nächstes Bild', 'dbw-immo-suite'); ?>"
-		style="position:absolute; right:15px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.1); backdrop-filter:blur(4px); border:none; color:#fff; width:48px; height:48px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:100001; transition: background 0.2s;">
+	<button id="dbwLbNext" onclick="dbwLightbox.next()" class="dbw-lightbox-btn" aria-label="<?php esc_attr_e('Nächstes Bild', 'dbw-immo-suite'); ?>">
 		<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 			stroke-linecap="round" stroke-linejoin="round">
 			<polyline points="9 18 15 12 9 6"></polyline>
 		</svg>
 	</button>
 	<!-- Image -->
-	<img id="dbwLbImage" src="" alt=""
-		style="max-width:90vw; max-height:85vh; object-fit:contain; border-radius:4px; user-select:none; transition: opacity 0.25s ease;">
+	<img id="dbwLbImage" src="" alt="">
 	<!-- Counter -->
-	<div id="dbwLbCounter"
-		style="position:absolute; bottom:20px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.7); font-size:0.9rem; font-family:inherit;">
+	<div id="dbwLbCounter">
 	</div>
 </div>
 
