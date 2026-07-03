@@ -293,18 +293,19 @@
 	color: #fff;
 }
 
+/* Status badge colors: darkened for WCAG AA contrast (>= 4.5:1 on white text) */
 #dbw-immo-suite .dbw-property-tag.dbw-tag-sold {
-	background: #e74c3c;
+	background: #c0392b;
 	color: #fff;
 }
 
 #dbw-immo-suite .dbw-property-tag.dbw-tag-reference {
-	background: #27ae60;
+	background: #1e8449;
 	color: #fff;
 }
 
 #dbw-immo-suite .dbw-property-tag.dbw-tag-reserved {
-	background: #f39c12;
+	background: #a4650e;
 	color: #fff;
 }
 
@@ -837,11 +838,17 @@
 	gap: 8px;
 }
 
-#dbw-immo-suite .dbw-input-inner .dashicons {
+/* Inline SVG icons (replaced dashicons — saves the ~85KB icon font for visitors) */
+#dbw-immo-suite .dbw-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	line-height: 1;
+}
+
+#dbw-immo-suite .dbw-input-inner .dbw-icon {
 	color: var(--dbw-primary);
-	font-size: 1.1rem;
-	height: auto;
-	width: auto;
 }
 
 #dbw-immo-suite .dbw-main-search-input {
@@ -899,18 +906,14 @@
 	transform: translateY(-1px);
 }
 
-#dbw-immo-suite .dbw-filter-toggle-btn .dashicons {
-	font-size: 20px;
-	width: 20px;
-	height: 20px;
+#dbw-immo-suite .dbw-filter-toggle-btn .dbw-icon {
 	margin: 0;
-	line-height: 1;
 	transition: transform 0.3s ease;
 	/* Animate rotation */
 }
 
 /* Rotate icon when expanded */
-#dbw-immo-suite .is-expanded .dbw-filter-toggle-btn .dashicons {
+#dbw-immo-suite .is-expanded .dbw-filter-toggle-btn .dbw-icon {
 	transform: rotate(180deg);
 }
 
@@ -1107,8 +1110,7 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-#dbw-immo-suite .dbw-view-btn .dashicons {
-	font-size: 18px;
+#dbw-immo-suite .dbw-view-btn .dbw-icon svg {
 	width: 18px;
 	height: 18px;
 }
@@ -2242,6 +2244,14 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	outline: none;
 	border-color: var(--dbw-accent, #3498db);
 	box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Keyboard users get a visible focus indicator on top of the subtle ring */
+.dbw-modal input:focus-visible,
+.dbw-modal textarea:focus-visible,
+.dbw-modal select:focus-visible {
+	outline: 2px solid var(--dbw-accent, #3498db);
+	outline-offset: 1px;
 }
 
 .dbw-field textarea {
@@ -3544,12 +3554,12 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 }
 
 .dbw-price-sqm-badge-below {
-	background: rgba(40, 167, 69, 0.9);
+	background: rgba(30, 132, 73, 0.95);
 	color: #fff;
 }
 
 .dbw-price-sqm-badge-above {
-	background: rgba(230, 126, 34, 0.9);
+	background: rgba(164, 101, 14, 0.95);
 	color: #fff;
 }
 
@@ -4046,7 +4056,9 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 }
 
 #dbw-immo-suite .dbw-skeleton--img {
-	height: 220px;
+	/* must match .dbw-property-image height — a mismatch causes a visible
+	   layout shift when skeletons swap to real cards */
+	height: 280px;
 	border-radius: 0;
 }
 

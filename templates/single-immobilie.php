@@ -144,7 +144,7 @@ get_header(); ?>
 			</h1>
 			<?php if ($show_address): ?>
 			<div class="dbw-single-address">
-				<span class="dashicons dashicons-location"></span>
+				<span class="dbw-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
 				<?php echo esc_html(implode(' ', array_filter(array($street, $house_num))) . ', ' . implode(' ', array_filter(array($plz, $city)))); ?>
 			</div>
 			<?php endif; ?>
@@ -640,7 +640,7 @@ get_header(); ?>
 							else: ?>
 								<div
 									style="width: 60px; height: 60px; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #ccc;">
-									<span class="dashicons dashicons-admin-users"></span>
+									<span class="dbw-icon" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
 								</div>
 								<?php
 							endif; ?>
@@ -716,9 +716,11 @@ get_header(); ?>
 			'post_status'    => 'publish',
 			'orderby'        => 'date',
 			'order'          => 'DESC',
-			'fields'         => 'ids',
+			// no 'fields' => 'ids' — it would skip WP's meta/term cache priming
+			// and cost ~10 extra queries when the cards render
 			'update_post_meta_cache' => true,
 			'update_post_term_cache' => true,
+			'no_found_rows'  => true,
 		);
 
 		foreach ($attempts as $attempt_args) {

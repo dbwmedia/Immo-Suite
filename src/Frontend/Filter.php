@@ -20,9 +20,17 @@ class Filter
         add_action('wp_ajax_nopriv_dbw_immo_filter', array($this, 'ajax_filter'));
 
         // Keep the price-slider histogram in sync with the portfolio
+        // (trash/delete do not fire save_post, so hook them separately)
         add_action('save_post_immobilie', function () {
             delete_transient('dbw_immo_price_histogram');
         });
+        $invalidate = function ($post_id) {
+            if (get_post_type($post_id) === 'immobilie') {
+                delete_transient('dbw_immo_price_histogram');
+            }
+        };
+        add_action('trashed_post', $invalidate);
+        add_action('deleted_post', $invalidate);
     }
 
     /**
@@ -233,11 +241,6 @@ class Filter
             remove_filter('posts_clauses', $clauses_fn, 10);
         }
 
-        // Lightweight mode for live result-count previews
-        if (!empty($_POST['count_only'])) {
-            wp_send_json_success(array('count' => (int) $query->found_posts));
-        }
-
         ob_start();
         while ($query->have_posts()) {
             $query->the_post();
@@ -250,8 +253,11 @@ class Filter
             $html = self::render_empty_state();
         }
 
-        $markers = array();
-        if (class_exists('\DBW\ImmoSuite\Frontend\ArchiveMap') && ArchiveMap::is_enabled()) {
+        // Markers only on request (map view active) — collecting up to 200
+        // marker payloads on every filter request is wasted work otherwise
+        $markers = null;
+        if (!empty($_POST['with_markers'])
+            && class_exists('\DBW\ImmoSuite\Frontend\ArchiveMap') && ArchiveMap::is_enabled()) {
             $markers = ArchiveMap::collect_markers($args);
         }
 
@@ -385,7 +391,8 @@ class Filter
             $keys = explode(',', $chip['param']);
             $remove = array_merge($keys, array('paged'));
             $href = $base_url !== null ? remove_query_arg($remove, $base_url) : remove_query_arg($remove);
-            $html .= '<a href="' . esc_url($href) . '" class="dbw-chip" data-dbw-chip="' . esc_attr($chip['param']) . '">'
+            $html .= '<a href="' . esc_url($href) . '" class="dbw-chip" data-dbw-chip="' . esc_attr($chip['param']) . '"'
+                . ' aria-label="' . esc_attr(sprintf(__('Filter %s entfernen', 'dbw-immo-suite'), $chip['label'])) . '">'
                 . '<span>' . esc_html($chip['label']) . '</span>'
                 . '<span class="dbw-chip__x" aria-hidden="true">&times;</span>'
                 . '</a>';
@@ -637,7 +644,7 @@ class Filter
                     <div class="dbw-toolbar-item dbw-search-input-wrapper">
                         <label class="dbw-toolbar-label"><?php _e('Standort', 'dbw-immo-suite'); ?></label>
                         <div class="dbw-input-inner">
-                            <span class="dashicons dashicons-location"></span>
+                            <span class="dbw-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
                             <input type="text" name="location" class="dbw-main-search-input" list="dbw-ort-list"
                                    placeholder="<?php _e('Ort, PLZ...', 'dbw-immo-suite'); ?>"
                                    value="<?php echo esc_attr($location); ?>">
@@ -652,7 +659,7 @@ class Filter
                     <!-- Actions -->
                     <div class="dbw-toolbar-actions">
                         <button type="button" class="dbw-filter-toggle-btn" id="dbw-filter-toggle" aria-label="<?php esc_attr_e('Erweiterte Filter', 'dbw-immo-suite'); ?>" aria-expanded="<?php echo $expanded ? 'true' : 'false'; ?>" aria-controls="dbw-filter-content">
-                            <span class="dashicons dashicons-arrow-down-alt2"></span>
+                            <span class="dbw-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
                         </button>
                         
                         <button type="submit" class="dbw-main-search-submit">
@@ -726,7 +733,7 @@ class Filter
                     <!-- Secondary Reset Link -->
                     <div class="dbw-filter-footer">
                         <a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-filter-reset">
-                            <span class="dashicons dashicons-image-rotate"></span>
+                            <span class="dbw-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>
                             <?php _e('Filter zurücksetzen', 'dbw-immo-suite'); ?>
                         </a>
                     </div>
@@ -753,7 +760,7 @@ class Filter
         <div class="dbw-filter-chips" data-dbw-chips><?php echo self::render_chips(); // phpcs:ignore -- escaped in render_chips ?></div>
 
         <div class="dbw-archive-header-bar">
-            <div class="dbw-result-count">
+            <div class="dbw-result-count" role="status" aria-live="polite">
                 <strong data-dbw-count><?php echo esc_html($count); ?></strong> <?php _e('Immobilien gefunden', 'dbw-immo-suite'); ?>
             </div>
 
@@ -763,14 +770,14 @@ class Filter
                 <!-- View Switcher -->
                 <div class="dbw-view-switcher">
                     <button type="button" id="dbw-view-grid" class="dbw-view-btn active" aria-label="<?php esc_attr_e('Kachelansicht', 'dbw-immo-suite'); ?>" aria-pressed="true">
-                        <span class="dashicons dashicons-grid-view"></span>
+                        <span class="dbw-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
                     </button>
                     <button type="button" id="dbw-view-list" class="dbw-view-btn" aria-label="<?php esc_attr_e('Listenansicht', 'dbw-immo-suite'); ?>" aria-pressed="false">
-                        <span class="dashicons dashicons-list-view"></span>
+                        <span class="dbw-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
                     </button>
                     <?php if (ArchiveMap::is_enabled()): ?>
                     <button type="button" id="dbw-view-map" class="dbw-view-btn" aria-label="<?php esc_attr_e('Kartenansicht', 'dbw-immo-suite'); ?>" aria-pressed="false">
-                        <span class="dashicons dashicons-location-alt"></span>
+                        <span class="dbw-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg></span>
                     </button>
                     <?php endif; ?>
                 </div>
@@ -785,7 +792,7 @@ class Filter
                         echo '<input type="hidden" name="' . esc_attr($key) . '" value="' . esc_attr($val) . '">';
                     }
                     ?>
-                    <select name="sort" onchange="this.form.submit()" class="dbw-sort-select">
+                    <select name="sort" onchange="this.form.submit()" class="dbw-sort-select" aria-label="<?php esc_attr_e('Sortierung', 'dbw-immo-suite'); ?>">
                         <option value="date_desc" <?php selected($sort, 'date_desc'); ?>><?php _e('Neueste zuerst', 'dbw-immo-suite'); ?></option>
                         <option value="date_asc" <?php selected($sort, 'date_asc'); ?>><?php _e('Älteste zuerst', 'dbw-immo-suite'); ?></option>
                         <option value="price_asc" <?php selected($sort, 'price_asc'); ?>><?php _e('Preis aufsteigend', 'dbw-immo-suite'); ?></option>
