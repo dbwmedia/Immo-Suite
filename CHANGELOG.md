@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.4.1] — 2026-08-11
+
+### Behoben
+- **Energiekosten-Checkbox** — Inkonsistenter Default: Checkbox "Geschaetzte Heizkosten anzeigen" zeigte visuell "aus", aber der Rechner wurde trotzdem angezeigt, wenn die Einstellung nie gespeichert wurde. Default jetzt konsistent (checked = an, passend zum Renderer-Default).
+
+---
+
 ## [2.4.0] — 2026-07-03
 
 Polish-Release: Das Kauf- und Bedienerlebnis zieht mit dem Frontend gleich.

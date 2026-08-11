@@ -784,10 +784,14 @@ class Settings
 		$this->checkbox_callback('filter_sold_from_main', 'Verkaufte Objekte aus normaler Liste ausblenden');
 	}
 
-	private function checkbox_callback($id, $label)
+	private function checkbox_callback($id, $label, $default = false)
 	{
 		$options = get_option($this->option_name);
-		$val = isset($options[$id]) && $options[$id] == 1 ? 'checked' : '';
+		if (isset($options[$id])) {
+			$val = $options[$id] == 1 ? 'checked' : '';
+		} else {
+			$val = $default ? 'checked' : '';
+		}
 		printf(
 			'<input type="checkbox" id="%s" name="%s[%s]" value="1" %s /> <label for="%s">%s</label>',
 			esc_attr($id), esc_attr($this->option_name), esc_attr($id), $val, esc_attr($id), wp_kses($label, array('b' => array(), 'strong' => array()))
@@ -1029,7 +1033,7 @@ class Settings
 
 	public function energy_show_costs_callback()
 	{
-		$this->checkbox_callback('energy_show_costs', __('Geschaetzte Heizkosten im Energieausweis-Bereich anzeigen', 'dbw-immo-suite'));
+		$this->checkbox_callback('energy_show_costs', __('Geschaetzte Heizkosten im Energieausweis-Bereich anzeigen', 'dbw-immo-suite'), true);
 	}
 
 	public function energy_price_callback($args)
