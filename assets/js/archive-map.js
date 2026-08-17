@@ -22,9 +22,14 @@
         var wrap = document.createElement('div');
         wrap.className = 'dbw-map-popup';
 
+        // Empty url = detail page switched off for sold/reference properties.
+        var linkable = !!m.url;
+
         if (m.img) {
-            var link = document.createElement('a');
-            link.href = m.url;
+            var link = document.createElement(linkable ? 'a' : 'span');
+            if (linkable) {
+                link.href = m.url;
+            }
             var img = document.createElement('img');
             img.src = m.img;
             img.alt = '';
@@ -34,8 +39,10 @@
             wrap.appendChild(link);
         }
 
-        var title = document.createElement('a');
-        title.href = m.url;
+        var title = document.createElement(linkable ? 'a' : 'span');
+        if (linkable) {
+            title.href = m.url;
+        }
         title.className = 'dbw-map-popup__title';
         title.textContent = m.title;
         wrap.appendChild(title);

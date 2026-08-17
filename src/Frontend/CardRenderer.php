@@ -60,6 +60,12 @@ class CardRenderer
         $immo_status = $m('_dbw_immo_status');
         $sales_date = $m('_dbw_immo_sales_date');
 
+        // Detail page switched off for sold/reference properties: render the
+        // card as a plain tile so nobody clicks into a redirect.
+        $link_disabled = TemplateLoader::single_disabled($post_id);
+        $img_tag       = $link_disabled ? 'div' : 'a';
+        $img_href      = $link_disabled ? '' : ' href="' . esc_url(get_permalink($post_id)) . '"';
+
         // Determine tag & grayscale
         $tag_data = null;
         $is_sold = $opts['is_reference'] || in_array($immo_status, array('verkauft', 'referenz'));
@@ -111,7 +117,7 @@ class CardRenderer
 
         ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class($card_classes); ?>>
-            <a href="<?php the_permalink(); ?>" class="dbw-property-image<?php echo $has_image ? ' has-image' : ' dbw-property-image--placeholder'; ?>">
+            <<?php echo $img_tag; ?><?php echo $img_href; ?> class="dbw-property-image<?php echo $has_image ? ' has-image' : ' dbw-property-image--placeholder'; ?>">
                 <?php if ($has_image) : ?>
                     <?php echo wp_get_attachment_image($image_id, 'medium_large', false, array(
                         'class' => 'dbw-card-img' . $grayscale_class,
@@ -136,7 +142,7 @@ class CardRenderer
                     PriceComparison::render_archive_badge($post_id);
                 }
                 ?>
-            </a>
+            </<?php echo $img_tag; ?>>
 
             <div class="dbw-property-content">
                 <?php
@@ -146,7 +152,11 @@ class CardRenderer
                 ?>
                 <div class="dbw-card-body">
                     <h2 class="dbw-property-title">
-                        <a href="<?php the_permalink(); ?>"><?php echo esc_html(self::get_display_title($post_id)); ?></a>
+                        <?php if ($link_disabled) : ?>
+                            <?php echo esc_html(self::get_display_title($post_id)); ?>
+                        <?php else : ?>
+                            <a href="<?php the_permalink(); ?>"><?php echo esc_html(self::get_display_title($post_id)); ?></a>
+                        <?php endif; ?>
                     </h2>
 
                     <?php if ($location) : ?>
@@ -236,7 +246,9 @@ class CardRenderer
                         <div class="dbw-property-price"></div>
                     <?php endif; ?>
 
-                    <a href="<?php the_permalink(); ?>" class="dbw-button-expose"><?php echo esc_html(get_theme_mod('dbw_immo_expose_btn_text', __('Zum Exposé', 'dbw-immo-suite'))); ?></a>
+                    <?php if (!$link_disabled) : ?>
+                        <a href="<?php the_permalink(); ?>" class="dbw-button-expose"><?php echo esc_html(get_theme_mod('dbw_immo_expose_btn_text', __('Zum Exposé', 'dbw-immo-suite'))); ?></a>
+                    <?php endif; ?>
                 </div>
             </div>
         </article>

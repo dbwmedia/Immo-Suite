@@ -7,6 +7,19 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.5.0] — 2026-08-17
+
+### Hinzugefuegt
+- **Detailseiten fuer verkaufte Objekte abschaltbar** — Neue Einstellung "Detailseiten deaktivieren" (Referenzen-Tab, standardmaessig aus). Ist sie aktiv, bekommen Objekte mit Status "verkauft" oder "referenz" keine eigene Unterseite mehr: Karten und Kartenmarker werden nicht mehr verlinkt, der Expose-Button entfaellt, und Aufrufe alter URLs landen per 302 auf der Referenz-Seite (ersatzweise im Archiv). Nach dem Verkauf ist das Expose ohnehin eine Sackgasse, das spart duenne Seiten im Index.
+
+### Behoben
+- **Leerer Objekttitel** — Liefert die Maklersoftware ein leeres `<objekttitel/>` (onOffice tut das), blieb der Beitragstitel leer und die Objektliste zeigte "(kein Titel)". Der Fallback "Immobilie <ID>" greift jetzt auch bei leerem Element, nicht nur bei fehlendem.
+
+### Dokumentation
+- **Anleitung onOffice** — Neue `docs/ANLEITUNG-ONOFFICE.md`: FTP-Einrichtung in Plesk, Portalanbindung in onOffice (Menuepfad, Zugangsdatencheck, Vollabgleich, Portalgruppen), Adressfreigabe, Import-Pfad in WordPress und der Ablauf fuer verkaufte Objekte als Referenz.
+
+---
+
 ## [2.4.1] — 2026-08-11
 
 ### Behoben

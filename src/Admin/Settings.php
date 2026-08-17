@@ -453,6 +453,7 @@ class Settings
 		add_settings_field('sold_badge_text', __('Badge: Verkauft', 'dbw-immo-suite'), array($this, 'sold_badge_text_callback'), 'dbw-settings-references', 'section_references');
 		add_settings_field('hide_price_sold', __('Preise ausblenden', 'dbw-immo-suite'), array($this, 'hide_price_sold_callback'), 'dbw-settings-references', 'section_references');
 		add_settings_field('show_sold_date', __('Verkaufsdatum', 'dbw-immo-suite'), array($this, 'show_sold_date_callback'), 'dbw-settings-references', 'section_references');
+		add_settings_field('disable_single_sold', __('Detailseiten deaktivieren', 'dbw-immo-suite'), array($this, 'disable_single_sold_callback'), 'dbw-settings-references', 'section_references');
 
 		// ── Tab 4: Maklerfirma (SEO) ──
 		add_settings_section('section_seo', __('Maklerfirma (SEO)', 'dbw-immo-suite'), array($this, 'print_seo_section_info'), 'dbw-settings-seo');
@@ -571,6 +572,7 @@ class Settings
 		}
 		$new_input['hide_price_sold'] = isset($input['hide_price_sold']) ? 1 : 0;
 		$new_input['show_sold_date'] = isset($input['show_sold_date']) ? 1 : 0;
+		$new_input['disable_single_sold'] = isset($input['disable_single_sold']) ? 1 : 0;
 		$new_input['filter_sold_from_main'] = isset($input['filter_sold_from_main']) ? 1 : 0; // Default off, user must enable
 
 		// SEO / Maklerfirma fields
@@ -772,6 +774,14 @@ class Settings
 	public function hide_price_sold_callback()
 	{
 		$this->checkbox_callback('hide_price_sold', 'Preis bei verkauften Objekten ausblenden');
+	}
+
+	public function disable_single_sold_callback()
+	{
+		$this->checkbox_callback(
+			'disable_single_sold',
+			'Verkaufte und Referenz-Objekte bekommen keine eigene Unterseite mehr. Karten werden nicht mehr verlinkt, Aufrufe alter URLs landen auf der Referenz-Seite (sonst im Archiv). Sinnvoll, wenn das Exposé nach dem Verkauf ohnehin keinen Zweck mehr erfuellt.'
+		);
 	}
 
 	public function show_sold_date_callback()

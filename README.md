@@ -148,6 +148,8 @@ Zeigt verkaufte und Referenz-Objekte an.
 4. Maklersoftware fuer FTP-Upload nach `/wp-content/uploads/openimmo/` einrichten
 5. Import laeuft automatisch via WP-Cron oder manuell ueber das Import-Dashboard
 
+Schritt-fuer-Schritt inkl. onOffice-Menuepfaden und FTP-Setup: [docs/ANLEITUNG-ONOFFICE.md](docs/ANLEITUNG-ONOFFICE.md)
+
 ### Fuer Entwickler
 ```bash
 git clone [repo-url]

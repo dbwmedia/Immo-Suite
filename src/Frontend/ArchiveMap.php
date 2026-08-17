@@ -115,7 +115,7 @@ class ArchiveMap
                 'lat'   => (float) $lat,
                 'lng'   => (float) $lng,
                 'title' => CardRenderer::get_display_title($post_id),
-                'url'   => get_permalink($post_id),
+                'url'   => TemplateLoader::single_disabled($post_id) ? '' : get_permalink($post_id),
                 'price' => $price_label,
                 'img'   => get_the_post_thumbnail_url($post_id, 'medium') ?: '',
             );

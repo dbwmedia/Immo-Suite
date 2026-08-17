@@ -415,7 +415,12 @@ class Importer
         // Title Generation
         $geo = $immobilie->geo;
         $freitexte = $immobilie->freitexte;
-        $titel = isset($freitexte->objekttitel) ? (string)$freitexte->objekttitel : 'Immobilie ' . $openimmo_id;
+        // onOffice ships an empty <objekttitel/> node, so isset() alone left the
+        // post title blank ("(kein Titel)" in the admin list).
+        $titel = isset($freitexte->objekttitel) ? trim((string)$freitexte->objekttitel) : '';
+        if ($titel === '') {
+            $titel = 'Immobilie ' . $openimmo_id;
+        }
 
         $post_data = array(
             'post_title' => $titel,
