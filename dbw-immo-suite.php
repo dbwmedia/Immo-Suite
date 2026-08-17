@@ -166,7 +166,7 @@ function dbw_format_phone($raw)
 // GitHub Update Checker
 require_once DBW_IMMO_SUITE_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
 $dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-	'https://github.com/dbwmedia/dbw-immo-suite/',
+	'https://github.com/dbwmedia/Immo-Suite/',
 	__FILE__,
 	'dbw-immo-suite'
 );

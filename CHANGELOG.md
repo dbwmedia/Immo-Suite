@@ -15,6 +15,8 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 ### Behoben
 - **Leerer Objekttitel** — Liefert die Maklersoftware ein leeres `<objekttitel/>` (onOffice tut das), blieb der Beitragstitel leer und die Objektliste zeigte "(kein Titel)". Der Fallback "Immobilie <ID>" greift jetzt auch bei leerem Element, nicht nur bei fehlendem.
 
+- **Update-Checker** — Zeigte noch auf den alten Repository-Namen (`dbw-immo-suite`), das Repository heisst inzwischen `Immo-Suite`. Damit fand die Update-Suche im Plugin-Verzeichnis keine neuen Versionen mehr.
+
 ### Dokumentation
 - **Anleitung onOffice** — Neue `docs/ANLEITUNG-ONOFFICE.md`: FTP-Einrichtung in Plesk, Portalanbindung in onOffice (Menuepfad, Zugangsdatencheck, Vollabgleich, Portalgruppen), Adressfreigabe, Import-Pfad in WordPress und der Ablauf fuer verkaufte Objekte als Referenz.
 
