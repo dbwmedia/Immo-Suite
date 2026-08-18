@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.5.1] — 2026-08-17
+
+### Geaendert
+- **"Zum Expose"-Button folgt der Akzentfarbe** — Der Button auf den Objektkarten nutzte die Hauptfarbe und wechselte erst beim Hover zur Akzentfarbe. Damit sah die Uebersicht anders aus als die Detailseite, deren CTAs schon immer die Akzentfarbe verwenden. Die Customizer-Einstellung heisst "Akzentfarbe (Buttons/Links)" und steuert jetzt auch diesen Button; beim Hover wird er dezent abgedunkelt.
+- **Neutrale Button-Schatten** — Die Schatten unter "Zum Expose" und den Detailseiten-CTAs waren auf die alten Standardfarben festgelegt (blau bzw. dunkelblau) und wirkten unter einer frei gewaehlten Akzentfarbe fehlfarbig. Sie sind jetzt neutral und passen zu jeder Farbe.
+
+---
+
 ## [2.5.0] — 2026-08-17
 
 ### Hinzugefuegt

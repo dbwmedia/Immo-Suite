@@ -497,9 +497,10 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	background: var(--dbw-primary);
-	/* Solid Primary */
-	border: 1px solid var(--dbw-primary);
+	/* Accent, same as the CTAs on the detail page — the Customizer labels it
+	   "Akzentfarbe (Buttons/Links)", so it has to drive card buttons too. */
+	background: var(--dbw-accent);
+	border: 1px solid var(--dbw-accent);
 	color: #fff;
 	padding: 10px 20px;
 	border-radius: 50px;
@@ -508,15 +509,15 @@
 	font-weight: 600;
 	font-size: 0.9rem;
 	transition: all 0.3s ease;
-	box-shadow: 0 4px 10px rgba(44, 62, 80, 0.2);
+	/* Neutral shadow: a tinted one clashes with a freely chosen accent color */
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 #dbw-immo-suite .dbw-button-expose:hover {
-	background: var(--dbw-accent);
-	border-color: var(--dbw-accent);
 	color: #fff;
 	transform: translateY(-2px);
-	box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+	filter: brightness(0.92);
+	box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 
 #dbw-immo-suite .dbw-button-expose::after {
@@ -1822,12 +1823,12 @@
 #dbw-immo-suite .dbw-cta--primary {
 	background: var(--dbw-accent, #3498db);
 	color: #fff;
-	box-shadow: 0 4px 14px rgba(52, 152, 219, 0.3);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
 #dbw-immo-suite .dbw-cta--primary:hover {
 	transform: translateY(-1px);
-	box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
 }
 
 #dbw-immo-suite .dbw-cta--secondary {
