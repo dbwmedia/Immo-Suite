@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.6.1] — 2026-08-19
+
+### Behoben
+- **Missverstaendliche Kacheln auf der Medien-Seite** — Die Zahlen zaehlen Bilder, die Beschriftung ("Aktive Objekte") las sich aber wie eine Objektzahl: Bei 4 Immobilien mit 91 Bildern stand dort "91 aktive Objekte". Die Kacheln heissen jetzt eindeutig ("Bilder gesamt", "Bei aktiven Objekten", "Bei archivierten") und nennen in einer zweiten Zeile die Anzahl der zugehoerigen Objekte.
+
+---
+
 ## [2.6.0] — 2026-08-19
 
 ### Hinzugefuegt

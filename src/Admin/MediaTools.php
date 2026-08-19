@@ -51,17 +51,49 @@ class MediaTools
             <hr class="wp-header-end">
 
             <p class="description" style="max-width: 780px; margin-top: 12px;">
-                <?php _e('Importierte Bilder gehoeren zur Immobilie, nicht zur Mediathek. Hier siehst du, wie viele davon aktuell gespeichert sind und was davon nur noch Ballast ist.', 'dbw-immo-suite'); ?>
+                <?php _e('Importierte Bilder gehoeren zur Immobilie, nicht zur Mediathek. Hier siehst du, wie viele davon aktuell gespeichert sind und was davon nur noch Ballast ist. <b>Alle Kacheln zaehlen Bilder</b>, die Zeile darunter nennt die zugehoerigen Objekte.', 'dbw-immo-suite'); ?>
             </p>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; max-width: 900px;">
                 <?php
-                $this->render_stat_card(__('Gesamt', 'dbw-immo-suite'), $stats['total'], '#1d2327');
-                $this->render_stat_card(__('Aktive Objekte', 'dbw-immo-suite'), $stats['active'], '#00a32a');
-                $this->render_stat_card(__('Archiviert', 'dbw-immo-suite'), $stats['archived'], '#dba617');
-                $this->render_stat_card(__('Im Papierkorb', 'dbw-immo-suite'), $stats['trashed'], '#996800');
-                $this->render_stat_card(__('Verwaist', 'dbw-immo-suite'), $stats['orphaned'], '#d63638');
-                $this->render_stat_card(__('Eigener Ordner', 'dbw-immo-suite'), size_format($stats['bytes'], 1), '#2271b1');
+                $prop_active = max(0, $stats['prop_total'] - $stats['prop_trashed'] - $stats['prop_archived']);
+
+                $this->render_stat_card(
+                    __('Bilder gesamt', 'dbw-immo-suite'),
+                    $stats['total'],
+                    '#1d2327',
+                    sprintf(_n('%d Objekt', '%d Objekte', $stats['prop_total'], 'dbw-immo-suite'), $stats['prop_total'])
+                );
+                $this->render_stat_card(
+                    __('Bei aktiven Objekten', 'dbw-immo-suite'),
+                    $stats['active'],
+                    '#00a32a',
+                    sprintf(_n('%d Objekt', '%d Objekte', $prop_active, 'dbw-immo-suite'), $prop_active)
+                );
+                $this->render_stat_card(
+                    __('Bei archivierten', 'dbw-immo-suite'),
+                    $stats['archived'],
+                    '#dba617',
+                    sprintf(_n('%d Objekt', '%d Objekte', $stats['prop_archived'], 'dbw-immo-suite'), $stats['prop_archived'])
+                );
+                $this->render_stat_card(
+                    __('Im Papierkorb', 'dbw-immo-suite'),
+                    $stats['trashed'],
+                    '#996800',
+                    sprintf(_n('%d Objekt', '%d Objekte', $stats['prop_trashed'], 'dbw-immo-suite'), $stats['prop_trashed'])
+                );
+                $this->render_stat_card(
+                    __('Verwaist', 'dbw-immo-suite'),
+                    $stats['orphaned'],
+                    '#d63638',
+                    __('ohne Objekt', 'dbw-immo-suite')
+                );
+                $this->render_stat_card(
+                    __('Eigener Ordner', 'dbw-immo-suite'),
+                    size_format($stats['bytes'], 1),
+                    '#2271b1',
+                    __('Speicher belegt', 'dbw-immo-suite')
+                );
                 ?>
             </div>
 
@@ -197,7 +229,7 @@ class MediaTools
         <?php
     }
 
-    private function render_stat_card($label, $value, $color)
+    private function render_stat_card($label, $value, $color, $sub = '')
     {
         ?>
         <div style="background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 14px; text-align: center;">
@@ -207,6 +239,11 @@ class MediaTools
             <div style="font-size: 11px; color: #50575e; text-transform: uppercase; margin-top: 4px;">
                 <?php echo esc_html($label); ?>
             </div>
+            <?php if ($sub !== '') : ?>
+                <div style="font-size: 11px; color: #8c8f94; margin-top: 2px;">
+                    <?php echo esc_html($sub); ?>
+                </div>
+            <?php endif; ?>
         </div>
         <?php
     }
