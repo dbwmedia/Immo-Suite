@@ -31,6 +31,9 @@ class Media
 
     const CRON_HOOK = 'dbw_immo_media_cleanup';
 
+    /** Cached storage total, recalculated after every cleanup. */
+    const SIZE_TRANSIENT = 'dbw_immo_media_size';
+
     /** Property id whose uploads are currently being captured. */
     private static $capture_post_id = 0;
 
@@ -260,6 +263,7 @@ class Media
         }
 
         self::remove_upload_folder($post_id);
+        self::flush_size_cache();
     }
 
     /**
@@ -334,7 +338,7 @@ class Media
             }
         }
 
-        $stats['bytes'] = self::folder_size();
+        $stats['bytes'] = self::storage_bytes();
 
         $counts = $wpdb->get_results(
             "SELECT post_status, COUNT(*) AS num FROM {$wpdb->posts}
@@ -443,32 +447,78 @@ class Media
     }
 
     /**
-     * Disk usage of uploads/immobilien.
+     * Disk usage of all property images, thumbnails included.
+     *
+     * Counts the actual files, not just the plugin's own folder - images
+     * imported before v2.6.0 still live in the year/month structure.
+     * Cached, because it stats a few thousand files.
      */
-    public static function folder_size()
+    public static function storage_bytes()
     {
+        $cached = get_transient(self::SIZE_TRANSIENT);
+        if ($cached !== false) {
+            return (int) $cached;
+        }
+
+        global $wpdb;
+
+        $ids = array_map('intval', $wpdb->get_col(
+            "SELECT a.ID FROM {$wpdb->posts} a
+             WHERE a.post_type = 'attachment'
+               AND EXISTS (
+                   SELECT 1 FROM {$wpdb->postmeta} m
+                   WHERE m.post_id = a.ID AND m.meta_key = '" . self::META_MARKER . "'
+               )"
+        ));
+
+        if (empty($ids)) {
+            set_transient(self::SIZE_TRANSIENT, 0, 12 * HOUR_IN_SECONDS);
+            return 0;
+        }
+
+        // One query for all attachment metadata instead of one per image
+        update_meta_cache('post', $ids);
+
         $uploads = wp_upload_dir();
-        if (!empty($uploads['error'])) {
-            return 0;
-        }
-
-        $base = trailingslashit($uploads['basedir']) . self::UPLOAD_DIR;
-        if (!is_dir($base)) {
-            return 0;
-        }
-
+        $basedir = !empty($uploads['error']) ? '' : trailingslashit($uploads['basedir']);
         $bytes = 0;
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($base, \FilesystemIterator::SKIP_DOTS)
-        );
 
-        foreach ($iterator as $file) {
-            if ($file->isFile()) {
-                $bytes += $file->getSize();
+        foreach ($ids as $id) {
+            $file = get_attached_file($id);
+            if ($file && is_file($file)) {
+                $bytes += (int) filesize($file);
+            }
+
+            $meta = wp_get_attachment_metadata($id);
+            if (empty($meta['sizes']) || empty($meta['file']) || $basedir === '') {
+                continue;
+            }
+
+            $size_dir = trailingslashit($basedir . dirname($meta['file']));
+
+            foreach ($meta['sizes'] as $size) {
+                if (empty($size['file'])) {
+                    continue;
+                }
+                if (isset($size['filesize'])) {
+                    $bytes += (int) $size['filesize'];
+                } elseif (is_file($size_dir . $size['file'])) {
+                    $bytes += (int) filesize($size_dir . $size['file']);
+                }
             }
         }
 
+        set_transient(self::SIZE_TRANSIENT, $bytes, 12 * HOUR_IN_SECONDS);
+
         return $bytes;
+    }
+
+    /**
+     * Drop the cached size after anything was deleted.
+     */
+    public static function flush_size_cache()
+    {
+        delete_transient(self::SIZE_TRANSIENT);
     }
 
     /* ---------------------------------------------------------------------

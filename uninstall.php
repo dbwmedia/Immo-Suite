@@ -23,6 +23,7 @@ delete_transient('dbw_immo_batch_zips');
 delete_transient('dbw_immo_batch_processed_ids');
 delete_transient('dbw_immo_import_progress');
 delete_transient('dbw_immo_price_histogram');
+delete_transient('dbw_immo_media_size');
 
 // Remove dynamic-key transients (price/sqm comparison cache, rate limits) incl. timeout rows
 $transient_patterns = array(

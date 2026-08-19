@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.6.2] — 2026-08-19
+
+### Behoben
+- **Speicher-Kachel zeigte 0 B** — Gemessen wurde nur der neue Ordner `uploads/immobilien/`. Bilder, die vor v2.6.0 importiert wurden, liegen weiter im Jahr/Monat-Schema und blieben deshalb ungezaehlt. Die Kachel misst jetzt alle Immobilien-Bilder inklusive der erzeugten Bildgroessen, egal wo sie liegen. Der Wert wird zwischengespeichert (12 Stunden) und nach jedem Aufraeum-Lauf neu berechnet.
+
+---
+
 ## [2.6.1] — 2026-08-19
 
 ### Behoben

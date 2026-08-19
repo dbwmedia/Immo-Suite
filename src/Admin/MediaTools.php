@@ -89,10 +89,10 @@ class MediaTools
                     __('ohne Objekt', 'dbw-immo-suite')
                 );
                 $this->render_stat_card(
-                    __('Eigener Ordner', 'dbw-immo-suite'),
+                    __('Speicher', 'dbw-immo-suite'),
                     size_format($stats['bytes'], 1),
                     '#2271b1',
-                    __('Speicher belegt', 'dbw-immo-suite')
+                    __('inkl. Thumbnails', 'dbw-immo-suite')
                 );
                 ?>
             </div>
@@ -310,6 +310,7 @@ class MediaTools
                 wp_send_json_error(__('Unbekannte Aktion.', 'dbw-immo-suite'));
         }
 
+        Media::flush_size_cache();
         $stats = Media::get_stats();
 
         $remaining = array(
