@@ -405,6 +405,7 @@ class Importer
                     'post_status' => 'draft' // Set to draft
                 );
                 wp_update_post($update_data);
+                update_post_meta($existing_id, \DBW\ImmoSuite\Core\Media::META_ARCHIVED, current_time('mysql'));
                 $this->log_debug("Immobilie $openimmo_id ($existing_id) wurde archiviert/Entwurf (Action: $action_type).");
                 $stats['updated']++;
             }
@@ -433,6 +434,8 @@ class Importer
             $post_data['ID'] = $existing_id;
             wp_update_post($post_data);
             $post_id = $existing_id;
+            // Back in the feed: the archive retention clock stops
+            delete_post_meta($post_id, \DBW\ImmoSuite\Core\Media::META_ARCHIVED);
             $stats['updated']++;
         }
         else {
@@ -916,7 +919,11 @@ class Importer
             require_once(ABSPATH . 'wp-admin/includes/media.php');
         }
 
+        // Route the file into uploads/immobilien/<post-id>/ so the property
+        // owns its folder and can be removed without leftovers.
+        \DBW\ImmoSuite\Core\Media::begin_upload_capture($post_id);
         $att_id = media_handle_sideload($file_array, $post_id);
+        \DBW\ImmoSuite\Core\Media::end_upload_capture();
 
         // Cleanup temp file if sideload failed (WP removes it on success)
         if (is_wp_error($att_id) && file_exists($tmp_file)) {
@@ -925,6 +932,7 @@ class Importer
 
         if (!is_wp_error($att_id)) {
             update_post_meta($att_id, '_openimmo_filename', $file_name);
+            \DBW\ImmoSuite\Core\Media::mark_attachment($att_id);
         }
 
         return $att_id;
@@ -1446,6 +1454,7 @@ class Importer
                     wp_update_post($update_data);
 
                     update_post_meta($post_id, '_dbw_immo_status', 'archiviert');
+                    update_post_meta($post_id, \DBW\ImmoSuite\Core\Media::META_ARCHIVED, current_time('mysql'));
 
                     $this->log_debug("Garbage Collection: Immobilie $oid ($post_id) archiviert, da nicht mehr im Feed.");
                     $archived_count++;

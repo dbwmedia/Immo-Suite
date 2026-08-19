@@ -379,6 +379,12 @@ class Settings
 		add_settings_field('enable_garbage_collection', __('Garbage Collection (Full Sync)', 'dbw-immo-suite'), array($this, 'enable_garbage_collection_callback'), 'dbw-settings-import', 'section_import');
 
 		// ── Tab 2: Darstellung ──
+		// --- Section: Media ---
+		add_settings_section('section_media', __('Medien', 'dbw-immo-suite'), array($this, 'print_media_section_info'), 'dbw-settings-import');
+		add_settings_field('media_hide_library', __('Mediathek entlasten', 'dbw-immo-suite'), array($this, 'media_hide_library_callback'), 'dbw-settings-import', 'section_media');
+		add_settings_field('media_own_folder', __('Eigener Upload-Ordner', 'dbw-immo-suite'), array($this, 'media_own_folder_callback'), 'dbw-settings-import', 'section_media');
+		add_settings_field('media_archive_retention_months', __('Archiv aufraeumen nach (Monate)', 'dbw-immo-suite'), array($this, 'media_archive_retention_callback'), 'dbw-settings-import', 'section_media');
+
 		add_settings_section('section_display', __('Darstellung', 'dbw-immo-suite'), array($this, 'print_display_section_info'), 'dbw-settings-display');
 		add_settings_field('anrede', __('Anrede', 'dbw-immo-suite'), array($this, 'anrede_callback'), 'dbw-settings-display', 'section_display');
 		add_settings_field('grayscale_sold', __('Grayscale bei Verkauft', 'dbw-immo-suite'), array($this, 'grayscale_sold_callback'), 'dbw-settings-display', 'section_display');
@@ -600,6 +606,13 @@ class Settings
 		// Contact CC
 		$new_input['contact_cc_email'] = sanitize_email($input['contact_cc_email'] ?? '');
 
+		// Media handling
+		$new_input['media_hide_library'] = isset($input['media_hide_library']) ? 1 : 0;
+		$new_input['media_own_folder'] = isset($input['media_own_folder']) ? 1 : 0;
+		$new_input['media_archive_retention_months'] = isset($input['media_archive_retention_months'])
+			? max(0, min(120, (int) $input['media_archive_retention_months']))
+			: 0;
+
 		// Inquiry inbox
 		$new_input['inquiry_store'] = isset($input['inquiry_store']) ? 1 : 0;
 		$new_input['inquiry_retention_days'] = isset($input['inquiry_retention_days']) ? absint($input['inquiry_retention_days']) : 180;
@@ -792,6 +805,49 @@ class Settings
 	public function filter_sold_from_main_callback()
 	{
 		$this->checkbox_callback('filter_sold_from_main', 'Verkaufte Objekte aus normaler Liste ausblenden');
+	}
+
+	// -- Media Callbacks --
+
+	public function print_media_section_info()
+	{
+		print __('Importierte Bilder gehoeren zur Immobilie, nicht in die Mediathek. Aufraeum-Werkzeuge und Zahlen dazu unter <b>Immobilien &rarr; Medien</b>.', 'dbw-immo-suite');
+	}
+
+	public function media_hide_library_callback()
+	{
+		$this->checkbox_callback(
+			'media_hide_library',
+			'Importierte Immobilien-Bilder aus der Mediathek und der Bildauswahl ausblenden. In der Mediathek laesst sich das ueber das Dropdown jederzeit umschalten.',
+			true
+		);
+	}
+
+	public function media_own_folder_callback()
+	{
+		$upload_dir = wp_upload_dir();
+		$this->checkbox_callback(
+			'media_own_folder',
+			'Neue Bilder in einen eigenen Ordner je Objekt legen statt nach Jahr/Monat.',
+			true
+		);
+		echo '<p class="description">' . sprintf(
+			/* translators: %s: upload path */
+			esc_html__('Zielordner: %s. Bereits importierte Bilder bleiben, wo sie sind.', 'dbw-immo-suite'),
+			'<code>' . esc_html(trailingslashit($upload_dir['basedir']) . \DBW\ImmoSuite\Core\Media::UPLOAD_DIR . '/&lt;ID&gt;/') . '</code>'
+		) . '</p>';
+	}
+
+	public function media_archive_retention_callback()
+	{
+		$options = get_option($this->option_name);
+		$val = isset($options['media_archive_retention_months']) ? (int) $options['media_archive_retention_months'] : 0;
+		printf(
+			'<input type="number" min="0" max="120" step="1" id="media_archive_retention_months" name="%s[media_archive_retention_months]" value="%s" class="small-text" />',
+			esc_attr($this->option_name),
+			esc_attr($val)
+		);
+		echo '<p class="description">' . __('Objekte, die aus dem Feed gefallen sind (Status "archiviert"), werden nach dieser Zeit samt Bildern endgueltig geloescht. <b>0 = nie loeschen.</b> Empfehlung: 12 Monate, sonst waechst der Bestand dauerhaft weiter.', 'dbw-immo-suite') . '</p>';
 	}
 
 	private function checkbox_callback($id, $label, $default = false)

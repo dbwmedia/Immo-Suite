@@ -7,6 +7,20 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.6.0] — 2026-08-19
+
+### Hinzugefuegt
+- **Mediathek bleibt sauber** — Importierte Immobilien-Bilder sind Plugin-Daten, keine redaktionellen Medien. Sie werden jetzt standardmaessig aus der Mediathek und aus der Bildauswahl im Editor ausgeblendet (neue Einstellung "Mediathek entlasten", Import-Tab). In der Listenansicht der Mediathek gibt es dafuer ein Dropdown: ausblenden, nur Immobilien-Bilder, alle Medien. Beim Bearbeiten einer Immobilie bleiben die eigenen Bilder sichtbar, damit sich das Beitragsbild weiter von Hand setzen laesst.
+- **Eigener Upload-Ordner je Objekt** — Neue Bilder landen in `uploads/immobilien/<Objekt-ID>/` statt im Jahr/Monat-Schema (Einstellung "Eigener Upload-Ordner"). Damit gehoert jedem Objekt ein Ordner, der beim Loeschen restlos verschwindet. Bereits importierte Bilder bleiben unveraendert liegen und funktionieren weiter.
+- **Neue Seite "Immobilien &rarr; Medien"** — Zeigt, wie viele Immobilien-Bilder gespeichert sind und wie sie sich aufteilen (aktive Objekte, archiviert, Papierkorb, verwaist) inklusive Speicherbedarf. Dazu drei Aufraeum-Laeufe in Bloecken: verwaiste Bilder loeschen, Papierkorb endgueltig leeren, archivierte Objekte loeschen. Zusaetzlich ein abgesicherter Komplett-Reset fuer den Wechsel von Demo- auf Echtdaten.
+- **Taegliche Selbstreinigung** — Ein neuer Cron loescht verwaiste Bilder automatisch, also solche, deren Immobilie nicht mehr existiert.
+- **Aufbewahrung fuer archivierte Objekte** — Neue Einstellung "Archiv aufraeumen nach (Monate)": Objekte, die aus dem OpenImmo-Feed gefallen sind, werden nach der eingestellten Zeit samt Bildern endgueltig geloescht (0 = nie, Empfehlung 12). Ohne diese Grenze waechst der Bestand dauerhaft weiter, weil archivierte Objekte bisher fuer immer liegen blieben. Fuer Objekte, die vor dem Update archiviert wurden, startet die Frist beim ersten Lauf, damit nichts unerwartet verschwindet.
+
+### Geaendert
+- **Medien-Aufraeumen haengt nicht mehr an der Lizenz** — Die Loeschroutine war Teil der lizenzpflichtigen Hooks. Lief die Lizenz ab, blieben beim Loeschen einer Immobilie alle Bilder zurueck. Sie laeuft jetzt unabhaengig davon.
+
+---
+
 ## [2.5.1] — 2026-08-17
 
 ### Geaendert

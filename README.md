@@ -17,7 +17,8 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Batch Processing** — stabil auch bei grossen Datenmengen durch AJAX-Stapelverarbeitung
 - **Hash-basierte Duplikat-Erkennung** — ueberspringt unveraenderte Dateien
 - **Garbage Collection** — archiviert Objekte die nicht mehr im Feed sind (optional)
-- **Media Handling** — automatischer Import von Bildern, Grundrissen und Kontaktfotos
+- **Media Handling** — automatischer Import von Bildern, Grundrissen und Kontaktfotos in einen eigenen Ordner je Objekt (`uploads/immobilien/<ID>/`), ausgeblendet aus der Mediathek
+- **Selbstreinigend** — geloeschte Objekte nehmen ihre Bilder mit, taeglicher Cron raeumt verwaiste Bilder ab, optionale Aufbewahrungsfrist fuer archivierte Objekte
 - **Ausstattungs-Parser** — extrahiert strukturierte Features (Balkon, Garage, Keller etc.) aus OpenImmo XML
 
 ### Modernes Frontend
@@ -129,6 +130,7 @@ Zeigt verkaufte und Referenz-Objekte an.
 ### Admin-Backend
 - **7 Tabs im Property-Editor** — Basisdaten, Preise, Flaechen, Ausstattung, Technik, Kontakt, Import Info
 - **Import-Dashboard** — System-Status, manueller Import-Trigger, Historie (letzte 20 Laeufe)
+- **Medien-Bereinigung** — Uebersicht ueber alle Immobilien-Bilder (aktiv, archiviert, Papierkorb, verwaist), Aufraeum-Laeufe und abgesicherter Komplett-Reset
 - **Einstellungen** — Import-Pfad (Dropdown + Validierung), CPT-Slug, Referenz-System, Darstellung (Du/Sie-Anrede, Preis/m², WhatsApp), Rechner (Finanzierung, Energiekosten), Maklerfirma (SEO), Shortcode-Doku
 - **Automatischer WP-Cron Import** — stuendlich, mit Lock-Mechanismus
 
@@ -174,6 +176,7 @@ src/
     Anrede.php              # Globale Du/Sie-Anrede Helper
     PageGenerator.php       # Automatische Referenz-Seite
     Rewrites.php            # URL-Rewrites fuer Referenzen
+    Media.php               # Upload-Ordner, Mediathek-Filter, Bild-Cleanup
   PostTypes/
     Property.php            # CPT "immobilie" mit konfigurierbarem Slug
   Taxonomies/
@@ -184,6 +187,7 @@ src/
     Settings.php            # Einstellungsseite + Shortcode-Doku
     PropertyDetails.php     # Meta-Boxes mit 7 Tabs
     ImportDashboard.php     # Import-Zentrale
+    MediaTools.php          # Medien-Bereinigung (Statistik + Aufraeum-Laeufe)
     Customizer.php          # 25+ Customizer Controls
   Frontend/
     CardRenderer.php        # Zentrale Card-Komponente (DRY)

@@ -85,6 +85,15 @@ class Plugin
         $import_dashboard = new \DBW\ImmoSuite\Admin\ImportDashboard();
         $this->loader->add_action('init', $import_dashboard, 'init');
 
+        // Media handling (library visibility, own upload folder, cleanup).
+        // Registered here on purpose: an expired license must not stop the
+        // cleanup and leave orphaned images behind.
+        $plugin_media = new \DBW\ImmoSuite\Core\Media();
+        $this->loader->add_action('init', $plugin_media, 'init');
+
+        $media_tools = new \DBW\ImmoSuite\Admin\MediaTools();
+        $this->loader->add_action('init', $media_tools, 'init');
+
         $page_generator = new \DBW\ImmoSuite\Core\PageGenerator();
         $this->loader->add_action('init', $page_generator, 'init');
 
@@ -210,9 +219,6 @@ class Plugin
 
         $plugin_privacy = new \DBW\ImmoSuite\Core\Privacy();
         $this->loader->add_action('init', $plugin_privacy, 'init');
-
-        $plugin_media_cleanup = new \DBW\ImmoSuite\Core\MediaCleanup();
-        $this->loader->add_action('init', $plugin_media_cleanup, 'init');
 
         $plugin_block_references = new \DBW\ImmoSuite\blocks\ReferencesBlock();
         $this->loader->add_action('init', $plugin_block_references, 'init');

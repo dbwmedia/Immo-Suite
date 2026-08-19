@@ -45,10 +45,12 @@ delete_option('dbw_immo_license_status');
 wp_clear_scheduled_hook('dbw_immo_cron_hook');
 wp_clear_scheduled_hook('dbw_immo_inquiry_cleanup');
 wp_clear_scheduled_hook('dbw_immo_monitor_check');
+wp_clear_scheduled_hook('dbw_immo_media_cleanup');
 
 // Monitoring/onboarding state
 delete_option('dbw_immo_import_alert');
 delete_option('dbw_immo_onboarding_dismissed');
+delete_option('dbw_immo_media_migrated');
 
 // Delete stored inquiries incl. meta (PII — must not survive an uninstall)
 $inquiry_ids = $wpdb->get_col("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'immo_anfrage'");
