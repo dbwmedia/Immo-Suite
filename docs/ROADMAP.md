@@ -1,7 +1,14 @@
 # Roadmap — DBW Immo Suite
 
-Stand: 2026-06-10 (nach v1.18.0). Ergebnis aus Produkt-/Code-Review.
+Stand: 2026-08-20 (nach v2.8.0). Ergebnis aus Produkt-/Code-Review.
 Priorisierung: P1 = als naechstes, P2 = danach, P3 = bei Bedarf/Nachfrage.
+
+> **Update 2026-08-20:** P1.1 Anfragen-Inbox ist seit laengerem gebaut (CPT
+> `immo_anfrage` inkl. Status-Workflow, DSGVO-Loeschfristen, Privacy-Export).
+> P1.3 Objekt-Statistiken sind mit v2.8.0 zur Haelfte da (View-Counter +
+> Admin-Spalte + Top-3 im neuen Wochenbericht; Expose-Downloads/Conversion
+> fehlen noch). **P1.2 Suchagent ist damit das naechste grosse Feature.**
+> Technische Schulden und offene Punkte: siehe AUDIT-REPORT-2026-08.md.
 
 ---
 
