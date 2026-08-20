@@ -15,8 +15,23 @@ class Customizer
     public function init()
     {
         add_action('customize_register', array($this, 'register_settings'));
-        add_action('wp_head', array($this, 'output_custom_css'));
+        // Attach the customizer CSS to the stylesheet handle instead of a
+        // plain wp_head <style>: blocks/shortcodes enqueue frontend.css
+        // mid-body, and its :root defaults would then override the customizer
+        // values printed earlier in the head (accent color bug on non-archive
+        // pages). wp_add_inline_style always prints right AFTER the stylesheet,
+        // wherever it loads.
+        add_action('wp_enqueue_scripts', array($this, 'attach_custom_css'), 20);
         add_filter('pre_get_posts', array($this, 'modify_archive_query'));
+    }
+
+    /**
+     * Attach the dynamic CSS to the frontend stylesheet handle.
+     * Priority 20: the handle is registered at default priority 10.
+     */
+    public function attach_custom_css()
+    {
+        wp_add_inline_style('dbw-immo-frontend', $this->build_custom_css());
     }
 
     /**
@@ -246,9 +261,10 @@ class Customizer
     }
 
     /**
-     * Output Dynamic CSS to wp_head.
+     * Build the dynamic CSS string (no <style> wrapper - attached to the
+     * frontend stylesheet via wp_add_inline_style).
      */
-    public function output_custom_css()
+    private function build_custom_css()
     {
         $primary = get_theme_mod('dbw_immo_color_primary', '#2c3e50');
         $secondary = get_theme_mod('dbw_immo_color_secondary', '#34495e');
@@ -272,7 +288,7 @@ class Customizer
             ";
         }
 
-        echo "<style type='text/css'>
+        return "
             :root {
                 --dbw-primary: {$primary};
                 --dbw-secondary: {$secondary};
@@ -285,7 +301,7 @@ class Customizer
                measured by section-nav.js from the actual fixed theme header */
             #dbw-immo-suite.dbw-single-property-container { padding-top: {$single_top}rem; }
             {$grid_style}
-        </style>";
+        ";
     }
 
     /**

@@ -7,6 +7,13 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.1] — 2026-08-20
+
+### Behoben
+- **Akzentfarbe griff nicht in Bloecken und Shortcodes** — Die Customizer-Farben wurden als eigener Style-Block in den Seitenkopf geschrieben. Auf Seiten, die die Immobilien-Styles erst ueber einen Block laden (z.B. Immo-Grid auf der Startseite), landete das Stylesheet mit seinen Standardfarben NACH den Customizer-Werten und ueberschrieb sie: der Expose-Button war dann blau statt in der Akzentfarbe. Das dynamische CSS haengt jetzt direkt am Stylesheet (wp_add_inline_style) und gewinnt in jedem Lade-Kontext. Nebeneffekt: Auf Seiten ohne Immobilien-Inhalte wird das CSS gar nicht mehr ausgegeben.
+
+---
+
 ## [2.8.0] — 2026-08-20
 
 Grosses Release: Korrektheits- und Sicherheits-Fixes nach einem vollstaendigen Review der Import-Schicht (gegen das offizielle OpenImmo-1.2.7-XSD verifiziert) und des restlichen Plugins, dazu ein Schwung neuer Komfort-Features und eine ueberarbeitete Einstellungen-Oberflaeche.
