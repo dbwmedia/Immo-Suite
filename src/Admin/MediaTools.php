@@ -67,7 +67,7 @@ class MediaTools
                 $this->render_stat_card(
                     __('Bei aktiven Objekten', 'dbw-immo-suite'),
                     $stats['active'],
-                    '#00a32a',
+                    '#16a34a',
                     sprintf(_n('%d Objekt', '%d Objekte', $prop_active, 'dbw-immo-suite'), $prop_active)
                 );
                 $this->render_stat_card(
@@ -91,7 +91,7 @@ class MediaTools
                 $this->render_stat_card(
                     __('Speicher', 'dbw-immo-suite'),
                     size_format($stats['bytes'], 1),
-                    '#2271b1',
+                    '#3858e9',
                     __('inkl. Thumbnails', 'dbw-immo-suite')
                 );
                 ?>

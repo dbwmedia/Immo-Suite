@@ -7,6 +7,18 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.7.0] — 2026-08-20
+
+### Behoben
+- **Import-Historie zeigte ueberall Nullen** — Der stapelweise Import (der Normalfall ueber das Dashboard) hat die Historie mit fest verdrahteten Nullen beschrieben, obwohl die echten Zahlen waehrend des Laufs mitgezaehlt wurden. Die Tabelle zeigt jetzt pro Datei die tatsaechlich erstellten, aktualisierten und fehlerhaften Objekte. Dafuer werden die Zahlen waehrend des Imports je Datei gefuehrt und beim Abschluss der ZIP zugeordnet.
+- **Lose XML-Dateien fehlten in der Historie** — Sie wurden verarbeitet und archiviert, aber nie protokolliert. Jetzt bekommen sie einen eigenen Eintrag.
+- **"undefined Immobilien verarbeitet"** — Lief ein Import ohne neue Objekte (alle Dateien unveraendert), gab es keinen Fortschritts-Datensatz und die Abschlussmeldung zeigte "undefined". Sie faellt jetzt auf die Anzahl aus der Warteschlange zurueck und formuliert den Singular korrekt.
+
+### Geaendert
+- **Farben im Import-Dashboard** — Der Fortschrittsbalken nutzt jetzt das aktuelle WordPress-Admin-Blau (#3858e9) statt des alten #2271b1 und wechselt am Ende auf ein satteres Gruen (#16a34a). Statuspunkte, Zaehler und die Kacheln der Medien-Seite folgen derselben Palette.
+
+---
+
 ## [2.6.2] — 2026-08-19
 
 ### Behoben

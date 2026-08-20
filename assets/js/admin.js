@@ -2,6 +2,12 @@ jQuery(document).ready(function ($) {
     var nonce = (typeof dbwImmoAdmin !== 'undefined') ? dbwImmoAdmin.nonce : '';
     var pollTimer = null;
 
+    // WordPress admin blue while running, a saturated green on success
+    var COLOR_RUNNING = '#3858e9';
+    var COLOR_DONE    = '#16a34a';
+    var COLOR_ERROR   = '#d63638';
+    var lastTotal     = 0;
+
     // --- UI Elements ---
     var $btn       = $('#dbw-immo-trigger-import');
     var $panel     = $('#dbw-immo-progress-panel');
@@ -18,7 +24,8 @@ jQuery(document).ready(function ($) {
 
     // --- Progress UI helpers ---
     function showProgress(title) {
-        $panel.show().css('--dbw-progress-color', '#2271b1');
+        $panel.show().css('--dbw-progress-color', COLOR_RUNNING);
+        $bar.css('background', COLOR_RUNNING);
         $title.text(title);
         $counter.text('');
         $file.text('');
@@ -55,16 +62,22 @@ jQuery(document).ready(function ($) {
     function showDone(data) {
         stopPolling();
         $spinner.removeClass('is-active');
-        $panel.css('--dbw-progress-color', '#00a32a');
-        $bar.css({'width': '100%', 'background': '#00a32a'});
+        $panel.css('--dbw-progress-color', COLOR_DONE);
+        $bar.css({'width': '100%', 'background': COLOR_DONE});
         $pct.text('100%');
         $title.text('Import abgeschlossen');
-        if (data) {
-            $counter.text(data.processed + ' Immobilien verarbeitet');
-            $created.text(data.created || 0);
-            $updated.text(data.updated || 0);
-            $errors.text(data.errors || 0);
-        }
+
+        data = data || {};
+        // An idle transient has no counters, fall back to what the queue knew
+        var processed = (typeof data.processed === 'number') ? data.processed : lastTotal;
+
+        $counter.text(processed === 1
+            ? '1 Immobilie verarbeitet'
+            : processed + ' Immobilien verarbeitet');
+        $created.text(data.created || 0);
+        $updated.text(data.updated || 0);
+        $errors.text(data.errors || 0);
+
         $btn.prop('disabled', false).text('Import jetzt starten');
         refreshHistory();
     }
@@ -72,7 +85,8 @@ jQuery(document).ready(function ($) {
     function showError(msg) {
         stopPolling();
         $spinner.removeClass('is-active');
-        $panel.css('--dbw-progress-color', '#d63638');
+        $panel.css('--dbw-progress-color', COLOR_ERROR);
+        $bar.css('background', COLOR_ERROR);
         $title.text('Fehler');
         var $notice = $('<div class="notice notice-error inline" style="margin-top:12px;"></div>');
         $notice.append($('<p></p>').text(msg));
@@ -152,6 +166,8 @@ jQuery(document).ready(function ($) {
                     flattenQueue.push({ file: f.file, index: j, limit: Math.min(BATCH_SIZE, f.count - j) });
                 }
             });
+            lastTotal = total;
+
             if (total === 0) {
                 $title.text('Keine neuen Immobilien. Räume auf...');
                 finalizeImport(looseFiles, 0);
@@ -195,6 +211,7 @@ jQuery(document).ready(function ($) {
     }
 
     function finalizeImport(looseFiles, totalProcessed) {
+        lastTotal = totalProcessed;
         $title.text('Räume auf und führe Garbage Collection aus...');
 
         $.post(ajaxurl, {

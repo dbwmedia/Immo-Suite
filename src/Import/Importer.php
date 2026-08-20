@@ -1120,6 +1120,7 @@ class Importer
                 'errors'       => 0,
                 'current_file' => '',
                 'file_names'   => $file_names,
+                'per_file'     => array(),
                 'started'      => time(),
             ), 3600);
 
@@ -1146,8 +1147,10 @@ class Importer
 
         $progress = get_transient('dbw_immo_import_progress');
         if (!$progress) {
-            wp_send_json_success(array('status' => 'idle'));
+            wp_send_json_success(array('status' => 'idle', 'processed' => 0, 'created' => 0, 'updated' => 0, 'errors' => 0));
         }
+
+        unset($progress['per_file']); // internal bookkeeping, not for the poller
 
         wp_send_json_success($progress);
     }
@@ -1209,6 +1212,15 @@ class Importer
                 $progress['created']  += $stats['created'];
                 $progress['updated']  += $stats['updated'];
                 $progress['errors']   += $stats['errors'];
+
+                // Per file, so the history can show real numbers instead of zeros
+                if (!isset($progress['per_file'][$real_file])) {
+                    $progress['per_file'][$real_file] = array('created' => 0, 'updated' => 0, 'errors' => 0);
+                }
+                $progress['per_file'][$real_file]['created'] += $stats['created'];
+                $progress['per_file'][$real_file]['updated'] += $stats['updated'];
+                $progress['per_file'][$real_file]['errors']  += $stats['errors'];
+
                 set_transient('dbw_immo_import_progress', $progress, 3600);
             }
 
@@ -1238,15 +1250,20 @@ class Importer
             if (!current_user_can('manage_options'))
                 wp_send_json_error('Keine Berechtigung');
 
+            $progress = get_transient('dbw_immo_import_progress');
+            $per_file = (is_array($progress) && !empty($progress['per_file'])) ? $progress['per_file'] : array();
+
             // 1. Cleanup ZIPs
             $active_zips = get_transient('dbw_immo_batch_zips');
             if (is_array($active_zips)) {
                 foreach ($active_zips as $az) {
                     $this->set_last_xml_hash(basename($az['file']), $az['hash']);
+                    // Sum up every XML that was extracted from this ZIP
+                    $zip_stats = $this->collect_file_stats($per_file, $az['temp_dir']);
                     $this->delete_directory($az['temp_dir']);
                     rename($az['file'], $az['file'] . '.processed');
                     $this->log_debug('ZIP erfolgreich verarbeitet: ' . basename($az['file']));
-                    $this->log_history($az['file'], array('created' => 0, 'updated' => 0, 'errors' => 0), 'success');
+                    $this->log_history($az['file'], $zip_stats, 'success');
                 }
                 delete_transient('dbw_immo_batch_zips');
             }
@@ -1262,8 +1279,12 @@ class Importer
                     $real_path = realpath($lf);
                     // Only allow files within the configured import directory
                     if ($real_path && strpos($real_path, realpath($allowed_base)) === 0 && file_exists($real_path)) {
+                        $loose_stats = isset($per_file[$real_path])
+                            ? $per_file[$real_path]
+                            : array('created' => 0, 'updated' => 0, 'errors' => 0);
                         rename($real_path, $real_path . '.processed');
                         $this->log_debug('Lose XML-Datei archiviert: ' . basename($real_path));
+                        $this->log_history($real_path, $loose_stats, 'success');
                     }
                 }
             }
@@ -1283,6 +1304,7 @@ class Importer
             // Mark progress as done so polling stops
             $progress = get_transient('dbw_immo_import_progress');
             if (is_array($progress)) {
+                unset($progress['per_file']); // keep the polled payload small
                 $progress['status'] = 'done';
                 set_transient('dbw_immo_import_progress', $progress, 60);
             }
@@ -1299,6 +1321,34 @@ class Importer
             }
             wp_send_json_error('Fehler bei Cleanup: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Sum the per-file stats of every XML that came out of one directory.
+     *
+     * @param array  $per_file Absolute path => stats
+     * @param string $dir      Directory the files were extracted to
+     * @return array{created:int,updated:int,errors:int}
+     */
+    private function collect_file_stats($per_file, $dir)
+    {
+        $sum = array('created' => 0, 'updated' => 0, 'errors' => 0);
+        $real_dir = realpath($dir);
+
+        if (!$real_dir) {
+            return $sum;
+        }
+
+        foreach ($per_file as $path => $stats) {
+            if (strpos($path, $real_dir) !== 0) {
+                continue;
+            }
+            $sum['created'] += (int) $stats['created'];
+            $sum['updated'] += (int) $stats['updated'];
+            $sum['errors']  += (int) $stats['errors'];
+        }
+
+        return $sum;
     }
 
     /**

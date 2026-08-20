@@ -74,7 +74,7 @@ class ImportDashboard
                 </div>
 
                 <!-- Progress Panel (hidden by default) -->
-                <div id="dbw-immo-progress-panel" style="display: none; margin-top: 20px; padding: 20px; background: #f0f0f1; border-radius: 6px; border-left: 4px solid var(--dbw-progress-color, #2271b1);">
+                <div id="dbw-immo-progress-panel" style="display: none; margin-top: 20px; padding: 20px; background: #f0f0f1; border-radius: 6px; border-left: 4px solid var(--dbw-progress-color, #3858e9);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span class="spinner is-active" id="dbw-immo-progress-spinner" style="float: none; margin: 0;"></span>
@@ -85,7 +85,7 @@ class ImportDashboard
 
                     <!-- Progress Bar -->
                     <div style="background: #dcdcde; border-radius: 4px; height: 24px; overflow: hidden; position: relative;">
-                        <div id="dbw-immo-progress-bar" style="background: #2271b1; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 4px;"></div>
+                        <div id="dbw-immo-progress-bar" style="background: #3858e9; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 4px;"></div>
                         <span id="dbw-immo-progress-pct" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #1d2327;"></span>
                     </div>
 
@@ -95,11 +95,11 @@ class ImportDashboard
                     <!-- Live Stats -->
                     <div id="dbw-immo-progress-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px;">
                         <div style="text-align: center; padding: 10px; background: #fff; border-radius: 4px;">
-                            <div style="font-size: 22px; font-weight: 700; color: #00a32a;" id="dbw-stat-created">0</div>
+                            <div style="font-size: 22px; font-weight: 700; color: #16a34a;" id="dbw-stat-created">0</div>
                             <div style="font-size: 11px; color: #50575e; text-transform: uppercase;"><?php _e('Erstellt', 'dbw-immo-suite'); ?></div>
                         </div>
                         <div style="text-align: center; padding: 10px; background: #fff; border-radius: 4px;">
-                            <div style="font-size: 22px; font-weight: 700; color: #2271b1;" id="dbw-stat-updated">0</div>
+                            <div style="font-size: 22px; font-weight: 700; color: #3858e9;" id="dbw-stat-updated">0</div>
                             <div style="font-size: 11px; color: #50575e; text-transform: uppercase;"><?php _e('Aktualisiert', 'dbw-immo-suite'); ?></div>
                         </div>
                         <div style="text-align: center; padding: 10px; background: #fff; border-radius: 4px;">
@@ -154,7 +154,7 @@ class ImportDashboard
                 (int) $last['created'],
                 (int) $last['updated']
             ) . ($ok ? '' : ' · ' . __('mit Fehlern', 'dbw-immo-suite'));
-            $dot = $ok ? '#00a32a' : '#d63638';
+            $dot = $ok ? '#16a34a' : '#d63638';
         } else {
             $parts[] = __('Noch kein Import gelaufen.', 'dbw-immo-suite');
             $dot = '#c3c4c7';
@@ -196,8 +196,8 @@ class ImportDashboard
                         if ($count >= 20) break;
                         $count++;
                         $status_map = array(
-                            'success' => array('#46b450', 'OK'),
-                            'skipped' => array('#2271b1', __('Übersprungen', 'dbw-immo-suite')),
+                            'success' => array('#16a34a', 'OK'),
+                            'skipped' => array('#3858e9', __('Übersprungen', 'dbw-immo-suite')),
                         );
                         $s = isset($status_map[$entry['status']]) ? $status_map[$entry['status']] : array('#dc3232', __('Fehler', 'dbw-immo-suite'));
                     ?>
