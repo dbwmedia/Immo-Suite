@@ -1,0 +1,261 @@
+/**
+ * Immo Suite settings screen: vertical navigation, card panels,
+ * toggle switches, sticky save bar.
+ */
+
+.dbw-settings-wrap {
+	margin-right: 12px;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.dbw-settings-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 10px 0 18px;
+}
+.dbw-settings-header h1 {
+	margin: 0;
+	padding: 0;
+}
+.dbw-settings-version {
+	font-size: 11px;
+	font-weight: 600;
+	color: #50575e;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 999px;
+	padding: 2px 10px;
+}
+
+/* ── Layout ─────────────────────────────────────────────── */
+.dbw-settings-layout {
+	display: flex;
+	gap: 24px;
+	align-items: flex-start;
+}
+
+/* ── Vertical nav ───────────────────────────────────────── */
+.dbw-settings-nav {
+	flex: 0 0 220px;
+	position: sticky;
+	top: 46px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 10px;
+	padding: 8px;
+}
+.dbw-settings-nav a {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 12px;
+	border-radius: 7px;
+	text-decoration: none;
+	color: #3c434a;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	position: relative;
+	transition: background 0.12s ease;
+}
+.dbw-settings-nav a .dashicons {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+	color: #8c8f94;
+	transition: color 0.12s ease;
+}
+.dbw-settings-nav a:hover {
+	background: #f0f0f1;
+	color: #1d2327;
+}
+.dbw-settings-nav a.is-active {
+	background: #f0f3ff;
+	color: #1d2327;
+	font-weight: 600;
+}
+.dbw-settings-nav a.is-active .dashicons {
+	color: #3858e9;
+}
+.dbw-settings-nav a.is-active::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 8px;
+	bottom: 8px;
+	width: 3px;
+	border-radius: 3px;
+	background: linear-gradient(180deg, #ea2b1f, #ff3c6f, #7e56ff);
+}
+.dbw-settings-nav .dbw-nav-sep {
+	height: 1px;
+	background: #f0f0f1;
+	margin: 6px 4px;
+}
+
+/* ── Content panels ─────────────────────────────────────── */
+.dbw-settings-content {
+	flex: 1;
+	min-width: 0;
+	max-width: 860px;
+}
+.dbw-tab-panel {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 10px;
+	padding: 8px 28px 22px;
+}
+
+/* Section headings inside panels */
+.dbw-tab-panel h2 {
+	font-size: 16px;
+	padding: 18px 0 4px;
+	margin: 0 0 4px;
+	border-bottom: 1px solid #f0f0f1;
+	padding-bottom: 10px;
+}
+.dbw-tab-panel h2:not(:first-of-type) {
+	margin-top: 26px;
+}
+.dbw-tab-panel > p {
+	color: #646970;
+	font-size: 13px;
+	margin: 8px 0 4px;
+}
+
+/* form-table modernisieren */
+.dbw-tab-panel .form-table {
+	margin-top: 4px;
+}
+.dbw-tab-panel .form-table th {
+	width: 220px;
+	padding: 16px 10px 16px 0;
+	font-size: 13px;
+	color: #1d2327;
+}
+.dbw-tab-panel .form-table td {
+	padding: 13px 10px;
+}
+.dbw-tab-panel .form-table tr {
+	border-bottom: 1px solid #f6f7f7;
+}
+.dbw-tab-panel .description {
+	color: #787c82;
+	font-size: 12px;
+	margin-top: 6px;
+}
+.dbw-tab-panel input[type="text"],
+.dbw-tab-panel input[type="email"],
+.dbw-tab-panel input[type="url"],
+.dbw-tab-panel input[type="tel"],
+.dbw-tab-panel input[type="number"],
+.dbw-tab-panel select,
+.dbw-tab-panel textarea {
+	border-radius: 6px;
+	border-color: #dcdcde;
+}
+
+/* ── Toggle switch ──────────────────────────────────────── */
+.dbw-toggle {
+	position: relative;
+	display: inline-block;
+	width: 40px;
+	height: 22px;
+	vertical-align: middle;
+	flex: 0 0 auto;
+}
+.dbw-toggle input {
+	position: absolute;
+	opacity: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	cursor: pointer;
+	z-index: 2;
+}
+.dbw-toggle-slider {
+	position: absolute;
+	inset: 0;
+	background: #c3c4c7;
+	border-radius: 999px;
+	transition: background 0.15s ease;
+}
+.dbw-toggle-slider::before {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	background: #fff;
+	border-radius: 50%;
+	transition: transform 0.15s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.dbw-toggle input:checked + .dbw-toggle-slider {
+	background: #3858e9;
+}
+.dbw-toggle input:checked + .dbw-toggle-slider::before {
+	transform: translateX(18px);
+}
+.dbw-toggle input:focus-visible + .dbw-toggle-slider {
+	outline: 2px solid #3858e9;
+	outline-offset: 2px;
+}
+.dbw-toggle-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+}
+.dbw-toggle-row .dbw-toggle {
+	margin-top: 1px;
+}
+.dbw-toggle-label {
+	font-size: 13px;
+	color: #3c434a;
+	line-height: 1.5;
+	cursor: pointer;
+}
+
+/* ── Sticky save bar ────────────────────────────────────── */
+.dbw-settings-savebar {
+	position: sticky;
+	bottom: 0;
+	margin-top: 16px;
+	padding: 12px 0;
+	background: linear-gradient(180deg, rgba(240, 240, 241, 0), #f0f0f1 30%);
+	z-index: 10;
+}
+.dbw-settings-savebar .button-primary {
+	min-width: 160px;
+	border-radius: 6px;
+	padding: 2px 18px;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 960px) {
+	.dbw-settings-layout {
+		flex-direction: column;
+	}
+	.dbw-settings-nav {
+		position: static;
+		flex-direction: row;
+		flex-wrap: wrap;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.dbw-settings-nav a.is-active::before {
+		display: none;
+	}
+	.dbw-settings-content {
+		max-width: none;
+		width: 100%;
+	}
+	.dbw-tab-panel .form-table th {
+		width: auto;
+	}
+}

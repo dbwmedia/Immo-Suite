@@ -91,6 +91,7 @@ class ReferencesBlock
         ob_start();
 
         if ($query->have_posts()) {
+            $columns = max(1, min(6, (int) $columns));
             $grid_style = ($columns !== 3) ? ' style="grid-template-columns: repeat(' . $columns . ', 1fr);"' : '';
 
             echo '<div id="dbw-immo-suite">';

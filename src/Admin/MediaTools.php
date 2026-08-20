@@ -217,7 +217,13 @@ class MediaTools
             document.querySelectorAll('.dbw-media-run').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     var task = this.dataset.task;
-                    if (task === 'reset' && !window.confirm('Wirklich alle Immobilien und Bilder loeschen?')) {
+                    // Every irreversible bulk delete needs an explicit confirm
+                    var confirmMsgs = {
+                        reset: 'Wirklich alle Immobilien und Bilder loeschen?',
+                        trashed: 'Papierkorb wirklich endgueltig leeren? Immobilien und Bilder werden unwiderruflich geloescht.',
+                        archived: 'Archivierte Objekte wirklich endgueltig loeschen? Immobilien und Bilder werden unwiderruflich geloescht.'
+                    };
+                    if (confirmMsgs[task] && !window.confirm(confirmMsgs[task])) {
                         return;
                     }
                     document.querySelectorAll('.dbw-media-run').forEach(function(b) { b.disabled = true; });

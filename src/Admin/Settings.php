@@ -20,6 +20,45 @@ class Settings
 		add_action('wp_ajax_dbw_immo_validate_path', array($this, 'ajax_validate_path'));
 		add_action('update_option_dbw_immo_suite_settings', array($this, 'on_settings_update'), 10, 2);
 		add_action('admin_notices', array($this, 'anrede_changed_notice'));
+		add_action('admin_enqueue_scripts', array($this, 'enqueue_assets'));
+		add_action('admin_post_dbw_immo_test_report', array($this, 'handle_test_report'));
+	}
+
+	/**
+	 * Settings screen stylesheet (vertical nav, cards, toggles).
+	 */
+	public function enqueue_assets($hook)
+	{
+		if ($hook !== 'immobilie_page_dbw-immo-suite-settings') {
+			return;
+		}
+		wp_enqueue_style(
+			'dbw-immo-admin-settings',
+			DBW_IMMO_SUITE_URL . 'assets/css/admin-settings.css',
+			array(),
+			DBW_IMMO_SUITE_VERSION
+		);
+	}
+
+	/**
+	 * "Bericht jetzt testen" button: send the weekly report to the configured
+	 * address without resetting the weekly counters.
+	 */
+	public function handle_test_report()
+	{
+		if (!current_user_can('manage_options')) {
+			wp_die('Keine Berechtigung');
+		}
+		check_admin_referer('dbw_immo_test_report');
+
+		(new \DBW\ImmoSuite\Core\WeeklyReport())->send(true);
+
+		wp_safe_redirect(add_query_arg(
+			'dbw_report_test',
+			'sent',
+			admin_url('edit.php?post_type=immobilie&page=dbw-immo-suite-settings#tab-report')
+		));
+		exit;
 	}
 
 	public function add_plugin_page()
@@ -36,84 +75,107 @@ class Settings
 
 	public function create_admin_page()
 	{
+		// slug => [label, dashicon, is_form_tab]
 		$tabs = array(
-			'import'      => __('Import', 'dbw-immo-suite'),
-			'display'     => __('Darstellung', 'dbw-immo-suite'),
-			'calculator'  => __('Rechner', 'dbw-immo-suite'),
-			'references'  => __('Referenzen & Verkauf', 'dbw-immo-suite'),
-			'seo'         => __('Maklerfirma (SEO)', 'dbw-immo-suite'),
-			'privacy'     => __('Datenschutz', 'dbw-immo-suite'),
-			'shortcodes'  => __('Shortcodes', 'dbw-immo-suite'),
-			'license'     => __('Lizenz', 'dbw-immo-suite'),
+			'import'      => array(__('Import', 'dbw-immo-suite'), 'database-import', true),
+			'display'     => array(__('Darstellung', 'dbw-immo-suite'), 'admin-appearance', true),
+			'calculator'  => array(__('Rechner', 'dbw-immo-suite'), 'calculator', true),
+			'references'  => array(__('Referenzen & Verkauf', 'dbw-immo-suite'), 'awards', true),
+			'seo'         => array(__('Maklerfirma (SEO)', 'dbw-immo-suite'), 'store', true),
+			'report'      => array(__('Bericht & System', 'dbw-immo-suite'), 'email-alt', true),
+			'privacy'     => array(__('Datenschutz', 'dbw-immo-suite'), 'shield', false),
+			'shortcodes'  => array(__('Shortcodes', 'dbw-immo-suite'), 'shortcode', false),
+			'license'     => array(__('Lizenz', 'dbw-immo-suite'), 'admin-network', false),
 		);
+
+		if (isset($_GET['dbw_report_test']) && $_GET['dbw_report_test'] === 'sent') {
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Test-Bericht wurde versendet.', 'dbw-immo-suite') . '</p></div>';
+		}
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-
-			<nav class="nav-tab-wrapper dbw-settings-tabs">
-				<?php foreach ($tabs as $slug => $label) : ?>
-					<a href="#tab-<?php echo esc_attr($slug); ?>"
-					   class="nav-tab<?php echo ($slug === 'import') ? ' nav-tab-active' : ''; ?>"
-					   data-tab="<?php echo esc_attr($slug); ?>">
-						<?php echo esc_html($label); ?>
-					</a>
-				<?php endforeach; ?>
-			</nav>
-
-			<form method="post" action="options.php">
-				<?php settings_fields($this->option_group); ?>
-
-				<div class="dbw-tab-panel" id="tab-import">
-					<?php do_settings_sections('dbw-settings-import'); ?>
-				</div>
-
-				<div class="dbw-tab-panel" id="tab-display" style="display:none;">
-					<?php do_settings_sections('dbw-settings-display'); ?>
-				</div>
-
-				<div class="dbw-tab-panel" id="tab-calculator" style="display:none;">
-					<?php do_settings_sections('dbw-settings-calculator'); ?>
-				</div>
-
-				<div class="dbw-tab-panel" id="tab-references" style="display:none;">
-					<?php do_settings_sections('dbw-settings-references'); ?>
-				</div>
-
-				<div class="dbw-tab-panel" id="tab-seo" style="display:none;">
-					<?php do_settings_sections('dbw-settings-seo'); ?>
-				</div>
-
-				<?php submit_button(); ?>
-			</form>
-
-			<div class="dbw-tab-panel" id="tab-privacy" style="display:none;">
-				<?php $this->render_privacy_tab(); ?>
+		<div class="wrap dbw-settings-wrap">
+			<div class="dbw-settings-header">
+				<h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+				<span class="dbw-settings-version">v<?php echo esc_html(DBW_IMMO_SUITE_VERSION); ?></span>
 			</div>
 
-			<div class="dbw-tab-panel" id="tab-shortcodes" style="display:none;">
-				<?php $this->render_shortcode_reference(); ?>
-			</div>
+			<div class="dbw-settings-layout">
+				<nav class="dbw-settings-nav dbw-settings-tabs">
+					<?php $sep_done = false; ?>
+					<?php foreach ($tabs as $slug => $tab) : ?>
+						<?php if (!$tab[2] && !$sep_done) { echo '<div class="dbw-nav-sep"></div>'; $sep_done = true; } ?>
+						<a href="#tab-<?php echo esc_attr($slug); ?>"
+						   class="<?php echo ($slug === 'import') ? 'is-active' : ''; ?>"
+						   data-tab="<?php echo esc_attr($slug); ?>">
+							<span class="dashicons dashicons-<?php echo esc_attr($tab[1]); ?>"></span>
+							<?php echo esc_html($tab[0]); ?>
+						</a>
+					<?php endforeach; ?>
+				</nav>
 
-			<div class="dbw-tab-panel" id="tab-license" style="display:none;">
-				<?php $this->render_license_tab(); ?>
+				<div class="dbw-settings-content">
+					<form method="post" action="options.php">
+						<?php settings_fields($this->option_group); ?>
+
+						<div class="dbw-tab-panel" id="tab-import">
+							<?php do_settings_sections('dbw-settings-import'); ?>
+						</div>
+
+						<div class="dbw-tab-panel" id="tab-display" style="display:none;">
+							<?php do_settings_sections('dbw-settings-display'); ?>
+						</div>
+
+						<div class="dbw-tab-panel" id="tab-calculator" style="display:none;">
+							<?php do_settings_sections('dbw-settings-calculator'); ?>
+						</div>
+
+						<div class="dbw-tab-panel" id="tab-references" style="display:none;">
+							<?php do_settings_sections('dbw-settings-references'); ?>
+						</div>
+
+						<div class="dbw-tab-panel" id="tab-seo" style="display:none;">
+							<?php do_settings_sections('dbw-settings-seo'); ?>
+						</div>
+
+						<div class="dbw-tab-panel" id="tab-report" style="display:none;">
+							<?php do_settings_sections('dbw-settings-report'); ?>
+						</div>
+
+						<div class="dbw-settings-savebar">
+							<?php submit_button(__('Einstellungen speichern', 'dbw-immo-suite'), 'primary', 'submit', false); ?>
+						</div>
+					</form>
+
+					<div class="dbw-tab-panel" id="tab-privacy" style="display:none;">
+						<?php $this->render_privacy_tab(); ?>
+					</div>
+
+					<div class="dbw-tab-panel" id="tab-shortcodes" style="display:none;">
+						<?php $this->render_shortcode_reference(); ?>
+					</div>
+
+					<div class="dbw-tab-panel" id="tab-license" style="display:none;">
+						<?php $this->render_license_tab(); ?>
+					</div>
+				</div>
 			</div>
 		</div>
 
 		<script>
 		(function() {
-			var tabs = document.querySelectorAll('.dbw-settings-tabs .nav-tab');
+			var tabs = document.querySelectorAll('.dbw-settings-tabs a');
 			var panels = document.querySelectorAll('.dbw-tab-panel');
+			var formTabs = ['import', 'display', 'calculator', 'references', 'seo', 'report'];
 
 			function activate(slug) {
 				tabs.forEach(function(t) {
-					t.classList.toggle('nav-tab-active', t.dataset.tab === slug);
+					t.classList.toggle('is-active', t.dataset.tab === slug);
 				});
 				panels.forEach(function(p) {
 					p.style.display = (p.id === 'tab-' + slug) ? '' : 'none';
 				});
-				// Hide submit button on non-form tabs
-				var submit = document.querySelector('.wrap .submit');
-				if (submit) submit.style.display = (slug === 'shortcodes' || slug === 'license' || slug === 'privacy') ? 'none' : '';
+				// Hide save bar on read-only tabs
+				var savebar = document.querySelector('.dbw-settings-savebar');
+				if (savebar) savebar.style.display = (formTabs.indexOf(slug) !== -1) ? '' : 'none';
 			}
 
 			tabs.forEach(function(tab) {
@@ -122,6 +184,7 @@ class Settings
 					var slug = this.dataset.tab;
 					activate(slug);
 					history.replaceState(null, '', '#tab-' + slug);
+					window.scrollTo({ top: 0 });
 				});
 			});
 
@@ -478,6 +541,59 @@ class Settings
 		foreach ($seo_fields as $field_id => $label) {
 			add_settings_field($field_id, $label, array($this, 'seo_field_callback'), 'dbw-settings-seo', 'section_seo', array('id' => $field_id));
 		}
+
+		// ── Tab: Bericht & System ──
+		add_settings_section('section_report', __('Wochenbericht', 'dbw-immo-suite'), array($this, 'print_report_section_info'), 'dbw-settings-report');
+		add_settings_field('weekly_report_enabled', __('Wochenbericht senden', 'dbw-immo-suite'), array($this, 'weekly_report_enabled_callback'), 'dbw-settings-report', 'section_report');
+		add_settings_field('weekly_report_email', __('Empfaenger', 'dbw-immo-suite'), array($this, 'weekly_report_email_callback'), 'dbw-settings-report', 'section_report');
+		add_settings_field('weekly_report_test', __('Testen', 'dbw-immo-suite'), array($this, 'weekly_report_test_callback'), 'dbw-settings-report', 'section_report');
+
+		add_settings_section('section_system', __('System & Betreuung', 'dbw-immo-suite'), array($this, 'print_system_section_info'), 'dbw-settings-report');
+		add_settings_field('telemetry_enabled', __('Status-Meldung an dbw media', 'dbw-immo-suite'), array($this, 'telemetry_enabled_callback'), 'dbw-settings-report', 'section_system');
+	}
+
+	public function print_report_section_info()
+	{
+		print __('Jeden Montagmorgen eine kurze Zusammenfassung per E-Mail: neue Objekte, Verkaeufe, Anfragen und die meistgesehenen Exposes der Woche.', 'dbw-immo-suite');
+	}
+
+	public function print_system_section_info()
+	{
+		print __('Damit wir Probleme sehen, bevor sie auffallen.', 'dbw-immo-suite');
+	}
+
+	public function weekly_report_enabled_callback()
+	{
+		$this->checkbox_callback('weekly_report_enabled', __('Jeden Montag den Wochenbericht per E-Mail senden.', 'dbw-immo-suite'), true);
+	}
+
+	public function weekly_report_email_callback()
+	{
+		$options = get_option($this->option_name);
+		$val = isset($options['weekly_report_email']) ? $options['weekly_report_email'] : '';
+		printf(
+			'<input type="email" id="weekly_report_email" name="%s[weekly_report_email]" value="%s" class="regular-text" placeholder="%s" />',
+			esc_attr($this->option_name),
+			esc_attr($val),
+			esc_attr(get_option('admin_email'))
+		);
+		echo '<p class="description">' . esc_html__('Leer lassen = WordPress-Admin-Adresse.', 'dbw-immo-suite') . '</p>';
+	}
+
+	public function weekly_report_test_callback()
+	{
+		$url = wp_nonce_url(admin_url('admin-post.php?action=dbw_immo_test_report'), 'dbw_immo_test_report');
+		echo '<a href="' . esc_url($url) . '" class="button">' . esc_html__('Bericht jetzt testen', 'dbw-immo-suite') . '</a>';
+		echo '<p class="description">' . esc_html__('Sendet den Bericht sofort an den Empfaenger (Wochenzaehler werden dabei nicht zurueckgesetzt).', 'dbw-immo-suite') . '</p>';
+	}
+
+	public function telemetry_enabled_callback()
+	{
+		$this->checkbox_callback(
+			'telemetry_enabled',
+			__('Taeglich einen technischen Statusbericht an dbw media senden (Plugin-Version, Import-Gesundheit, Objektanzahl). Keine personenbezogenen Daten, keine Besucherdaten. So bemerken wir gestoerte Feeds, bevor sie auffallen.', 'dbw-immo-suite'),
+			true
+		);
 	}
 
 	private $is_sanitizing = false;
@@ -617,13 +733,30 @@ class Settings
 		$new_input['inquiry_store'] = isset($input['inquiry_store']) ? 1 : 0;
 		$new_input['inquiry_retention_days'] = isset($input['inquiry_retention_days']) ? absint($input['inquiry_retention_days']) : 180;
 
+		// Weekly report + telemetry
+		$new_input['weekly_report_enabled'] = isset($input['weekly_report_enabled']) ? 1 : 0;
+		$new_input['weekly_report_email'] = sanitize_email($input['weekly_report_email'] ?? '');
+		$new_input['telemetry_enabled'] = isset($input['telemetry_enabled']) ? 1 : 0;
+
 		// Trigger Page Generation if enabled and changed
 		$old_options = get_option($this->option_name);
 		$old_enable = isset($old_options['enable_references']) ? $old_options['enable_references'] : 0;
 
+		// Carry values that are written by code (not by this form) over from
+		// the stored options - rebuilding $new_input from scratch would drop
+		// them on every save and kill the reference page rewrites.
+		$new_input['reference_page_id'] = absint($old_options['reference_page_id'] ?? 0);
+
 		if ($new_input['enable_references'] == 1 && $old_enable == 0) {
 			// Just enabled
 			do_action('dbw_immo_references_enabled', $new_input);
+
+			// PageGenerator has just written the fresh page id into the option;
+			// pick it up or the outer update_option overwrites it again.
+			$refreshed = get_option($this->option_name);
+			if (is_array($refreshed) && !empty($refreshed['reference_page_id'])) {
+				$new_input['reference_page_id'] = absint($refreshed['reference_page_id']);
+			}
 		}
 
 		$this->is_sanitizing = false;
@@ -858,8 +991,12 @@ class Settings
 		} else {
 			$val = $default ? 'checked' : '';
 		}
+		// Toggle switch markup; degrades to a plain checkbox without the CSS
 		printf(
-			'<input type="checkbox" id="%s" name="%s[%s]" value="1" %s /> <label for="%s">%s</label>',
+			'<span class="dbw-toggle-row">'
+			. '<span class="dbw-toggle"><input type="checkbox" id="%s" name="%s[%s]" value="1" %s /><span class="dbw-toggle-slider" aria-hidden="true"></span></span>'
+			. '<label for="%s" class="dbw-toggle-label">%s</label>'
+			. '</span>',
 			esc_attr($id), esc_attr($this->option_name), esc_attr($id), $val, esc_attr($id), wp_kses($label, array('b' => array(), 'strong' => array()))
 		);
 	}

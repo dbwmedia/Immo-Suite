@@ -21,6 +21,7 @@ $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE
 delete_transient('dbw_immo_import_lock');
 delete_transient('dbw_immo_batch_zips');
 delete_transient('dbw_immo_batch_processed_ids');
+delete_transient('dbw_immo_batch_full_sync');
 delete_transient('dbw_immo_import_progress');
 delete_transient('dbw_immo_price_histogram');
 delete_transient('dbw_immo_media_size');
@@ -47,6 +48,8 @@ wp_clear_scheduled_hook('dbw_immo_cron_hook');
 wp_clear_scheduled_hook('dbw_immo_inquiry_cleanup');
 wp_clear_scheduled_hook('dbw_immo_monitor_check');
 wp_clear_scheduled_hook('dbw_immo_media_cleanup');
+wp_clear_scheduled_hook('dbw_immo_weekly_report');
+wp_clear_scheduled_hook('dbw_immo_telemetry_ping');
 
 // Monitoring/onboarding state
 delete_option('dbw_immo_import_alert');

@@ -31,6 +31,7 @@ class AdminColumns
         $new['dbw_ort'] = __('Ort', 'dbw-immo-suite');
         $new['taxonomy-objektart'] = __('Objektart', 'dbw-immo-suite');
         $new['dbw_health'] = __('Vollständigkeit', 'dbw-immo-suite');
+        $new['dbw_views'] = __('Aufrufe', 'dbw-immo-suite');
         $new['date'] = isset($columns['date']) ? $columns['date'] : __('Datum', 'dbw-immo-suite');
         return $new;
     }
@@ -96,6 +97,19 @@ class AdminColumns
                     echo '<span class="dbw-admin-issues" title="' . esc_attr(implode(' · ', $issues)) . '">' . (int) count($issues) . ' ' . esc_html(_n('Hinweis', 'Hinweise', count($issues), 'dbw-immo-suite')) . '</span>';
                 }
                 break;
+
+            case 'dbw_views':
+                $views = \DBW\ImmoSuite\Core\Stats::get_views($post_id);
+                $week  = \DBW\ImmoSuite\Core\Stats::get_week_views($post_id);
+                if ($views > 0) {
+                    echo '<strong>' . esc_html(number_format_i18n($views)) . '</strong>';
+                    if ($week > 0) {
+                        echo ' <span style="color:#787c82;" title="' . esc_attr__('davon diese Woche', 'dbw-immo-suite') . '">(+' . esc_html(number_format_i18n($week)) . ')</span>';
+                    }
+                } else {
+                    echo '<span style="color:#787c82;">—</span>';
+                }
+                break;
         }
     }
 
@@ -103,6 +117,7 @@ class AdminColumns
     {
         $columns['dbw_price'] = 'dbw_price';
         $columns['dbw_ort'] = 'dbw_ort';
+        $columns['dbw_views'] = 'dbw_views';
         return $columns;
     }
 
@@ -131,6 +146,13 @@ class AdminColumns
                 'no_ort'   => array('key' => 'ort', 'compare' => 'NOT EXISTS'),
             ));
             $query->set('orderby', 'dbw_ort');
+        } elseif ($orderby === 'dbw_views') {
+            $query->set('meta_query', array(
+                'relation'  => 'OR',
+                'dbw_views' => array('key' => \DBW\ImmoSuite\Core\Stats::META_TOTAL, 'compare' => 'EXISTS', 'type' => 'NUMERIC'),
+                'no_views'  => array('key' => \DBW\ImmoSuite\Core\Stats::META_TOTAL, 'compare' => 'NOT EXISTS'),
+            ));
+            $query->set('orderby', 'dbw_views');
         }
     }
 

@@ -3,7 +3,7 @@
  * Plugin Name:       Immo Suite
  * Plugin URI:        https://dennisbuchwald.de/apps/immo-suite
  * Description:       Die Brücke zwischen Maklersoftware und moderner Website. Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
- * Version:           2.7.0
+ * Version:           2.8.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Dennis Buchwald
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define Constants
-define('DBW_IMMO_SUITE_VERSION', '2.7.0');
+define('DBW_IMMO_SUITE_VERSION', '2.8.0');
 define('DBW_IMMO_SUITE_PATH', plugin_dir_path(__FILE__));
 define('DBW_IMMO_SUITE_URL', plugin_dir_url(__FILE__));
 
@@ -46,9 +46,15 @@ spl_autoload_register(function ($class) {
 
 // Activation Hook
 register_activation_hook(__FILE__, function () {
-	// Register CPT so rewrite rules include it
+	// Register CPT + taxonomies so the flushed rewrite rules include them
+	// (without the taxonomies, /ort/... etc. 404s until permalinks are re-saved)
 	$property = new PostTypes\Property();
 	$property->register_post_type();
+
+	(new Taxonomies\PropertyType())->register_taxonomy();
+	(new Taxonomies\MarketingType())->register_taxonomy();
+	(new Taxonomies\Location())->register_taxonomy();
+
 	flush_rewrite_rules();
 });
 
@@ -58,6 +64,8 @@ register_deactivation_hook(__FILE__, function () {
 	wp_clear_scheduled_hook('dbw_immo_inquiry_cleanup');
 	wp_clear_scheduled_hook('dbw_immo_monitor_check');
 	wp_clear_scheduled_hook('dbw_immo_media_cleanup');
+	wp_clear_scheduled_hook('dbw_immo_weekly_report');
+	wp_clear_scheduled_hook('dbw_immo_telemetry_ping');
 	flush_rewrite_rules();
 });
 
@@ -164,14 +172,17 @@ function dbw_format_phone($raw)
 	return array('display' => $display, 'tel' => $tel);
 }
 
-// GitHub Update Checker
-require_once DBW_IMMO_SUITE_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
-$dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-	'https://github.com/dbwmedia/Immo-Suite/',
-	__FILE__,
-	'dbw-immo-suite'
-);
-$dbw_immo_update_checker->setBranch('main');
+// GitHub Update Checker - guarded: a build ZIP without vendor/ must degrade
+// to "no auto updates", never fatal the whole site
+if (file_exists(DBW_IMMO_SUITE_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php')) {
+	require_once DBW_IMMO_SUITE_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
+	$dbw_immo_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+		'https://github.com/dbwmedia/Immo-Suite/',
+		__FILE__,
+		'dbw-immo-suite'
+	);
+	$dbw_immo_update_checker->setBranch('main');
+}
 
 // Initialize Plugin
 function run_dbw_immo_suite()

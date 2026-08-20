@@ -129,6 +129,10 @@ class InquiryAdmin
             wp_send_json_error(__('Ungueltige Anfrage.', 'dbw-immo-suite'));
         }
 
+        if (!current_user_can('edit_post', $post_id)) {
+            wp_send_json_error('Keine Berechtigung');
+        }
+
         update_post_meta($post_id, '_dbw_anfrage_status', $status);
         wp_send_json_success(array('status' => $status, 'new_count' => Inquiry::count_new()));
     }

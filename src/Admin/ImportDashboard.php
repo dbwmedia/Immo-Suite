@@ -64,14 +64,20 @@ class ImportDashboard
 
                 <?php $this->render_cron_status($history); ?>
 
-                <div style="margin-top: 10px;">
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <button id="dbw-immo-trigger-import" type="button" class="button button-primary button-hero">
                         <?php _e('Import jetzt starten', 'dbw-immo-suite'); ?>
                     </button>
-                    <p class="description" style="margin-top: 10px;">
-                        <?php _e('Verarbeitet alle ZIP/XML-Dateien im konfigurierten Verzeichnis.', 'dbw-immo-suite'); ?>
-                    </p>
+                    <button id="dbw-immo-dry-run" type="button" class="button button-hero">
+                        <?php _e('Testlauf (Vorschau)', 'dbw-immo-suite'); ?>
+                    </button>
                 </div>
+                <p class="description" style="margin-top: 10px;">
+                    <?php _e('Verarbeitet alle ZIP/XML-Dateien im konfigurierten Verzeichnis. Der Testlauf zeigt vorher, was passieren wuerde - ohne etwas zu veraendern.', 'dbw-immo-suite'); ?>
+                </p>
+
+                <!-- Dry Run Result Panel -->
+                <div id="dbw-immo-dryrun-panel" style="display: none; margin-top: 20px; padding: 20px; background: #f0f6fc; border-radius: 6px; border-left: 4px solid #3858e9;"></div>
 
                 <!-- Progress Panel (hidden by default) -->
                 <div id="dbw-immo-progress-panel" style="display: none; margin-top: 20px; padding: 20px; background: #f0f0f1; border-radius: 6px; border-left: 4px solid var(--dbw-progress-color, #3858e9);">
@@ -118,6 +124,18 @@ class ImportDashboard
             <div id="dbw-immo-history-wrapper">
                 <?php $this->render_history_table($history); ?>
             </div>
+
+            <!-- Log Viewer -->
+            <details id="dbw-immo-log-details" style="margin-top: 24px;">
+                <summary style="cursor: pointer; font-weight: 600; padding: 8px 0;">
+                    <?php _e('Import-Log anzeigen', 'dbw-immo-suite'); ?>
+                </summary>
+                <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+                    <button id="dbw-immo-log-refresh" type="button" class="button button-small"><?php _e('Aktualisieren', 'dbw-immo-suite'); ?></button>
+                    <span id="dbw-immo-log-meta" style="color: #787c82; font-size: 12px;"></span>
+                </div>
+                <pre id="dbw-immo-log-output" style="margin-top: 8px; max-height: 400px; overflow: auto; background: #1d2327; color: #d5d9dd; padding: 14px 16px; border-radius: 6px; font-size: 12px; line-height: 1.6;"><?php esc_html_e('Noch nicht geladen.', 'dbw-immo-suite'); ?></pre>
+            </details>
 
         </div>
         <?php

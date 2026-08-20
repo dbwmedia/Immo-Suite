@@ -17,6 +17,51 @@ class TemplateLoader
     {
         add_filter('template_include', array($this, 'template_include'));
         add_action('template_redirect', array($this, 'maybe_redirect_sold_single'));
+        add_action('template_redirect', array($this, 'maybe_redirect_gone_property'));
+    }
+
+    /**
+     * A property that was deleted (trash) or archived (draft) by the import
+     * would 404 on indexed/shared URLs. Send those visitors to the reference
+     * page or archive instead of a dead end.
+     *
+     * 301: the object will not come back under this URL, and the redirect
+     * passes the link equity on.
+     */
+    public function maybe_redirect_gone_property()
+    {
+        if (!is_404()) {
+            return;
+        }
+
+        if (get_query_var('post_type') !== 'immobilie') {
+            return;
+        }
+
+        $slug = get_query_var('name');
+        if (!$slug) {
+            return;
+        }
+
+        global $wpdb;
+
+        // Trashed posts get a "__trashed" suffix on their slug (since WP 4.5)
+        $found = $wpdb->get_var($wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts}
+             WHERE post_type = 'immobilie'
+               AND post_status IN ('trash', 'draft')
+               AND post_name IN (%s, %s)
+             LIMIT 1",
+            $slug,
+            $slug . '__trashed'
+        ));
+
+        if (!$found) {
+            return;
+        }
+
+        wp_safe_redirect(self::fallback_url(), 301);
+        exit;
     }
 
     /**

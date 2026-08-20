@@ -149,18 +149,26 @@ class Inquiry
             return;
         }
 
-        $old = get_posts(array(
-            'post_type'      => self::POST_TYPE,
-            'post_status'    => 'any',
-            'posts_per_page' => 100,
-            'fields'         => 'ids',
-            'date_query'     => array(
-                array('before' => $days . ' days ago', 'column' => 'post_date_gmt'),
-            ),
-        ));
+        // Loop until empty (bounded): a daily cap of 100 could otherwise build
+        // a backlog that outlives the advertised GDPR retention period
+        for ($round = 0; $round < 20; $round++) {
+            $old = get_posts(array(
+                'post_type'      => self::POST_TYPE,
+                'post_status'    => 'any',
+                'posts_per_page' => 100,
+                'fields'         => 'ids',
+                'date_query'     => array(
+                    array('before' => $days . ' days ago', 'column' => 'post_date_gmt'),
+                ),
+            ));
 
-        foreach ($old as $post_id) {
-            wp_delete_post($post_id, true);
+            if (empty($old)) {
+                break;
+            }
+
+            foreach ($old as $post_id) {
+                wp_delete_post($post_id, true);
+            }
         }
     }
 

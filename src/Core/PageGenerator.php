@@ -23,7 +23,8 @@ class PageGenerator
     public function create_reference_page($settings)
     {
         $slug = !empty($settings['reference_slug']) ? $settings['reference_slug'] : 'referenzen';
-        $title = !empty($settings['reference_badge_text']) ? $settings['reference_badge_text'] : 'Referenzen';
+        // Page title, not the card badge text (that one says "Referenz")
+        $title = __('Referenzen', 'dbw-immo-suite');
 
         // Check if page exists by slug
         $existing_page = get_page_by_path($slug);

@@ -145,7 +145,13 @@ get_header(); ?>
 			<?php if ($show_address): ?>
 			<div class="dbw-single-address">
 				<span class="dbw-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-				<?php echo esc_html(implode(' ', array_filter(array($street, $house_num))) . ', ' . implode(' ', array_filter(array($plz, $city)))); ?>
+				<?php
+				$addr_parts = array_filter(array(
+					implode(' ', array_filter(array($street, $house_num))),
+					implode(' ', array_filter(array($plz, $city))),
+				));
+				echo esc_html(implode(', ', $addr_parts));
+				?>
 			</div>
 			<?php endif; ?>
 		</div>
@@ -399,9 +405,9 @@ get_header(); ?>
 								'function initMap(){' .
 									'consent.style.display="none";' .
 									'mapEl.style.display="block";' .
-									'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%s,%s],14);' .
+									'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%1$.7F,%2$.7F],14);' .
 									'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>",maxZoom:18}).addTo(m);' .
-									'L.marker([%s,%s]).addTo(m);' .
+									'L.marker([%1$.7F,%2$.7F]).addTo(m);' .
 								'}' .
 								'btn.addEventListener("click",initMap);' .
 								'if(window.BorlabsCookie&&window.BorlabsCookie.checkCookieConsent("openstreetmap")){initMap();}' .
@@ -409,17 +415,19 @@ get_header(); ?>
 									'if(window.BorlabsCookie.checkCookieConsent("openstreetmap")){initMap();}' .
 								'});' .
 								'})();',
-								esc_js($lat), esc_js($lng), esc_js($lat), esc_js($lng)
+								// Float cast: coords land in a bare numeric JS context,
+								// esc_js would not stop a breakout there
+								(float) $lat, (float) $lng
 							));
 						} else {
 							// Direct mode: init map immediately
 							wp_add_inline_script('leaflet', sprintf(
 								'(function(){' .
-								'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%s,%s],14);' .
+								'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%1$.7F,%2$.7F],14);' .
 								'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>",maxZoom:18}).addTo(m);' .
-								'L.marker([%s,%s]).addTo(m);' .
+								'L.marker([%1$.7F,%2$.7F]).addTo(m);' .
 								'})();',
-								esc_js($lat), esc_js($lng), esc_js($lat), esc_js($lng)
+								(float) $lat, (float) $lng
 							));
 						}
 						?>

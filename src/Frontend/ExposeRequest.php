@@ -191,7 +191,13 @@ class ExposeRequest
             ));
         }
 
-        // Rate limiting (keyed by IP only — email would be attacker-controlled)
+        if (!self::is_enabled()) {
+            wp_send_json_error(__('Diese Funktion ist deaktiviert.', 'dbw-immo-suite'));
+        }
+
+        // Rate limiting (keyed by IP only — email would be attacker-controlled).
+        // The transient is set only after successful processing, so a rejected
+        // form (validation error) doesn't burn the visitor's retry window.
         $rate_key = 'dbw_expose_' . md5($_SERVER['REMOTE_ADDR'] ?? '');
         if (get_transient($rate_key)) {
             wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
@@ -199,7 +205,6 @@ class ExposeRequest
                 __('Bitte warte einen Moment, bevor du erneut absendest.', 'dbw-immo-suite')
             ));
         }
-        set_transient($rate_key, 1, 120);
 
         // Honeypot
         if (!empty($_POST['website'])) {
@@ -283,6 +288,8 @@ class ExposeRequest
         }
 
         $sent = wp_mail($to, $subject, $body, $headers);
+
+        set_transient($rate_key, 1, 120);
 
         if ($sent) {
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(

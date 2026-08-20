@@ -359,8 +359,10 @@ class SchemaOutput
 
     private function output_json_ld($schema)
     {
+        // JSON_HEX_TAG/HEX_AMP: a literal "</script>" inside feed data must
+        // not be able to break out of this script block (stored XSS)
         echo '<script type="application/ld+json">' . "\n"
-            . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
+            . wp_json_encode($schema, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
             . "\n</script>\n";
     }
 }

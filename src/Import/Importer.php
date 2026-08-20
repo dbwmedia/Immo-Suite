@@ -24,6 +24,17 @@ class Importer
         $target_real = realpath($target_dir);
         if (!$target_real) return false;
 
+        // Zip bomb guard: a hostile archive in the FTP dir must not be able
+        // to fill the customer's hosting quota. Real feeds stay far below.
+        $max_files = 2000;
+        $max_bytes = 500 * MB_IN_BYTES;
+
+        if ($zip->numFiles > $max_files) {
+            $this->log_debug(sprintf('ZIP blockiert: %d Dateien (Limit %d).', $zip->numFiles, $max_files));
+            return false;
+        }
+
+        $total_size = 0;
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = $zip->getNameIndex($i);
             // Block traversal, absolute paths (Unix + Windows drive/UNC) and unreadable entries
@@ -31,6 +42,14 @@ class Importer
                 $this->log_debug('Zip-Slip blocked: ' . $name);
                 return false;
             }
+
+            $stat = $zip->statIndex($i);
+            $total_size += $stat ? (int) $stat['size'] : 0;
+        }
+
+        if ($total_size > $max_bytes) {
+            $this->log_debug(sprintf('ZIP blockiert: %s entpackt (Limit %s).', size_format($total_size), size_format($max_bytes)));
+            return false;
         }
 
         return $zip->extractTo($target_dir);
@@ -84,19 +103,64 @@ class Importer
     private $processed_openimmo_ids = array();
 
     /**
+     * True once a processed XML declared <uebertragung umfang="VOLL">.
+     * Garbage collection must only run after a full delivery - partial
+     * deliveries (onOffice pushes per-object ZIPs) would otherwise archive
+     * the entire remaining inventory.
+     * @var bool
+     */
+    private $full_sync_seen = false;
+
+    const LOCK_TRANSIENT = 'dbw_immo_import_lock';
+
+    /** Marks that the current dashboard batch run contained a VOLL delivery. */
+    const BATCH_FULL_SYNC_TRANSIENT = 'dbw_immo_batch_full_sync';
+
+    /**
+     * One lock for BOTH import paths (cron run_import + dashboard batch flow),
+     * so an hourly cron tick cannot process the same ZIPs a batch run is
+     * still working on.
+     */
+    private function acquire_lock($ttl)
+    {
+        if (get_transient(self::LOCK_TRANSIENT)) {
+            return false;
+        }
+        set_transient(self::LOCK_TRANSIENT, time(), $ttl);
+        return true;
+    }
+
+    private function refresh_lock($ttl)
+    {
+        set_transient(self::LOCK_TRANSIENT, time(), $ttl);
+    }
+
+    private function release_lock()
+    {
+        delete_transient(self::LOCK_TRANSIENT);
+    }
+
+    /**
+     * Containment check for realpath'ed paths. A plain strpos prefix match
+     * would accept "/pfad/openimmo-evil" for base "/pfad/openimmo".
+     */
+    private function path_within($path, $base)
+    {
+        $base = rtrim($base, '/\\');
+        return $path === $base || strpos($path, $base . DIRECTORY_SEPARATOR) === 0;
+    }
+
+    /**
      * Run the import process.
      *
      * @return array Result stats.
      */
     public function run_import()
     {
-        // 1. Check Lock
-        if (get_transient('dbw_immo_import_lock')) {
+        // Acquire lock (TTL matches the 600s time limit below)
+        if (!$this->acquire_lock(600)) {
             return array('success' => false, 'message' => 'Import läuft bereits. Bitte warten.');
         }
-
-        // 2. Set Lock (expires in 5 mins security fallback)
-        set_transient('dbw_immo_import_lock', time(), 300);
 
         $this->log_debug('--- Starte Import ---');
 
@@ -115,6 +179,9 @@ class Importer
 
             $this->log_debug('Import-Pfad aufgeloest: ' . $xml_path);
 
+            // Housekeeping: abandoned tmp_ dirs + old .processed/.skipped files
+            $this->cleanup_import_dir($xml_path);
+
             $stats = array(
                 'created' => 0,
                 'updated' => 0,
@@ -122,6 +189,12 @@ class Importer
             );
 
             $xmls_processed = 0;
+
+            // Time budget below the 600s limit: leftover files are picked up
+            // by the next cron tick (image dedupe makes retries cheap), instead
+            // of the whole request dying in the middle of a ZIP.
+            $run_started = time();
+            $time_budget = 480;
 
             // Verify glob() works on this path (catches open_basedir / permission issues)
             $zips = glob($xml_path . '*.zip');
@@ -154,6 +227,12 @@ class Importer
             // ZIP Processing
             if (!empty($zips)) {
                 foreach ($zips as $zip_file) {
+                    if (time() - $run_started > $time_budget) {
+                        $this->log_debug('Zeitbudget erreicht, restliche ZIPs werden im naechsten Lauf verarbeitet.');
+                        $this->full_sync_seen = false; // incomplete run must not trigger GC
+                        break;
+                    }
+
                     $temp_dir = $xml_path . 'tmp_' . uniqid() . '/';
 
                     $zip = new \ZipArchive;
@@ -192,10 +271,16 @@ class Importer
                                 continue;
                             }
 
-                            // Process XMLs
+                            // Process XMLs (history logs the per-file delta,
+                            // not the accumulated run totals)
                             foreach ($temp_xmls as $file) {
+                                $before = $stats;
                                 $this->process_file($file, $stats);
-                                $this->log_history($file, $stats, 'success');
+                                $this->log_history($file, array(
+                                    'created' => $stats['created'] - $before['created'],
+                                    'updated' => $stats['updated'] - $before['updated'],
+                                    'errors'  => $stats['errors'] - $before['errors'],
+                                ), 'success');
                                 $xmls_processed++;
                             }
 
@@ -209,6 +294,10 @@ class Importer
                         $this->delete_directory($temp_dir);
                         rename($zip_file, $zip_file . '.processed');
                         $this->log_debug('ZIP erfolgreich verarbeitet: ' . basename($zip_file));
+                    }
+                    else {
+                        // Typically a half-uploaded FTP file; retried next run
+                        $this->log_debug('ZIP konnte nicht geoeffnet werden (evtl. unvollstaendig hochgeladen): ' . basename($zip_file));
                     }
                 }
             }
@@ -225,8 +314,19 @@ class Importer
 
             if (!empty($xml_files)) {
                 foreach ($xml_files as $file) {
+                    if (time() - $run_started > $time_budget) {
+                        $this->log_debug('Zeitbudget erreicht, restliche XML-Dateien werden im naechsten Lauf verarbeitet.');
+                        $this->full_sync_seen = false;
+                        break;
+                    }
+
+                    $before = $stats;
                     $this->process_file($file, $stats);
-                    $this->log_history($file, $stats, 'success');
+                    $this->log_history($file, array(
+                        'created' => $stats['created'] - $before['created'],
+                        'updated' => $stats['updated'] - $before['updated'],
+                        'errors'  => $stats['errors'] - $before['errors'],
+                    ), 'success');
                     $xmls_processed++;
 
                     // Rename XML file to prevent hour-by-hour reimports
@@ -240,13 +340,17 @@ class Importer
                 $this->log_debug('Keine neuen Import-Dateien gefunden.');
             }
 
-            // Garbage Collection
-            if ($xmls_processed > 0 && !empty($options['enable_garbage_collection'])) {
+            // Garbage Collection - only after a delivery that declared itself
+            // a full sync (<uebertragung umfang="VOLL">). A partial delivery
+            // must never archive the rest of the inventory.
+            if ($xmls_processed > 0 && $this->full_sync_seen && !empty($options['enable_garbage_collection'])) {
                 $this->run_garbage_collection();
+            } elseif ($xmls_processed > 0 && !$this->full_sync_seen && !empty($options['enable_garbage_collection'])) {
+                $this->log_debug('Garbage Collection uebersprungen: Lieferung war kein Vollabgleich (umfang != VOLL).');
             }
 
             // Release Lock
-            delete_transient('dbw_immo_import_lock');
+            $this->release_lock();
 
             return array(
                 'success' => true,
@@ -254,9 +358,9 @@ class Importer
             );
 
         }
-        catch (\Exception $e) {
-            // Error Handling
-            delete_transient('dbw_immo_import_lock');
+        catch (\Throwable $e) {
+            // Error Handling (\Throwable: a TypeError must release the lock too)
+            $this->release_lock();
             $this->log_debug('Error: ' . $e->getMessage());
 
             // Log failed run
@@ -290,30 +394,6 @@ class Importer
     }
 
     /**
-     * Extract ZIP file.
-     * 
-     * @param string $zip_file
-     * @param string $target_path
-     */
-    private function extract_zip($zip_file, $target_path)
-    {
-        $zip = new \ZipArchive;
-        if ($zip->open($zip_file) === TRUE) {
-            // Extract to a folder named after the zip to avoid collisions
-            $extract_to = $target_path . pathinfo($zip_file, PATHINFO_FILENAME) . '/';
-            if (!is_dir($extract_to)) {
-                mkdir($extract_to, 0755, true);
-            }
-            if (!$this->safe_extract_zip($zip, $extract_to)) { $zip->close(); return; }
-            $zip->close();
-
-            // Optional: Rename/Move ZIP to '.processed' or similar to avoid re-extraction?
-            // For now, we leave it. Real production code should move it.
-            rename($zip_file, $zip_file . '.processed');
-        }
-    }
-
-    /**
      * Process a single XML file.
      *
      * @param string $file Path to XML file.
@@ -329,6 +409,11 @@ class Importer
         }
 
         $this->current_xml_file = $file;
+
+        // Track the delivery scope declared by the feed (VOLL vs. TEIL)
+        if ($this->is_full_sync($xml)) {
+            $this->full_sync_seen = true;
+        }
 
         // Support wrapping 'openimmo_feedback' or just 'anbieter' list
         if (isset($xml->anbieter)) {
@@ -362,11 +447,15 @@ class Importer
             return;
         }
 
-        // Check Action Type (DELETE, ARCHIVE, etc.)
+        // Check Action Type (CHANGE, DELETE, REFERENZ)
+        // OpenImmo XSD: <aktion aktionart="CHANGE|DELETE|REFERENZ"/>. Some
+        // non-standard feeds use "actiontype" or the node value instead.
         $action_type = '';
         if (isset($verwaltung_techn->aktion)) {
-            $action_type = (string)$verwaltung_techn->aktion['actiontype'];
-            // Sometimes it's the node value
+            $action_type = (string)$verwaltung_techn->aktion['aktionart'];
+            if (empty($action_type)) {
+                $action_type = (string)$verwaltung_techn->aktion['actiontype'];
+            }
             if (empty($action_type)) {
                 $action_type = (string)$verwaltung_techn->aktion;
             }
@@ -447,6 +536,12 @@ class Importer
         // Map Fields
         $this->map_fields($post_id, $immobilie);
 
+        // OpenImmo action REFERENZ marks the object as a reference. Set after
+        // map_fields so it wins over the verkaufstatus mapping.
+        if ($action_type === 'REFERENZ' && !get_post_meta($post_id, '_dbw_immo_manual_status_override', true)) {
+            update_post_meta($post_id, '_dbw_immo_status', 'referenz');
+        }
+
         // Process Attachments
         // We need the base path of the XML file to find images
         if (isset($this->current_xml_file)) {
@@ -480,17 +575,37 @@ class Importer
             update_post_meta($post_id, 'nebenkosten', $nebenkosten);
             update_post_meta($post_id, 'provision_kaeufer', $provision_kaeufer);
 
-            // Set Marketing Type Taxonomy
+            // Set Marketing Type Taxonomy.
+            // Primary source: <objektkategorie><vermarktungsart KAUF=".." MIETE_PACHT=".."
+            // ERBPACHT=".." LEASING=".."/> (required by the OpenImmo XSD). The price
+            // heuristic stays as fallback only - "Preis auf Anfrage" objects have no
+            // price > 0 and would otherwise end up in no marketing filter at all.
             $marketing_terms = array();
-            if (!empty($kaufpreis) && floatval($kaufpreis) > 0) {
-                $marketing_terms[] = 'Kauf';
-            }
-            if ((!empty($kaltmiete) && floatval($kaltmiete) > 0) || (!empty($warmmiete) && floatval($warmmiete) > 0)) {
-                $marketing_terms[] = 'Miete';
+
+            if (isset($xml->objektkategorie->vermarktungsart)) {
+                $va = $xml->objektkategorie->vermarktungsart->attributes();
+                $va_map = array(
+                    'KAUF'        => 'Kauf',
+                    'MIETE_PACHT' => 'Miete',
+                    'ERBPACHT'    => 'Erbpacht',
+                    'LEASING'     => 'Leasing',
+                );
+                foreach ($va_map as $attr => $term) {
+                    $val = isset($va[$attr]) ? strtolower((string)$va[$attr]) : '';
+                    if ($val === 'true' || $val === '1') {
+                        $marketing_terms[] = $term;
+                    }
+                }
             }
 
-            // Fallback: Check OpenImmo <vermarktungsart> if available (often checked via attributes or subnodes)
-            // For now, price-based is robust enough for standard XMLs.
+            if (empty($marketing_terms)) {
+                if (!empty($kaufpreis) && floatval($kaufpreis) > 0) {
+                    $marketing_terms[] = 'Kauf';
+                }
+                if ((!empty($kaltmiete) && floatval($kaltmiete) > 0) || (!empty($warmmiete) && floatval($warmmiete) > 0)) {
+                    $marketing_terms[] = 'Miete';
+                }
+            }
 
             if (!empty($marketing_terms)) {
                 wp_set_object_terms($post_id, $marketing_terms, 'vermarktungsart', false); // Append = false (overwrite)
@@ -521,8 +636,12 @@ class Importer
                 update_post_meta($post_id, 'geo_laenge', (string)$coord['laengengrad']);
             }
 
-            // Set Location Taxonomy
-            wp_set_object_terms($post_id, (string)$xml->geo->ort, 'ort', true);
+            // Set Location Taxonomy (replace, not append - a corrected Ort must
+            // not leave the object in two location filters)
+            $ort_name = trim((string)$xml->geo->ort);
+            if ($ort_name !== '') {
+                wp_set_object_terms($post_id, $ort_name, 'ort', false);
+            }
         }
 
         // Infrastructure
@@ -568,20 +687,8 @@ class Importer
                 }
             }
 
-            // Allow manual override in backend (don't overwrite if manual change? - User requirement: "Der intern gespeicherte Status darf vom XML abweichen, wenn im Backend manuell geändert wurde.")
-            // Logic: We always update from XML unless we implement a "Lock Status" checkbox. 
-            // BUT: The requirement says "soll Status aus OpenImmo XML intelligent interpretieren... Der intern gespeicherte Status darf vom XML abweichen".
-            // This usually means: If I set it to "Sold" manually, the next import of "Active" shouldn't overwrite it? 
-            // OR: If XML says "Sold", we update. If XML says "Active" but we manually set "Sold", do we keep "Sold"?
-            // A safer approach for now: Always update from XML if XML has explicit status. If XML status is "Active" (default/missing), maybe preserve?
-            // "Wenn kein Status eindeutig ermittelbar ist → Default „Aktiv“."
-
-            // Let's implement a meta field `_dbw_immo_status_locked` check?
-            // For now, let's keep it simple: Update based on XML. If user changes locally, they should lock it or XML should be source of truth.
-            // Wait, "Der intern gespeicherte Status darf vom XML abweichen, wenn im Backend manuell geändert wurde." 
-            // IMPLICATION: If I change it manually, the import should NOT overwrite it?
-            // Implementation: Check if `_dbw_immo_manual_status` flag is set. If so, skip update.
-
+            // A manual status change in the backend sets the override flag and
+            // wins over the feed until the flag is cleared.
             $manual_override = get_post_meta($post_id, '_dbw_immo_manual_status_override', true);
 
             if (!$manual_override) {
@@ -601,10 +708,23 @@ class Importer
             $ep = $xml->zustand_angaben->energiepass;
             update_post_meta($post_id, 'energiepass_art', (string)$ep->epart);
             update_post_meta($post_id, 'energiepass_gueltig_bis', (string)$ep->gueltig_bis);
-            update_post_meta($post_id, 'energiepass_endenergie', (string)$ep->endenergiebedarf);
             update_post_meta($post_id, 'energiepass_traeger', (string)$ep->primaerenergietraeger);
             update_post_meta($post_id, 'energiepass_wertklasse', (string)$ep->wertklasse);
-            update_post_meta($post_id, 'energiepass_baujahr', (string)$ep->baujahr);
+
+            // GEG display duty: a VERBRAUCH pass carries its kWh value in
+            // energieverbrauchkennwert, not endenergiebedarf. Store the raw
+            // value and fall back so the frontend always has a figure.
+            $bedarf    = trim((string)$ep->endenergiebedarf);
+            $verbrauch = trim((string)$ep->energieverbrauchkennwert);
+            update_post_meta($post_id, 'energiepass_verbrauchkennwert', $verbrauch);
+            update_post_meta($post_id, 'energiepass_mitwarmwasser', (string)$ep->mitwarmwasser);
+            update_post_meta($post_id, 'energiepass_endenergie', $bedarf !== '' ? $bedarf : $verbrauch);
+
+            // Do not clobber the building year from zustand_angaben with an
+            // empty pass year (both historically share this meta key).
+            if (trim((string)$ep->baujahr) !== '') {
+                update_post_meta($post_id, 'energiepass_baujahr', (string)$ep->baujahr);
+            }
         }
 
         // Ausstattung (structured features)
@@ -658,7 +778,7 @@ class Importer
 
             // Keller
             if (isset($ausstattung->unterkellert)) {
-                $keller_attr = (string)$ausstattung->unterkellert['kpiuell']; // JA, NEIN, TEIL
+                $keller_attr = (string)$ausstattung->unterkellert['keller']; // JA, NEIN, TEIL (per XSD)
                 if (empty($keller_attr)) {
                     $keller_attr = (string)$ausstattung->unterkellert;
                 }
@@ -712,14 +832,16 @@ class Importer
             update_post_meta($post_id, 'text_sonstiges', (string)$xml->freitexte->sonstige_angaben);
         }
 
-        // Object Type Taxonomy
+        // Object Type Taxonomy - collect all terms, then set once as replace.
+        // Append accumulated stale terms whenever the broker corrected the type.
         if (isset($xml->objektkategorie)) {
+            $objektart_terms = array();
+
             // Iterate over children to find the type (e.g. <objektart><haus>...</haus></objektart>)
             // Simplified: Just taking the key name of the detailed type
             if (isset($xml->objektkategorie->objektart)) {
                 foreach ($xml->objektkategorie->objektart->children() as $child) {
-                    $type_name = $child->getName(); // e.g. 'haus', 'wohnung'
-                    wp_set_object_terms($post_id, ucfirst($type_name), 'objektart', true);
+                    $objektart_terms[] = ucfirst($child->getName()); // e.g. 'Haus', 'Wohnung'
                     break;
                 }
             }
@@ -728,9 +850,13 @@ class Importer
                 foreach ($usage_attributes as $name => $val) {
                     if ((string)$val === 'true' || (string)$val === '1') {
                         // e.g. WOHNEN or GEWERBE
-                        wp_set_object_terms($post_id, ucfirst(strtolower($name)), 'objektart', true);
+                        $objektart_terms[] = ucfirst(strtolower($name));
                     }
                 }
+            }
+
+            if (!empty($objektart_terms)) {
+                wp_set_object_terms($post_id, array_unique($objektart_terms), 'objektart', false);
             }
         }
 
@@ -887,7 +1013,7 @@ class Importer
         $real_full = realpath($full_path);
         $real_base = realpath($base_path);
 
-        if (!$real_full || !$real_base || strpos($real_full, $real_base) !== 0) {
+        if (!$real_full || !$real_base || !$this->path_within($real_full, $real_base)) {
             $this->log_debug(sprintf('Path traversal blocked: %s (base: %s)', $file_name, $base_path));
             return false;
         }
@@ -976,7 +1102,17 @@ class Importer
             if (!$xml_path || !is_dir($xml_path))
                 wp_send_json_error(__('Import-Verzeichnis nicht gefunden.', 'dbw-immo-suite'));
 
+            // Same lock as the cron path - an hourly cron tick must not chew
+            // on the ZIPs this batch run is about to process. Released in
+            // ajax_finalize_import, TTL covers an abandoned browser session.
+            if (!$this->acquire_lock(900)) {
+                wp_send_json_error(__('Ein Import laeuft bereits (Cron oder anderer Tab). Bitte kurz warten und erneut versuchen.', 'dbw-immo-suite'));
+            }
+
             $this->log_debug('AJAX Import-Pfad aufgeloest: ' . $xml_path);
+
+            // Housekeeping: abandoned tmp_ dirs + old .processed/.skipped files
+            $this->cleanup_import_dir($xml_path);
 
             // 2. Extract ZIPs & Check Hashes
             $zips = glob($xml_path . '*.zip');
@@ -997,6 +1133,7 @@ class Importer
                 }
 
                 if ($zips === false) {
+                    $this->release_lock();
                     wp_send_json_error(sprintf(
                         'Verzeichnis "%s" nicht lesbar (Berechtigungsproblem oder PHP open_basedir). Bitte den Uploads-Pfad in den Einstellungen wählen.',
                         $xml_path
@@ -1058,21 +1195,27 @@ class Importer
 
             // Allow garbage collection to track across batches
             set_transient('dbw_immo_batch_processed_ids', array(), 3600);
+            delete_transient(self::BATCH_FULL_SYNC_TRANSIENT);
 
             // 3. Collect XML files for JS queue
             $xml_files_data = array();
+            $batch_full_sync = false;
 
             // a) From active ZIPs
             foreach ($active_zips as $az) {
                 foreach ($az['xmls'] as $xml_file) {
                     $xml = $this->safe_load_xml($xml_file);
-                    if ($xml && isset($xml->anbieter->immobilie)) {
-                        $count = count($xml->anbieter->immobilie);
+                    if ($xml) {
+                        // xpath covers multi-anbieter feeds; ->anbieter->immobilie
+                        // would only count the first anbieter node
+                        $props = $xml->xpath('anbieter/immobilie');
+                        $count = is_array($props) ? count($props) : 0;
                         if ($count > 0) {
                             $xml_files_data[] = array(
                                 'file' => $xml_file,
                                 'count' => $count
                             );
+                            $batch_full_sync = $batch_full_sync || $this->is_full_sync($xml);
                         }
                     }
                 }
@@ -1083,17 +1226,23 @@ class Importer
             foreach ($loose_files as $file) {
                 if ($file->isFile() && strtolower($file->getExtension()) === 'xml' && strpos($file->getPathname(), '/tmp_') === false) {
                     $xml = $this->safe_load_xml($file->getPathname());
-                    if ($xml && isset($xml->anbieter->immobilie)) {
-                        $count = count($xml->anbieter->immobilie);
+                    if ($xml) {
+                        $props = $xml->xpath('anbieter/immobilie');
+                        $count = is_array($props) ? count($props) : 0;
                         if ($count > 0) {
                             $xml_files_data[] = array(
                                 'file' => $file->getPathname(),
                                 'count' => $count,
                                 'loose' => true
                             );
+                            $batch_full_sync = $batch_full_sync || $this->is_full_sync($xml);
                         }
                     }
                 }
+            }
+
+            if ($batch_full_sync) {
+                set_transient(self::BATCH_FULL_SYNC_TRANSIENT, 1, 3600);
             }
 
             if (empty($xml_files_data)) {
@@ -1131,6 +1280,7 @@ class Importer
 
         }
         catch (\Throwable $e) {
+            $this->release_lock();
             $this->log_debug('Prepare Error: ' . $e->getMessage());
             wp_send_json_error(__('Fehler bei der Import-Vorbereitung. Details im Import-Log.', 'dbw-immo-suite'));
         }
@@ -1173,13 +1323,16 @@ class Importer
             // processing several properties per request cuts that overhead 5-10x
             $limit = isset($_POST['limit']) ? max(1, min(20, intval($_POST['limit']))) : 1;
 
+            // Keep the shared lock alive while batches are running
+            $this->refresh_lock(900);
+
             // Validate file path is within allowed import directory
             $options = get_option('dbw_immo_suite_settings');
             $allowed_base = $this->resolve_import_path($options);
             $real_file = realpath($file);
             $real_base = $allowed_base ? realpath($allowed_base) : false;
 
-            if (!$real_file || !$real_base || strpos($real_file, $real_base) !== 0) {
+            if (!$real_file || !$real_base || !$this->path_within($real_file, $real_base)) {
                 wp_send_json_error(__('Ungültiger Dateipfad.', 'dbw-immo-suite'));
             }
 
@@ -1189,7 +1342,9 @@ class Importer
             $this->current_xml_file = $file; // IMPORTANT for images
 
             $xml = $this->safe_load_xml($file);
-            if (!$xml || !isset($xml->anbieter->immobilie[$index])) {
+            // xpath covers multi-anbieter feeds (same flat indexing as prepare)
+            $props = $xml ? $xml->xpath('anbieter/immobilie') : array();
+            if (!$xml || !is_array($props) || !isset($props[$index])) {
                 wp_send_json_error('Immobilie nicht gefunden bei Index ' . $index);
             }
 
@@ -1197,10 +1352,10 @@ class Importer
             $processed = 0;
 
             for ($i = $index; $i < $index + $limit; $i++) {
-                if (!isset($xml->anbieter->immobilie[$i])) {
+                if (!isset($props[$i])) {
                     break;
                 }
-                $this->import_property($xml->anbieter->immobilie[$i], $stats);
+                $this->import_property($props[$i], $stats);
                 $processed++;
             }
 
@@ -1278,7 +1433,7 @@ class Importer
                     $lf = sanitize_text_field($lf);
                     $real_path = realpath($lf);
                     // Only allow files within the configured import directory
-                    if ($real_path && strpos($real_path, realpath($allowed_base)) === 0 && file_exists($real_path)) {
+                    if ($real_path && $this->path_within($real_path, (string) realpath($allowed_base)) && file_exists($real_path)) {
                         $loose_stats = isset($per_file[$real_path])
                             ? $per_file[$real_path]
                             : array('created' => 0, 'updated' => 0, 'errors' => 0);
@@ -1289,17 +1444,23 @@ class Importer
                 }
             }
 
-            // 3. Garbage Collection
+            // 3. Garbage Collection - only if this batch run contained a
+            // delivery that declared itself a full sync (umfang="VOLL")
             $options = get_option('dbw_immo_suite_settings');
             if (!empty($options['enable_garbage_collection'])) {
                 $batch_ids = get_transient('dbw_immo_batch_processed_ids');
                 if (is_array($batch_ids) && !empty($batch_ids)) {
-                    // Populate instance variable for the GC run
-                    $this->processed_openimmo_ids = $batch_ids;
-                    $this->run_garbage_collection();
+                    if (get_transient(self::BATCH_FULL_SYNC_TRANSIENT)) {
+                        // Populate instance variable for the GC run
+                        $this->processed_openimmo_ids = $batch_ids;
+                        $this->run_garbage_collection();
+                    } else {
+                        $this->log_debug('Garbage Collection uebersprungen: Lieferung war kein Vollabgleich (umfang != VOLL).');
+                    }
                 }
             }
             delete_transient('dbw_immo_batch_processed_ids');
+            delete_transient(self::BATCH_FULL_SYNC_TRANSIENT);
 
             // Mark progress as done so polling stops
             $progress = get_transient('dbw_immo_import_progress');
@@ -1309,9 +1470,13 @@ class Importer
                 set_transient('dbw_immo_import_progress', $progress, 60);
             }
 
+            $this->release_lock();
+
             wp_send_json_success('Import und Cleanup erfolgreich abgeschlossen.');
         }
         catch (\Throwable $e) {
+            $this->release_lock();
+
             // Mark progress as error
             $progress = get_transient('dbw_immo_import_progress');
             if (is_array($progress)) {
@@ -1375,6 +1540,228 @@ class Importer
             $this->log_debug('Finalize Error: ' . $e->getMessage());
             wp_send_json_error(__('Fehler beim Abschluss. Details im Import-Log.', 'dbw-immo-suite'));
         }
+    }
+
+    /**
+     * AJAX: Dry run - analyze all pending files and report what an import
+     * WOULD do (create/update/delete, hash skips, GC simulation) without
+     * touching a single post, file hash or ZIP. Builds trust before the
+     * real run, especially with garbage collection enabled.
+     */
+    public function ajax_dry_run()
+    {
+        $temp_dirs = array();
+
+        try {
+            check_ajax_referer('dbw_immo_import_nonce', 'nonce');
+            if (!current_user_can('manage_options'))
+                wp_send_json_error('Keine Berechtigung');
+            if (function_exists('set_time_limit')) { set_time_limit(300); }
+
+            $options = get_option('dbw_immo_suite_settings');
+            $xml_path = $this->resolve_import_path($options);
+
+            if (!$xml_path || !is_dir($xml_path))
+                wp_send_json_error(__('Import-Verzeichnis nicht gefunden.', 'dbw-immo-suite'));
+
+            $result = array(
+                'files' => array(),
+                'gc'    => array(
+                    'enabled'   => !empty($options['enable_garbage_collection']),
+                    'full_sync' => false,
+                    'archive'   => array(),
+                    'brake'     => false,
+                ),
+                'notes' => array(),
+            );
+
+            $feed_ids  = array();
+            $full_sync = false;
+
+            // ZIPs
+            foreach (glob($xml_path . '*.zip') ?: array() as $zip_file) {
+                $zip = new \ZipArchive;
+                if ($zip->open($zip_file) !== TRUE) {
+                    $result['notes'][] = sprintf(__('%s: ZIP nicht lesbar (evtl. Upload noch aktiv).', 'dbw-immo-suite'), basename($zip_file));
+                    continue;
+                }
+
+                $temp_dir = $xml_path . 'tmp_dry_' . uniqid() . '/';
+                mkdir($temp_dir, 0755, true);
+                $temp_dirs[] = $temp_dir;
+
+                if (!$this->safe_extract_zip($zip, $temp_dir)) {
+                    $zip->close();
+                    $result['notes'][] = sprintf(__('%s: ZIP blockiert (Details im Import-Log).', 'dbw-immo-suite'), basename($zip_file));
+                    continue;
+                }
+                $zip->close();
+
+                $temp_xmls = array();
+                foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($temp_dir)) as $f) {
+                    if ($f->isFile() && strtolower($f->getExtension()) === 'xml') {
+                        $temp_xmls[] = $f->getPathname();
+                    }
+                }
+
+                if (empty($temp_xmls)) {
+                    $result['notes'][] = sprintf(__('%s: keine XML im Archiv.', 'dbw-immo-suite'), basename($zip_file));
+                    continue;
+                }
+
+                // Hash skip simulation
+                $hash = '';
+                foreach ($temp_xmls as $xf) { $hash .= md5_file($xf); }
+                $hash = md5($hash);
+                if ($hash === $this->get_last_xml_hash(basename($zip_file)) && !empty($hash)) {
+                    $result['files'][] = array('file' => basename($zip_file), 'skipped' => true, 'items' => array());
+                    continue;
+                }
+
+                $items = array();
+                foreach ($temp_xmls as $xf) {
+                    $this->dry_run_analyze_xml($xf, $items, $feed_ids, $full_sync);
+                }
+                $result['files'][] = array('file' => basename($zip_file), 'skipped' => false, 'items' => $items);
+            }
+
+            // Loose XMLs
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($xml_path)) as $f) {
+                if ($f->isFile() && strtolower($f->getExtension()) === 'xml'
+                    && strpos($f->getPathname(), '/tmp_') === false) {
+                    $items = array();
+                    $this->dry_run_analyze_xml($f->getPathname(), $items, $feed_ids, $full_sync);
+                    if (!empty($items)) {
+                        $result['files'][] = array('file' => basename($f->getPathname()), 'skipped' => false, 'items' => $items);
+                    }
+                }
+            }
+
+            // GC simulation
+            $result['gc']['full_sync'] = $full_sync;
+            if ($result['gc']['enabled'] && $full_sync && !empty($feed_ids)) {
+                $all = new \WP_Query(array(
+                    'post_type' => 'immobilie',
+                    'post_status' => 'publish',
+                    'posts_per_page' => -1,
+                    'fields' => 'ids',
+                    'meta_query' => array(array('key' => 'openimmo_id', 'compare' => 'EXISTS')),
+                ));
+                if ($all->have_posts()) {
+                    update_meta_cache('post', $all->posts);
+                    $feed_flip = array_flip($feed_ids);
+                    foreach ($all->posts as $pid) {
+                        $oid = get_post_meta($pid, 'openimmo_id', true);
+                        if (!empty($oid) && !isset($feed_flip[$oid])) {
+                            $result['gc']['archive'][] = get_the_title($pid) ?: ('#' . $pid);
+                        }
+                    }
+                    $total = count($all->posts);
+                    if (count($result['gc']['archive']) > 20 && count($result['gc']['archive']) * 2 > $total) {
+                        $result['gc']['brake'] = true;
+                    }
+                }
+            }
+
+            wp_send_json_success($result);
+        }
+        catch (\Throwable $e) {
+            $this->log_debug('Dry-Run Error: ' . $e->getMessage());
+            wp_send_json_error(__('Fehler beim Testlauf. Details im Import-Log.', 'dbw-immo-suite'));
+        }
+        finally {
+            foreach ($temp_dirs as $dir) {
+                $this->delete_directory($dir);
+            }
+        }
+    }
+
+    /**
+     * Classify every property of one XML for the dry run.
+     */
+    private function dry_run_analyze_xml($file, &$items, &$feed_ids, &$full_sync)
+    {
+        $xml = $this->safe_load_xml($file);
+        if (!$xml) {
+            $items[] = array('title' => basename($file), 'action' => 'fehler', 'detail' => __('XML nicht lesbar', 'dbw-immo-suite'));
+            return;
+        }
+
+        if ($this->is_full_sync($xml)) {
+            $full_sync = true;
+        }
+
+        $props = $xml->xpath('anbieter/immobilie');
+        foreach ((array) $props as $p) {
+            $vt = $p->verwaltung_techn;
+            $oid = (string) $vt->openimmo_obid;
+            if (empty($oid) && isset($p->obid)) {
+                $oid = (string) $p->obid;
+            }
+            if (empty($oid)) {
+                $items[] = array('title' => __('(ohne OpenImmo-ID)', 'dbw-immo-suite'), 'action' => 'fehler', 'detail' => '');
+                continue;
+            }
+
+            $action = '';
+            if (isset($vt->aktion)) {
+                $action = (string) $vt->aktion['aktionart'];
+                if ($action === '') { $action = (string) $vt->aktion['actiontype']; }
+                if ($action === '') { $action = (string) $vt->aktion; }
+                $action = strtoupper($action);
+            }
+
+            $title = isset($p->freitexte->objekttitel) ? trim((string) $p->freitexte->objekttitel) : '';
+            if ($title === '') {
+                $title = 'Immobilie ' . $oid;
+            }
+
+            $existing = $this->get_property_by_openimmo_id($oid);
+            $feed_ids[] = $oid;
+
+            if ($action === 'DELETE' || $action === 'LÖSCHEN' || $action === 'LOESCHEN') {
+                $items[] = array('title' => $title, 'action' => $existing ? 'loeschen' : 'unbekannt', 'detail' => $oid);
+            } elseif ($action === 'REFERENZ') {
+                $items[] = array('title' => $title, 'action' => 'referenz', 'detail' => $oid);
+            } else {
+                $items[] = array('title' => $title, 'action' => $existing ? 'aktualisieren' : 'neu', 'detail' => $oid);
+            }
+        }
+    }
+
+    /**
+     * AJAX: Return the tail of the import log for the dashboard viewer.
+     */
+    public function ajax_get_log()
+    {
+        check_ajax_referer('dbw_immo_import_nonce', 'nonce');
+        if (!current_user_can('manage_options'))
+            wp_send_json_error('Keine Berechtigung');
+
+        $log_file = DBW_IMMO_SUITE_PATH . 'logs/import-' . wp_hash('dbw_immo_import_log') . '.log';
+
+        if (!file_exists($log_file)) {
+            wp_send_json_success(array('lines' => array(), 'size' => 0));
+        }
+
+        $lines = array();
+        $fh = new \SplFileObject($log_file, 'r');
+        $fh->seek(PHP_INT_MAX);
+        $total = $fh->key();
+        $start = max(0, $total - 200);
+        $fh->seek($start);
+        while (!$fh->eof() && count($lines) < 220) {
+            $line = rtrim((string) $fh->current());
+            if ($line !== '') {
+                $lines[] = $line;
+            }
+            $fh->next();
+        }
+
+        wp_send_json_success(array(
+            'lines' => $lines,
+            'size'  => size_format((int) filesize($log_file)),
+        ));
     }
 
     /**
@@ -1469,6 +1856,41 @@ class Importer
     }
 
     /**
+     * Did this feed declare itself a full sync?
+     * OpenImmo header: <uebertragung art=".." umfang="VOLL|TEIL" .../>
+     */
+    private function is_full_sync($xml)
+    {
+        if (!isset($xml->uebertragung)) {
+            return false;
+        }
+        return strtoupper((string)$xml->uebertragung['umfang']) === 'VOLL';
+    }
+
+    /**
+     * Housekeeping in the import directory: abandoned tmp_ extraction dirs
+     * (aborted dashboard runs) and old .processed/.skipped files would
+     * otherwise accumulate forever on the customer's hosting quota.
+     */
+    private function cleanup_import_dir($xml_path)
+    {
+        foreach (glob($xml_path . 'tmp_*', GLOB_ONLYDIR) ?: array() as $dir) {
+            if (@filemtime($dir) < time() - DAY_IN_SECONDS) {
+                $this->delete_directory($dir);
+                $this->log_debug('Verwaistes Temp-Verzeichnis entfernt: ' . basename($dir));
+            }
+        }
+
+        foreach (array('*.processed', '*.skipped') as $pattern) {
+            foreach (glob($xml_path . $pattern) ?: array() as $file) {
+                if (is_file($file) && @filemtime($file) < time() - 14 * DAY_IN_SECONDS) {
+                    @unlink($file);
+                }
+            }
+        }
+    }
+
+    /**
      * Garbage Collection.
      * Archives all properties that were not in the current Full Sync.
      */
@@ -1487,33 +1909,53 @@ class Importer
             )
         ));
 
-        $archived_count = 0;
+        if (!$all_properties->have_posts()) {
+            return;
+        }
 
-        if ($all_properties->have_posts()) {
-            // One query instead of one get_post_meta query per property
-            update_meta_cache('post', $all_properties->posts);
-            $processed_flip = array_flip($this->processed_openimmo_ids);
-            foreach ($all_properties->posts as $post_id) {
-                $oid = get_post_meta($post_id, 'openimmo_id', true);
-                if (!empty($oid) && !isset($processed_flip[$oid])) {
-                    // Not in the feed -> Archive it
-                    $update_data = array(
-                        'ID' => $post_id,
-                        'post_status' => 'draft'
-                    );
-                    wp_update_post($update_data);
+        // One query instead of one get_post_meta query per property
+        update_meta_cache('post', $all_properties->posts);
+        $processed_flip = array_flip($this->processed_openimmo_ids);
 
-                    update_post_meta($post_id, '_dbw_immo_status', 'archiviert');
-                    update_post_meta($post_id, \DBW\ImmoSuite\Core\Media::META_ARCHIVED, current_time('mysql'));
-
-                    $this->log_debug("Garbage Collection: Immobilie $oid ($post_id) archiviert, da nicht mehr im Feed.");
-                    $archived_count++;
-                }
+        $to_archive = array();
+        foreach ($all_properties->posts as $post_id) {
+            $oid = get_post_meta($post_id, 'openimmo_id', true);
+            if (!empty($oid) && !isset($processed_flip[$oid])) {
+                $to_archive[$post_id] = $oid;
             }
         }
 
-        if ($archived_count > 0) {
-            $this->log_debug("Garbage Collection abgeschlossen: $archived_count Objekte archiviert.");
+        if (empty($to_archive)) {
+            return;
         }
+
+        // Emergency brake: a delivery that would wipe most of the inventory is
+        // almost certainly a partial delivery mislabeled as VOLL (or a broken
+        // export). Better a visible alert than an empty website.
+        $total = count($all_properties->posts);
+        if (count($to_archive) > 20 && count($to_archive) * 2 > $total) {
+            $this->log_debug(sprintf(
+                'Garbage Collection ABGEBROCHEN (Notbremse): haette %d von %d Objekten archiviert. Lieferung pruefen.',
+                count($to_archive),
+                $total
+            ));
+            $this->log_history('Garbage Collection (Notbremse)', array('created' => 0, 'updated' => 0, 'errors' => 1), 'error');
+            return;
+        }
+
+        foreach ($to_archive as $post_id => $oid) {
+            // Not in the feed -> Archive it
+            wp_update_post(array(
+                'ID' => $post_id,
+                'post_status' => 'draft'
+            ));
+
+            update_post_meta($post_id, '_dbw_immo_status', 'archiviert');
+            update_post_meta($post_id, \DBW\ImmoSuite\Core\Media::META_ARCHIVED, current_time('mysql'));
+
+            $this->log_debug("Garbage Collection: Immobilie $oid ($post_id) archiviert, da nicht mehr im Feed.");
+        }
+
+        $this->log_debug('Garbage Collection abgeschlossen: ' . count($to_archive) . ' Objekte archiviert.');
     }
 }

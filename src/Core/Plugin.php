@@ -104,6 +104,18 @@ class Plugin
         $this->loader->add_action('wp_ajax_dbw_immo_process_batch', $importer, 'ajax_process_batch');
         $this->loader->add_action('wp_ajax_dbw_immo_finalize_import', $importer, 'ajax_finalize_import');
         $this->loader->add_action('wp_ajax_dbw_immo_import_progress', $importer, 'ajax_import_progress');
+        $this->loader->add_action('wp_ajax_dbw_immo_dry_run', $importer, 'ajax_dry_run');
+        $this->loader->add_action('wp_ajax_dbw_immo_get_log', $importer, 'ajax_get_log');
+
+        // Expose view counter (frontend), weekly report + vendor telemetry
+        $stats = new \DBW\ImmoSuite\Core\Stats();
+        $this->loader->add_action('init', $stats, 'init');
+
+        $weekly_report = new \DBW\ImmoSuite\Core\WeeklyReport();
+        $this->loader->add_action('init', $weekly_report, 'init');
+
+        $telemetry = new \DBW\ImmoSuite\Core\Telemetry();
+        $this->loader->add_action('init', $telemetry, 'init');
 
         // Admin Assets
         $this->loader->add_action('admin_enqueue_scripts', $this, 'enqueue_admin_scripts');
@@ -149,7 +161,7 @@ class Plugin
 
         $allowed = array(
             'immobilie_page_dbw-immo-import',
-            'immobilie_page_dbw-immo-settings',
+            'immobilie_page_dbw-immo-suite-settings',
             'immobilie',
             'edit-immobilie',
         );

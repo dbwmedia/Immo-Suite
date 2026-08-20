@@ -7,6 +7,52 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.0] — 2026-08-20
+
+Grosses Release: Korrektheits- und Sicherheits-Fixes nach einem vollstaendigen Review der Import-Schicht (gegen das offizielle OpenImmo-1.2.7-XSD verifiziert) und des restlichen Plugins, dazu ein Schwung neuer Komfort-Features und eine ueberarbeitete Einstellungen-Oberflaeche.
+
+### Hinzugefuegt
+- **Wochenbericht per E-Mail** — Jeden Montagmorgen eine Zusammenfassung an den Makler: neue Objekte, Verkaeufe, Anfragen, aktive Objekte und die meistgesehenen Exposes der Woche, inklusive Import-Gesundheit. Empfaenger und An/Aus unter Einstellungen → Bericht & System, dort auch ein "Bericht jetzt testen"-Button.
+- **Expose-Aufrufe zaehlen** — Jede Detailseite zaehlt Aufrufe (serverseitig, ohne Cookies, ohne personenbezogene Daten; Crawler und eingeloggte Redakteure werden uebersprungen). Neue sortierbare Spalte "Aufrufe" in der Objektliste (gesamt + diese Woche), Top 3 im Wochenbericht.
+- **Testlauf (Vorschau) im Import-Dashboard** — Zeigt vor dem echten Import, was passieren wuerde: neue, aktualisierte und geloeschte Objekte pro Datei, Hash-Uebersprungene, und eine Simulation der Garbage Collection (inklusive Notbremsen-Warnung). Veraendert nichts.
+- **Import-Log im Dashboard** — Die letzten 200 Logzeilen sind direkt im Import-Dashboard einsehbar (aufklappbar, mit Aktualisieren-Button), statt nur als Datei auf dem Server.
+- **Weiterleitung statt 404** — Detail-URLs von geloeschten oder archivierten Objekten (geteilte Links, Google-Index) leiten jetzt per 301 auf die Referenz-Seite bzw. das Archiv, statt eine Fehlerseite zu zeigen.
+- **Status-Meldung an dbw media** — Taeglicher technischer Health-Ping (Plugin-Version, Import-Gesundheit, Objektanzahl; keine personenbezogenen Daten, keine Besucherdaten, nicht-blockierend). Abschaltbar unter Einstellungen → Bericht & System. So faellt ein gestoerter FTP-Feed beim Hersteller auf, bevor der Kunde ihn bemerkt.
+
+### Geaendert (Oberflaeche)
+- **Einstellungen-Seite komplett ueberarbeitet** — Vertikale Navigation mit Icons statt Tab-Leiste, Karten-Layout, Toggle-Schalter statt Checkboxen, klebende Speichern-Leiste, Versions-Badge. Neuer Bereich "Bericht & System".
+
+### Behoben
+- **DELETE-Aktionen wurden nie erkannt** — Der Import las das Attribut `actiontype`, der OpenImmo-Standard definiert aber `aktionart`. Loeschungen aus der Maklersoftware kamen dadurch nie an: geloeschte Objekte blieben veroeffentlicht. Jetzt wird `aktionart` gelesen (mit `actiontype` und Node-Wert als Fallback fuer nicht-standardkonforme Feeds). Die Standard-Aktion `REFERENZ` setzt das Objekt jetzt auf den Referenz-Status.
+- **Vermarktungsart wurde aus Preisen geraten** — Objekte mit "Preis auf Anfrage" bekamen keinen Kauf/Miete-Term und waren im Filter unauffindbar. Jetzt wird primaer das Pflichtelement `<vermarktungsart>` ausgewertet (inkl. Erbpacht und Leasing); die Preis-Heuristik bleibt nur als Fallback.
+- **Verbrauchsausweise zeigten keinen Energiekennwert** — Beim haeufigsten Ausweistyp (Verbrauchsausweis) steht der Wert in `energieverbrauchkennwert`, das nie importiert wurde. Damit fehlten GEG-Pflichtangaben im Expose. Der Wert wird jetzt importiert und faellt in das bestehende Anzeige-Feld zurueck. Ein leeres Ausweis-Baujahr ueberschreibt ausserdem nicht mehr das Gebaeude-Baujahr.
+- **Keller wurde nie als Ausstattung erkannt** — Der Import las ein nicht existierendes XML-Attribut (`kpiuell` statt `keller`).
+- **Ort- und Objektart-Terme sammelten sich an** — Korrigierte ein Makler den Ort oder die Objektart, blieb der alte Begriff zusaetzlich am Objekt haengen (Objekt erschien in zwei Filtern). Terme werden jetzt ersetzt statt angehaengt.
+- **Import-Historie im Cron-Pfad zeigte Laufsummen** — Pro Datei stehen jetzt die tatsaechlichen Zahlen, nicht die aufsummierten des ganzen Laufs (betraf auch die Fehler-Erkennung des Import-Monitors).
+- **Multi-Anbieter-Feeds im Dashboard-Import** — Der stapelweise Import verarbeitete nur den ersten `<anbieter>`-Knoten einer XML; jetzt alle (wie der Cron-Pfad).
+- **Referenz-Seiten-Verknuepfung ging beim Speichern verloren** — Jeder Klick auf "Einstellungen speichern" warf die intern gespeicherte `reference_page_id` weg; die huebschen Referenz-URLs und der Template-Fallback waren dadurch faktisch nie aktiv. Der Wert wird jetzt uebernommen. Die automatisch erstellte Seite heisst ausserdem "Referenzen" statt des Karten-Badge-Texts.
+- **404 auf Taxonomie-Seiten direkt nach Plugin-Aktivierung** — Der Aktivierungs-Hook registrierte nur den Post Type, nicht die Taxonomien; deren Permalinks fehlten bis zum manuellen Neuspeichern der Permalinks.
+- **Expose-Anfrage: Sperrzeit verbrannte bei Eingabefehlern** — Die 2-Minuten-Sperre wurde schon vor der Validierung gesetzt; wer einen Tippfehler korrigierte, wurde abgewiesen. Die Sperre greift jetzt erst nach erfolgreicher Verarbeitung.
+- **Leere Adresse zeigte ein einsames Komma** auf der Detailseite.
+
+### Sicherheit
+- **Stored XSS ueber Feed-Daten im JSON-LD geschlossen** — Ein `</script>` in Feed-Daten (Titel, Ausstattung, Kontaktname) konnte aus dem Schema-Block ausbrechen. Die JSON-Ausgabe escapet jetzt HTML-relevante Zeichen.
+- **Stored XSS ueber Geo-Koordinaten geschlossen** — Koordinaten aus dem Feed landeten unzureichend maskiert in einem numerischen JavaScript-Kontext der Karten-Initialisierung. Sie werden jetzt hart als Zahlen ausgegeben.
+- **Zip-Bomben-Schutz** — Archive mit mehr als 2000 Dateien oder ueber 500 MB entpackter Groesse werden abgewiesen, bevor sie die Hosting-Quota fuellen.
+- **Pfad-Containment-Checks gehaertet** — Prefix-Vergleiche akzeptierten Nachbarverzeichnisse mit gleichem Namensanfang.
+- **Anfragen-Status erfordert jetzt Bearbeitungsrecht am Datensatz** (statt pauschal `edit_posts`).
+
+### Geaendert
+- **Ein gemeinsames Lock fuer beide Import-Wege** — Der stuendliche Cron kann nicht mehr mitten in einem laufenden Dashboard-Import dieselben ZIP-Dateien parallel verarbeiten (Ursache fuer potenzielle Duplikate und verlorene Dateien). Das Lock wird waehrend der Batches verlaengert und laeuft bei Abbruch automatisch aus.
+- **Garbage Collection nur noch bei echtem Vollabgleich** — Sie laeuft nur, wenn die Lieferung sich selbst als Vollabgleich deklariert (`<uebertragung umfang="VOLL">`). Teillieferungen koennen den Bestand nicht mehr leerfegen. Zusaetzliche Notbremse: Wuerde ein Lauf mehr als die Haelfte des Bestands (und mehr als 20 Objekte) archivieren, bricht er ab und meldet einen Fehler statt auszufuehren.
+- **Zeitbudget fuer den Cron-Import** — Grosse Erstimporte werden nach ~8 Minuten kontrolliert unterbrochen und im naechsten Lauf fortgesetzt (Bild-Deduplizierung macht die Fortsetzung guenstig), statt im Timeout zu sterben.
+- **Import-Verzeichnis raeumt sich selbst auf** — Verwaiste Temp-Ordner (aelter als 24 h) und `.processed`/`.skipped`-Dateien (aelter als 14 Tage) werden bei jedem Lauf entfernt.
+- **Auto-Update-Checker mit Schutz** — Fehlt das vendor-Verzeichnis im Build, gibt es keine Updates statt einer abgestuerzten Website.
+- **Endgueltige Loesch-Aktionen in den Medien-Tools verlangen jetzt eine Bestaetigung** (Papierkorb leeren, Archiv loeschen).
+- **DSGVO-Aufraeumlauf der Anfragen ohne Tagesdeckel** — Bisher maximal 100 Loeschungen pro Tag, jetzt wird bis zum leeren Bestand gearbeitet.
+
+---
+
 ## [2.7.0] — 2026-08-20
 
 ### Behoben
