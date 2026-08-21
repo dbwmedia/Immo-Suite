@@ -7,6 +7,16 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.2] — 2026-08-21
+
+### Hinzugefuegt
+- **Bestaetigungs-E-Mail an Interessenten** — Wer eine Kontakt- oder Expose-Anfrage absendet, bekommt eine freundliche Bestaetigung mit Objektlink und den Kontaktdaten des Ansprechpartners. Der Antwort-an-Header (Reply-To) zeigt auf den Ansprechpartner der Immobilie: Antworten auf die Mail landen also beim Makler, auch wenn die Website ueber eine No-Reply-Adresse (SMTP) versendet. Abschaltbar unter Einstellungen → Darstellung → Kontaktanfragen. Texte folgen der Du/Sie-Einstellung.
+
+### Geaendert
+- **Spam-Schutz blockiert keine echten Interessenten mehr** — Bisher galt pauschal: eine Anfrage pro Besucher alle 2 Minuten, egal fuer welches Objekt. Wer direkt nacheinander zwei verschiedene Immobilien anfragen wollte (ein guter Lead!), wurde abgewiesen. Neu: Die 2-Minuten-Sperre gilt nur noch pro Objekt (gegen Doppel-Klicks), dazu ein Stundenlimit von 10 Anfragen pro Besucher gegen Massen-Spam ueber den ganzen Bestand.
+
+---
+
 ## [2.8.1] — 2026-08-20
 
 ### Behoben

@@ -34,6 +34,8 @@ $transient_patterns = array(
     '\_transient\_timeout\_dbw\_contact\_%',
     '\_transient\_dbw\_expose\_%',
     '\_transient\_timeout\_dbw\_expose\_%',
+    '\_transient\_dbw\_rl\_hour\_%',
+    '\_transient\_timeout\_dbw\_rl\_hour\_%',
 );
 foreach ($transient_patterns as $pattern) {
     $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $pattern));

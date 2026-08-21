@@ -456,6 +456,7 @@ class Settings
 		// ── Kontakt / E-Mail ──
 		add_settings_section('section_contact', __('Kontaktanfragen', 'dbw-immo-suite'), array($this, 'print_contact_section_info'), 'dbw-settings-display');
 		add_settings_field('contact_cc_email', __('CC-Adresse (optional)', 'dbw-immo-suite'), array($this, 'contact_cc_email_callback'), 'dbw-settings-display', 'section_contact');
+		add_settings_field('confirmation_email_enabled', __('Bestaetigung an Interessenten', 'dbw-immo-suite'), array($this, 'confirmation_email_callback'), 'dbw-settings-display', 'section_contact');
 		add_settings_field('inquiry_store', __('Anfragen-Inbox', 'dbw-immo-suite'), array($this, 'inquiry_store_callback'), 'dbw-settings-display', 'section_contact');
 		add_settings_field('inquiry_retention_days', __('Anfragen loeschen nach (Tage)', 'dbw-immo-suite'), array($this, 'inquiry_retention_callback'), 'dbw-settings-display', 'section_contact');
 
@@ -560,6 +561,15 @@ class Settings
 	public function print_system_section_info()
 	{
 		print __('Damit wir Probleme sehen, bevor sie auffallen.', 'dbw-immo-suite');
+	}
+
+	public function confirmation_email_callback()
+	{
+		$this->checkbox_callback(
+			'confirmation_email_enabled',
+			__('Interessenten erhalten nach dem Absenden eine Bestaetigungs-E-Mail mit Objektlink und Ansprechpartner. Antworten auf diese Mail gehen direkt an den Ansprechpartner (Reply-To), auch wenn die Website ueber eine No-Reply-Adresse versendet.', 'dbw-immo-suite'),
+			true
+		);
 	}
 
 	public function weekly_report_enabled_callback()
@@ -732,6 +742,9 @@ class Settings
 		// Inquiry inbox
 		$new_input['inquiry_store'] = isset($input['inquiry_store']) ? 1 : 0;
 		$new_input['inquiry_retention_days'] = isset($input['inquiry_retention_days']) ? absint($input['inquiry_retention_days']) : 180;
+
+		// Visitor confirmation mail
+		$new_input['confirmation_email_enabled'] = isset($input['confirmation_email_enabled']) ? 1 : 0;
 
 		// Weekly report + telemetry
 		$new_input['weekly_report_enabled'] = isset($input['weekly_report_enabled']) ? 1 : 0;

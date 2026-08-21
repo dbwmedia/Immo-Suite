@@ -195,17 +195,6 @@ class ExposeRequest
             wp_send_json_error(__('Diese Funktion ist deaktiviert.', 'dbw-immo-suite'));
         }
 
-        // Rate limiting (keyed by IP only — email would be attacker-controlled).
-        // The transient is set only after successful processing, so a rejected
-        // form (validation error) doesn't burn the visitor's retry window.
-        $rate_key = 'dbw_expose_' . md5($_SERVER['REMOTE_ADDR'] ?? '');
-        if (get_transient($rate_key)) {
-            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
-                __('Bitte warten Sie einen Moment, bevor Sie erneut absenden.', 'dbw-immo-suite'),
-                __('Bitte warte einen Moment, bevor du erneut absendest.', 'dbw-immo-suite')
-            ));
-        }
-
         // Honeypot
         if (!empty($_POST['website'])) {
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(
@@ -238,6 +227,15 @@ class ExposeRequest
 
         if (!is_email($email)) {
             wp_send_json_error(__('Bitte eine gueltige E-Mail-Adresse eingeben.', 'dbw-immo-suite'));
+        }
+
+        // Rate limiting: per IP+property (120s) + hourly per-IP cap.
+        // Requesting exposes for several DIFFERENT objects stays possible.
+        if (!ContactForm::rate_limit_ok('expose', $post_id)) {
+            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
+                __('Bitte warten Sie einen Moment, bevor Sie erneut absenden.', 'dbw-immo-suite'),
+                __('Bitte warte einen Moment, bevor du erneut absendest.', 'dbw-immo-suite')
+            ));
         }
 
         $property_title = get_the_title($post_id);
@@ -289,9 +287,11 @@ class ExposeRequest
 
         $sent = wp_mail($to, $subject, $body, $headers);
 
-        set_transient($rate_key, 1, 120);
+        ContactForm::rate_limit_hit('expose', $post_id);
 
         if ($sent) {
+            ContactForm::send_visitor_confirmation($post_id, $name, $email);
+
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(
                 __('Ihre Expose-Anfrage wurde erfolgreich versendet.', 'dbw-immo-suite'),
                 __('Deine Expose-Anfrage wurde erfolgreich versendet.', 'dbw-immo-suite')

@@ -31,6 +31,131 @@ class ContactForm
         ));
     }
 
+    /* ---------------------------------------------------------------------
+     * Rate limiting (shared with ExposeRequest)
+     *
+     * Two layers instead of one blunt per-IP block:
+     * 1. Per IP AND property: 120s. Blocks double-submits, but a visitor
+     *    who inquires about several different objects in a row is a GOOD
+     *    lead, not a spammer.
+     * 2. Per IP across everything: max 10 submissions per hour. Catches
+     *    bots that spray the whole portfolio.
+     * ------------------------------------------------------------------ */
+
+    const RATE_HOURLY_MAX = 10;
+
+    /**
+     * @return bool True if the request may proceed.
+     */
+    public static function rate_limit_ok($prefix, $post_id)
+    {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        if (get_transient('dbw_' . $prefix . '_' . md5($ip . '|' . $post_id))) {
+            return false;
+        }
+
+        if ((int) get_transient('dbw_rl_hour_' . md5($ip)) >= self::RATE_HOURLY_MAX) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Record a processed submission (called after successful handling).
+     */
+    public static function rate_limit_hit($prefix, $post_id)
+    {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        set_transient('dbw_' . $prefix . '_' . md5($ip . '|' . $post_id), 1, 120);
+
+        $hour_key = 'dbw_rl_hour_' . md5($ip);
+        $count = (int) get_transient($hour_key);
+        set_transient($hour_key, $count + 1, HOUR_IN_SECONDS);
+    }
+
+    /* ---------------------------------------------------------------------
+     * Confirmation mail to the visitor (shared with ExposeRequest)
+     * ------------------------------------------------------------------ */
+
+    public static function confirmation_enabled()
+    {
+        $settings = get_option('dbw_immo_suite_settings', array());
+        return !isset($settings['confirmation_email_enabled']) || (int) $settings['confirmation_email_enabled'] === 1;
+    }
+
+    /**
+     * Friendly confirmation to the person who submitted the form.
+     * Reply-To is the property's contact person, so a simple reply reaches
+     * the broker even when the site sends via a no-reply SMTP address.
+     */
+    public static function send_visitor_confirmation($post_id, $name, $email)
+    {
+        if (!self::confirmation_enabled() || !is_email($email)) {
+            return;
+        }
+
+        $settings = get_option('dbw_immo_suite_settings', array());
+        $firm = !empty($settings['org_name']) ? $settings['org_name'] : get_bloginfo('name');
+
+        $property_title = get_the_title($post_id);
+        $property_url   = get_permalink($post_id);
+
+        $kp_name  = trim(get_post_meta($post_id, 'kontaktperson_vorname', true) . ' ' . get_post_meta($post_id, 'kontaktperson_name', true));
+        $kp_tel   = get_post_meta($post_id, 'kontaktperson_tel', true);
+        $kp_email = get_post_meta($post_id, 'kontaktperson_email', true);
+        if (!is_email($kp_email)) {
+            $kp_email = get_option('admin_email');
+        }
+
+        $subject = sprintf(__('Ihre Anfrage: %s', 'dbw-immo-suite'), $property_title);
+        $subject = \DBW\ImmoSuite\dbw_anrede($subject, sprintf(__('Deine Anfrage: %s', 'dbw-immo-suite'), $property_title));
+
+        $greeting = \DBW\ImmoSuite\dbw_anrede(
+            sprintf(__('Guten Tag %s,', 'dbw-immo-suite'), $name),
+            sprintf(__('Hallo %s,', 'dbw-immo-suite'), $name)
+        );
+        $thanks = \DBW\ImmoSuite\dbw_anrede(
+            __('vielen Dank fuer Ihre Anfrage zu folgendem Objekt:', 'dbw-immo-suite'),
+            __('vielen Dank fuer deine Anfrage zu folgendem Objekt:', 'dbw-immo-suite')
+        );
+        $followup = \DBW\ImmoSuite\dbw_anrede(
+            __('Wir haben Ihre Nachricht erhalten und melden uns schnellstmoeglich bei Ihnen.', 'dbw-immo-suite'),
+            __('Wir haben deine Nachricht erhalten und melden uns schnellstmoeglich bei dir.', 'dbw-immo-suite')
+        );
+
+        $body  = $greeting . "\n\n";
+        $body .= $thanks . "\n\n";
+        $body .= $property_title . "\n";
+        $body .= $property_url . "\n\n";
+        $body .= $followup . "\n\n";
+
+        if ($kp_name || $kp_tel) {
+            $body .= __('Ihr direkter Ansprechpartner:', 'dbw-immo-suite') . "\n";
+            if ($kp_name) {
+                $body .= $kp_name . "\n";
+            }
+            if ($kp_tel) {
+                $body .= __('Telefon:', 'dbw-immo-suite') . ' ' . $kp_tel . "\n";
+            }
+            $body .= __('E-Mail:', 'dbw-immo-suite') . ' ' . $kp_email . "\n\n";
+        }
+
+        $body .= __('Viele Gruesse', 'dbw-immo-suite') . "\n";
+        $body .= $firm . "\n";
+
+        // Reply-To: the broker, not the (possibly no-reply) sender address
+        $reply_name = $kp_name ?: $firm;
+        $headers = array(
+            'Content-Type: text/plain; charset=UTF-8',
+            'Reply-To: "' . str_replace('"', '', $reply_name) . '" <' . $kp_email . '>',
+        );
+
+        wp_mail($email, $subject, $body, $headers);
+    }
+
     /**
      * Handle AJAX form submission with intent-based lead qualification.
      */
@@ -40,15 +165,6 @@ class ContactForm
             wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
                 __('Die Sitzung ist abgelaufen. Bitte laden Sie die Seite neu und versuchen Sie es erneut.', 'dbw-immo-suite'),
                 __('Die Sitzung ist abgelaufen. Bitte lade die Seite neu und versuch es erneut.', 'dbw-immo-suite')
-            ));
-        }
-
-        // Rate limiting (keyed by IP only — email would be attacker-controlled)
-        $rate_key = 'dbw_contact_' . md5($_SERVER['REMOTE_ADDR'] ?? '');
-        if (get_transient($rate_key)) {
-            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
-                __('Bitte warten Sie einen Moment, bevor Sie erneut absenden.', 'dbw-immo-suite'),
-                __('Bitte warte einen Moment, bevor du erneut absendest.', 'dbw-immo-suite')
             ));
         }
 
@@ -85,6 +201,15 @@ class ContactForm
 
         if (!is_email($email)) {
             wp_send_json_error(__('Bitte eine gueltige E-Mail-Adresse eingeben.', 'dbw-immo-suite'));
+        }
+
+        // Rate limiting: per IP+property (120s) + hourly per-IP cap.
+        // Inquiring about several DIFFERENT objects in a row stays possible.
+        if (!self::rate_limit_ok('contact', $post_id)) {
+            wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(
+                __('Bitte warten Sie einen Moment, bevor Sie erneut absenden.', 'dbw-immo-suite'),
+                __('Bitte warte einen Moment, bevor du erneut absendest.', 'dbw-immo-suite')
+            ));
         }
 
         $property_title = get_the_title($post_id);
@@ -199,9 +324,11 @@ class ContactForm
         $sent = wp_mail($to, $subject, $body, $headers);
 
         // Set rate limit after successful processing (even if mail fails)
-        set_transient($rate_key, 1, 120);
+        self::rate_limit_hit('contact', $post_id);
 
         if ($sent) {
+            self::send_visitor_confirmation($post_id, $name, $email);
+
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(
                 __('Ihre Anfrage wurde erfolgreich versendet. Wir melden uns bei Ihnen.', 'dbw-immo-suite'),
                 __('Deine Anfrage wurde erfolgreich versendet. Wir melden uns bei dir.', 'dbw-immo-suite')
