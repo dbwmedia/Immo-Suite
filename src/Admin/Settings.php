@@ -251,7 +251,7 @@ class Settings
 			?></li>
 			<li><?php esc_html_e('Gespeicherte Anfragen sind in den WordPress-Datenschutz-Export und die Loeschung nach Art. 15/17 DSGVO eingebunden.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('Spam-Schutz speichert die IP-Adresse nur als Hashwert fuer maximal 2 Minuten.', 'dbw-immo-suite'); ?></li>
-			<li><?php esc_html_e('OpenStreetMap-Karten laden erst nach aktivem Klick (Zwei-Klick-Loesung, Borlabs-kompatibel).', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('OpenStreetMap-Karten laden erst nach aktivem Klick (Zwei-Klick-Loesung). Wird im Cookie-Tool ein Karten-Service akzeptiert, laedt die Karte direkt - Service-ID im Customizer hinterlegen.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('WhatsApp-Button: Datenuebertragung an Meta erst beim Klick auf den Link.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('Merkliste liegt ausschliesslich im Browser des Besuchers (localStorage).', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('Anfrage-Mails enthalten einen Zeitstempel der Datenschutz-Zustimmung (Nachweis nach Art. 7 DSGVO).', 'dbw-immo-suite'); ?></li>

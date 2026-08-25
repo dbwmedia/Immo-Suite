@@ -152,6 +152,42 @@ class Plugin
     }
 
     /**
+     * Consent service ids that may release the map.
+     *
+     * Sites name the map service differently in their consent tool
+     * (Borlabs ships "maps" for Google Maps, an OSM service is created by hand),
+     * so the id is configurable and filterable.
+     *
+     * @return array
+     */
+    private static function map_consent_service_ids()
+    {
+        $raw = (string) get_theme_mod('dbw_immo_map_consent_service', 'openstreetmap');
+        $ids = array_filter(array_map('trim', explode(',', $raw)));
+        if (empty($ids)) {
+            $ids = array('openstreetmap');
+        }
+        $ids = apply_filters('dbw_immo_map_consent_service_ids', $ids);
+        return array_values(array_unique(array_map('strval', (array) $ids)));
+    }
+
+    /**
+     * Bridge between the map placeholder and whatever consent tool the site runs.
+     * Always loaded next to Leaflet: without it the placeholder still works,
+     * but an already granted consent would never skip it.
+     */
+    private static function enqueue_map_consent_bridge()
+    {
+        wp_enqueue_script('dbw-immo-map-consent', self::asset_url('assets/js/map-consent.js'), array('leaflet'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+        wp_localize_script('dbw-immo-map-consent', 'dbwImmoMapConsentCfg', array(
+            'serviceIds' => self::map_consent_service_ids(),
+            // Opt-in for the WP Consent API (Real Cookie Banner, Complianz):
+            // empty by default, categories are too coarse to guess.
+            'consentApiCategory' => (string) apply_filters('dbw_immo_map_consent_api_category', ''),
+        ));
+    }
+
+    /**
      * Enqueue Admin Scripts
      */
     public function enqueue_admin_scripts($hook)
@@ -309,7 +345,8 @@ class Plugin
             && \DBW\ImmoSuite\Frontend\ArchiveMap::is_enabled()) {
             wp_enqueue_style('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.css', array(), '1.9.4');
             wp_enqueue_script('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true);
-            wp_enqueue_script('dbw-immo-archive-map-js', self::asset_url('assets/js/archive-map.js'), array('leaflet'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
+            self::enqueue_map_consent_bridge();
+            wp_enqueue_script('dbw-immo-archive-map-js', self::asset_url('assets/js/archive-map.js'), array('leaflet', 'dbw-immo-map-consent'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
         }
 
         // Single property page scripts (lightbox + contact modal)
@@ -324,6 +361,7 @@ class Plugin
                 && get_theme_mod('dbw_immo_single_show_address', true)) {
                 wp_enqueue_style('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.css', array(), '1.9.4');
                 wp_enqueue_script('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true);
+                self::enqueue_map_consent_bridge();
             }
 
             wp_enqueue_script('dbw-immo-lightbox', self::asset_url('assets/js/lightbox.js'), array(), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));

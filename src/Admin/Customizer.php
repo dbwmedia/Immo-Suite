@@ -154,6 +154,18 @@ class Customizer
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_address', true, __('Adresse anzeigen (wenn aus: Karte wird ebenfalls ausgeblendet)', 'dbw-immo-suite'), 'dbw_immo_single_section');
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_map', true, __('Lage / Karte anzeigen', 'dbw-immo-suite'), 'dbw_immo_single_section');
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_map_consent', true, __('Karten-Consent anzeigen (DSGVO: OSM-Tiles uebertragen IP-Adresse)', 'dbw-immo-suite'), 'dbw_immo_single_section');
+
+        // Consent tool service id: lets an existing "yes" skip the placeholder
+        $wp_customize->add_setting('dbw_immo_map_consent_service', array(
+            'default' => 'openstreetmap',
+            'sanitize_callback' => 'sanitize_text_field',
+        ));
+        $wp_customize->add_control('dbw_immo_map_consent_service', array(
+            'label' => __('Consent-Service-ID der Karte', 'dbw-immo-suite'),
+            'description' => __('ID des Karten-Services im Cookie-Tool (Borlabs, Real Cookie Banner ...). Hat der Besucher diesen Service akzeptiert, laedt die Karte ohne zweiten Klick. Mehrere IDs mit Komma trennen. Leer lassen oder Service nicht vorhanden: es bleibt bei der Zwei-Klick-Loesung.', 'dbw-immo-suite'),
+            'section' => 'dbw_immo_single_section',
+            'type' => 'text',
+        ));
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_energy', true, __('Energieausweis anzeigen', 'dbw-immo-suite'), 'dbw_immo_single_section');
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_gallery', false, __('Galerie-Modul anzeigen (Beta)', 'dbw-immo-suite'), 'dbw_immo_single_section');
         $this->add_toggle_setting($wp_customize, 'dbw_immo_single_show_contact', true, __('Kontaktbox anzeigen', 'dbw-immo-suite'), 'dbw_immo_single_section');

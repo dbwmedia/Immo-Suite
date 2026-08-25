@@ -135,10 +135,8 @@
         var consentEl = document.getElementById('dbw-archive-map-consent');
         if (!consentEl) return true; // consent mode disabled
         if (initialized) return true;
-        if (window.BorlabsCookie && window.BorlabsCookie.checkCookieConsent && window.BorlabsCookie.checkCookieConsent('openstreetmap')) {
-            return true;
-        }
-        return false;
+        // Consent tool detection lives in map-consent.js (tool-agnostic)
+        return !!(window.dbwImmoMapConsent && window.dbwImmoMapConsent.isGranted());
     }
 
     function activate() {
@@ -158,14 +156,20 @@
     document.addEventListener('DOMContentLoaded', function () {
         var loadBtn = document.getElementById('dbw-archive-map-load');
         if (loadBtn) {
-            loadBtn.addEventListener('click', initMap);
+            // Explicit click is consent in itself, no tool needed
+            loadBtn.addEventListener('click', function () {
+                if (window.dbwImmoMapConsent) window.dbwImmoMapConsent.grant();
+                initMap();
+            });
         }
 
-        document.addEventListener('borlabs-cookie-consent-saved', function () {
-            var wrapper = document.getElementById('dbw-archive-map-wrapper');
-            if (wrapper && !wrapper.hidden && hasConsent()) {
-                initMap();
-            }
-        });
+        // Consent granted in the site's consent tool (now or later)
+        if (window.dbwImmoMapConsent) {
+            window.dbwImmoMapConsent.onGrant(function () {
+                var wrapper = document.getElementById('dbw-archive-map-wrapper');
+                // Map view may be hidden behind the view switcher — activate() handles that case
+                if (!wrapper || !wrapper.hidden) initMap();
+            });
+        }
     });
 })();

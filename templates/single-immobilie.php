@@ -396,24 +396,28 @@ get_header(); ?>
 						// Leaflet CSS/JS is enqueued in Plugin::enqueue_public_scripts (wp_head-safe)
 						if ($map_consent) {
 							// Consent mode: init on button click or Borlabs consent
-							wp_add_inline_script('leaflet', sprintf(
+							wp_add_inline_script('dbw-immo-map-consent', sprintf(
 								'(function(){' .
 								'var consent=document.getElementById("dbw-map-consent");' .
 								'var mapEl=document.getElementById("dbw-map");' .
 								'var btn=document.getElementById("dbw-map-load");' .
 								'if(!consent||!mapEl||!btn)return;' .
+								'var done=false;' .
 								'function initMap(){' .
+									'if(done)return;done=true;' .
 									'consent.style.display="none";' .
 									'mapEl.style.display="block";' .
 									'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%1$.7F,%2$.7F],14);' .
 									'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>",maxZoom:18}).addTo(m);' .
 									'L.marker([%1$.7F,%2$.7F]).addTo(m);' .
 								'}' .
-								'btn.addEventListener("click",initMap);' .
-								'if(window.BorlabsCookie&&window.BorlabsCookie.checkCookieConsent("openstreetmap")){initMap();}' .
-								'document.addEventListener("borlabs-cookie-consent-saved",function(){' .
-									'if(window.BorlabsCookie.checkCookieConsent("openstreetmap")){initMap();}' .
+								// Explicit click is consent in itself, no tool needed
+								'btn.addEventListener("click",function(){' .
+									'if(window.dbwImmoMapConsent)window.dbwImmoMapConsent.grant();' .
+									'initMap();' .
 								'});' .
+								// Skip the placeholder when the consent tool already has a yes
+								'if(window.dbwImmoMapConsent)window.dbwImmoMapConsent.onGrant(initMap);' .
 								'})();',
 								// Float cast: coords land in a bare numeric JS context,
 								// esc_js would not stop a breakout there
@@ -421,7 +425,7 @@ get_header(); ?>
 							));
 						} else {
 							// Direct mode: init map immediately
-							wp_add_inline_script('leaflet', sprintf(
+							wp_add_inline_script('dbw-immo-map-consent', sprintf(
 								'(function(){' .
 								'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%1$.7F,%2$.7F],14);' .
 								'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>",maxZoom:18}).addTo(m);' .

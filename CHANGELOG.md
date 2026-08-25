@@ -7,6 +7,21 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.3] - 2026-08-25
+
+### Behoben
+
+- **Karte lud trotz erteiltem Consent nicht** - Die Borlabs-Anbindung nutzte `BorlabsCookie.checkCookieConsent()`, die API von Borlabs Cookie 2.x. Unter Borlabs 3.x (getestet mit 3.4.2.2) existiert diese Methode nicht mehr, der Aufruf lief ins Leere und der "Karte laden"-Platzhalter blieb auch dann stehen, wenn der Besucher im Banner alles akzeptiert hatte.
+- **Consent-Pruefung lief zu frueh** - Optimierer wie WP Rocket / AccelerateWP verzoegern Cookie-Tools bis zur ersten Besucher-Interaktion ("Delay JS"). Die einmalige Pruefung beim Laden der Seite kam damit immer zu frueh. Der Consent wird jetzt zusaetzlich nach der ersten Interaktion erneut geprueft.
+
+### Hinzugefuegt
+
+- **Cookie-Tool-unabhaengige Consent-Bruecke** (`assets/js/map-consent.js`) - Erkennt Borlabs Cookie 3.x und 2.x automatisch, unterstuetzt optional die WP Consent API (Real Cookie Banner, Complianz) und laesst sich ueber `window.dbwImmoMapHasConsent(serviceIds)` an jedes beliebige Tool anbinden. Ohne erkanntes Tool bleibt es bei der bisherigen Zwei-Klick-Loesung, die Karte laedt also nie ungefragt.
+- **Customizer: "Consent-Service-ID der Karte"** (Detailansicht, Standard `openstreetmap`) - ID des Karten-Services im Cookie-Tool, mehrere IDs mit Komma moeglich. Wichtig: Der Service muss im Cookie-Tool auch existieren. Borlabs bringt von Haus aus nur `maps` (Google Maps) mit, ein OSM-Service wird von Hand angelegt (Gruppe "Externe Medien").
+- **Filter** `dbw_immo_map_consent_service_ids` (Service-IDs) und `dbw_immo_map_consent_api_category` (Kategorie fuer die WP Consent API, standardmaessig leer).
+
+---
+
 ## [2.8.2] — 2026-08-21
 
 ### Hinzugefuegt
