@@ -583,6 +583,11 @@ class Settings
 		add_settings_field('weekly_report_email', __('Empfaenger', 'dbw-immo-suite'), array($this, 'weekly_report_email_callback'), 'dbw-settings-report', 'section_report');
 		add_settings_field('weekly_report_test', __('Testen', 'dbw-immo-suite'), array($this, 'weekly_report_test_callback'), 'dbw-settings-report', 'section_report');
 
+		add_settings_section('section_monitor', __('Import-Ueberwachung', 'dbw-immo-suite'), array($this, 'print_monitor_section_info'), 'dbw-settings-report');
+		add_settings_field('monitor_email', __('Warnungen an', 'dbw-immo-suite'), array($this, 'monitor_email_callback'), 'dbw-settings-report', 'section_monitor');
+		add_settings_field('monitor_stale_hours', __('Warnen nach (Stunden ohne Feed)', 'dbw-immo-suite'), array($this, 'monitor_stale_hours_callback'), 'dbw-settings-report', 'section_monitor');
+		add_settings_field('monitor_mail_on_partial', __('Bei einzelnen Objektfehlern', 'dbw-immo-suite'), array($this, 'monitor_mail_on_partial_callback'), 'dbw-settings-report', 'section_monitor');
+
 		add_settings_section('section_system', __('System & Betreuung', 'dbw-immo-suite'), array($this, 'print_system_section_info'), 'dbw-settings-report');
 		add_settings_field('telemetry_enabled', __('Status-Meldung an dbw media', 'dbw-immo-suite'), array($this, 'telemetry_enabled_callback'), 'dbw-settings-report', 'section_system');
 	}
@@ -629,6 +634,45 @@ class Settings
 		$url = wp_nonce_url(admin_url('admin-post.php?action=dbw_immo_test_report'), 'dbw_immo_test_report');
 		echo '<a href="' . esc_url($url) . '" class="button">' . esc_html__('Bericht jetzt testen', 'dbw-immo-suite') . '</a>';
 		echo '<p class="description">' . esc_html__('Sendet den Bericht sofort an den Empfaenger (Wochenzaehler werden dabei nicht zurueckgesetzt).', 'dbw-immo-suite') . '</p>';
+	}
+
+	public function print_monitor_section_info()
+	{
+		print __('Meldet sich, wenn der OpenImmo-Import haengt oder gar kein Feed mehr ankommt. Diese Warnungen sind technisch und gehoeren in der Regel zur Betreuung, nicht zum Kunden.', 'dbw-immo-suite');
+	}
+
+	public function monitor_email_callback()
+	{
+		$options = get_option($this->option_name);
+		$val = isset($options['monitor_email']) ? $options['monitor_email'] : '';
+		printf(
+			'<input type="email" id="monitor_email" name="%s[monitor_email]" value="%s" class="regular-text" placeholder="%s" />',
+			esc_attr($this->option_name),
+			esc_attr($val),
+			esc_attr(get_option('admin_email'))
+		);
+		echo '<p class="description">' . esc_html__('Leer lassen = WordPress-Admin-Adresse (auf Kundenseiten meist der Kunde selbst).', 'dbw-immo-suite') . '</p>';
+	}
+
+	public function monitor_stale_hours_callback()
+	{
+		$this->number_field_callback(
+			'monitor_stale_hours',
+			48,
+			1,
+			0,
+			720,
+			__('Warnt, wenn so lange kein Feed mehr verarbeitet wurde. 0 schaltet diese Warnung ab - sinnvoll bei Maklersoftware, die nur bei Aenderungen hochlaedt.', 'dbw-immo-suite')
+		);
+	}
+
+	public function monitor_mail_on_partial_callback()
+	{
+		$this->checkbox_callback(
+			'monitor_mail_on_partial',
+			__('Auch dann eine E-Mail senden, wenn der Import durchlief und nur einzelne Objekte fehlerhaft waren. Standardmaessig aus: ein defektes Bild ist kein Stoerfall, der Hinweis erscheint dann nur im Import-Dashboard.', 'dbw-immo-suite'),
+			false
+		);
 	}
 
 	public function telemetry_enabled_callback()
@@ -783,6 +827,11 @@ class Settings
 		// Weekly report + telemetry
 		$new_input['weekly_report_enabled'] = isset($input['weekly_report_enabled']) ? 1 : 0;
 		$new_input['weekly_report_email'] = sanitize_email($input['weekly_report_email'] ?? '');
+		$new_input['monitor_email'] = sanitize_email($input['monitor_email'] ?? '');
+		$new_input['monitor_stale_hours'] = isset($input['monitor_stale_hours']) && $input['monitor_stale_hours'] !== ''
+			? min(720, max(0, (int) $input['monitor_stale_hours']))
+			: 48;
+		$new_input['monitor_mail_on_partial'] = isset($input['monitor_mail_on_partial']) ? 1 : 0;
 		$new_input['telemetry_enabled'] = isset($input['telemetry_enabled']) ? 1 : 0;
 
 		// Trigger Page Generation if enabled and changed

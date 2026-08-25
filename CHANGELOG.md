@@ -7,6 +7,16 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.6] - 2026-08-25
+
+### Geaendert
+
+- **Import-Warnungen gehen nicht mehr zwangslaeufig an den Kunden** - Die Mail "Immobilien-Import benoetigt Aufmerksamkeit" ging an die WordPress-Admin-Adresse, auf Kundenseiten also an den Kunden. Neue Einstellung "Warnungen an" (Reiter Bericht & System, Abschnitt Import-Ueberwachung) mit eigener Empfaengeradresse; leer = wie bisher die Admin-Adresse. Filter: `dbw_immo_monitor_email`.
+- **Einzelne Objektfehler loesen keinen Mail-Alarm mehr aus** - Bisher galt ein Lauf schon dann als Stoerfall, wenn ein einziges Objekt nicht verarbeitet werden konnte (z.B. wegen eines defekten Bildes). Bei einem durchgelaufenen Import mit Objektfehlern erscheint jetzt nur noch der Hinweis im Import-Dashboard, per Einstellung "Bei einzelnen Objektfehlern" wieder auf Mail umstellbar. Ein wirklich abgebrochener Import mailt weiterhin sofort.
+- **Stale-Warnung einstellbar** - Die Schwelle "so lange kein Feed mehr verarbeitet" ist jetzt ein Feld (Standard 48 Stunden, 0 schaltet die Warnung ab). Sinnvoll bei Maklersoftware, die nur bei Aenderungen hochlaedt.
+
+---
+
 ## [2.8.5] - 2026-08-25
 
 ### Behoben

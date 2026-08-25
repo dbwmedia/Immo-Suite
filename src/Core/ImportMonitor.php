@@ -20,7 +20,34 @@ class ImportMonitor
      */
     private static function stale_hours()
     {
-        return (int) apply_filters('dbw_immo_import_stale_hours', 48);
+        $settings = get_option('dbw_immo_settings', array());
+        $hours = isset($settings['monitor_stale_hours']) && $settings['monitor_stale_hours'] !== ''
+            ? (int) $settings['monitor_stale_hours']
+            : 48;
+        return (int) apply_filters('dbw_immo_import_stale_hours', $hours);
+    }
+
+    /**
+     * Where technical warnings go. Falls back to the WordPress admin address,
+     * which on a customer site is the customer — the agency usually wants these
+     * instead, hence the dedicated setting.
+     */
+    private static function alert_email()
+    {
+        $settings = get_option('dbw_immo_settings', array());
+        $mail = isset($settings['monitor_email']) ? $settings['monitor_email'] : '';
+        $mail = is_email($mail) ? $mail : get_option('admin_email');
+        return apply_filters('dbw_immo_monitor_email', $mail);
+    }
+
+    /**
+     * Whether a run that finished but reported single object errors should mail.
+     * Off by default: one broken image in a feed of 80 is not an incident.
+     */
+    private static function mail_on_partial()
+    {
+        $settings = get_option('dbw_immo_settings', array());
+        return !empty($settings['monitor_mail_on_partial']);
     }
 
     public function init()
@@ -51,13 +78,31 @@ class ImportMonitor
         $last = end($history);
         $alert = null;
 
-        if (!empty($last['errors']) || !in_array($last['status'], array('success', 'skipped'), true)) {
+        if (!in_array($last['status'], array('success', 'skipped'), true)) {
+            // Run aborted — the feed did not get through at all
             $alert = array(
                 'type'    => 'errors',
                 'message' => sprintf(
                     __('Der letzte OpenImmo-Import (%1$s, Datei %2$s) ist mit Fehlern beendet worden.', 'dbw-immo-suite'),
                     $last['date'],
                     $last['file']
+                ),
+            );
+        } elseif (!empty($last['errors'])) {
+            // Run finished, single objects failed. Worth a notice, not an alarm:
+            // one unreadable image must not mail every day.
+            $alert = array(
+                'type'    => 'partial',
+                'message' => sprintf(
+                    _n(
+                        'Der letzte OpenImmo-Import (%1$s, Datei %2$s) lief durch, dabei konnte %3$d Objekt nicht verarbeitet werden.',
+                        'Der letzte OpenImmo-Import (%1$s, Datei %2$s) lief durch, dabei konnten %3$d Objekte nicht verarbeitet werden.',
+                        (int) $last['errors'],
+                        'dbw-immo-suite'
+                    ),
+                    $last['date'],
+                    $last['file'],
+                    (int) $last['errors']
                 ),
             );
         } else {
@@ -70,7 +115,7 @@ class ImportMonitor
                 }
             }
             $hours = self::stale_hours();
-            if ($last_ok && (current_time('timestamp') - strtotime($last_ok['date'])) > $hours * HOUR_IN_SECONDS) {
+            if ($hours > 0 && $last_ok && (current_time('timestamp') - strtotime($last_ok['date'])) > $hours * HOUR_IN_SECONDS) {
                 $alert = array(
                     'type'    => 'stale',
                     'message' => sprintf(
@@ -93,10 +138,12 @@ class ImportMonitor
             : current_time('mysql');
         $alert['last_mail'] = isset($existing['last_mail']) ? $existing['last_mail'] : 0;
 
-        // Throttled email: at most one per 24h per ongoing alert
-        if (time() - (int) $alert['last_mail'] > DAY_IN_SECONDS) {
+        // Throttled email: at most one per 24h per ongoing alert.
+        // A partial run only mails when the site explicitly asked for it.
+        $may_mail = $alert['type'] !== 'partial' || self::mail_on_partial();
+        if ($may_mail && time() - (int) $alert['last_mail'] > DAY_IN_SECONDS) {
             $sent = wp_mail(
-                get_option('admin_email'),
+                self::alert_email(),
                 sprintf('[%s] %s', get_bloginfo('name'), __('Immobilien-Import benoetigt Aufmerksamkeit', 'dbw-immo-suite')),
                 $alert['message'] . "\n\n"
                     . __('Import-Dashboard:', 'dbw-immo-suite') . ' '
