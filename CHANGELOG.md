@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.7] - 2026-08-25
+
+### Behoben
+
+- **Die neuen Monitoring-Einstellungen griffen nicht** - Der ImportMonitor las sie aus `dbw_immo_settings`, gespeichert werden die Plugin-Einstellungen aber in `dbw_immo_suite_settings`. Empfaenger, Schwelle und Mail-Verhalten blieben dadurch auf den Standardwerten, die Warnung waere weiter an die WordPress-Admin-Adresse gegangen.
+
+---
+
 ## [2.8.6] - 2026-08-25
 
 ### Geaendert

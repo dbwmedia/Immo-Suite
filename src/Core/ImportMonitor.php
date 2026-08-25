@@ -20,7 +20,7 @@ class ImportMonitor
      */
     private static function stale_hours()
     {
-        $settings = get_option('dbw_immo_settings', array());
+        $settings = get_option('dbw_immo_suite_settings', array());
         $hours = isset($settings['monitor_stale_hours']) && $settings['monitor_stale_hours'] !== ''
             ? (int) $settings['monitor_stale_hours']
             : 48;
@@ -34,7 +34,7 @@ class ImportMonitor
      */
     private static function alert_email()
     {
-        $settings = get_option('dbw_immo_settings', array());
+        $settings = get_option('dbw_immo_suite_settings', array());
         $mail = isset($settings['monitor_email']) ? $settings['monitor_email'] : '';
         $mail = is_email($mail) ? $mail : get_option('admin_email');
         return apply_filters('dbw_immo_monitor_email', $mail);
@@ -46,7 +46,7 @@ class ImportMonitor
      */
     private static function mail_on_partial()
     {
-        $settings = get_option('dbw_immo_settings', array());
+        $settings = get_option('dbw_immo_suite_settings', array());
         return !empty($settings['monitor_mail_on_partial']);
     }
 
