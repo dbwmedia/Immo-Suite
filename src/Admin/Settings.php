@@ -257,6 +257,40 @@ class Settings
 			<li><?php esc_html_e('Anfrage-Mails enthalten einen Zeitstempel der Datenschutz-Zustimmung (Nachweis nach Art. 7 DSGVO).', 'dbw-immo-suite'); ?></li>
 		</ul>
 
+		<?php
+		// Borlabs is installed on most of our sites: show the exact values for the
+		// OSM service, because the map can only skip the placeholder once that
+		// service exists in the consent tool.
+		$borlabs_active = defined('BORLABS_COOKIE_VERSION')
+			|| in_array('borlabs-cookie/borlabs-cookie.php', (array) get_option('active_plugins', array()), true);
+		if ($borlabs_active):
+			$configured_service = (string) get_theme_mod('dbw_immo_map_consent_service', 'openstreetmap');
+		?>
+		<h3><?php esc_html_e('Borlabs Cookie: Karten-Service', 'dbw-immo-suite'); ?></h3>
+		<p style="max-width: 800px;">
+			<?php esc_html_e('Borlabs Cookie ist aktiv. Die Karte laedt aktuell erst nach einem zusaetzlichen Klick auf "Karte laden" - auch bei Besuchern, die im Banner alles akzeptiert haben. Grund: Borlabs kennt von Haus aus nur "maps" (Google Maps), einen Service fuer OpenStreetMap gibt es nicht. Der Scanner kann ihn auch nicht finden, weil dieses Plugin die Karte korrekt blockiert - gefunden wird nur, was ungefragt laedt.', 'dbw-immo-suite'); ?>
+		</p>
+		<p style="max-width: 800px;">
+			<?php esc_html_e('Einmal in Borlabs unter Bibliothek > Service anlegen, danach laedt die Karte fuer einwilligende Besucher sofort:', 'dbw-immo-suite'); ?>
+		</p>
+		<table class="widefat striped" style="max-width: 800px;">
+			<tbody>
+				<tr><td style="width: 180px;"><strong><?php esc_html_e('Service-Gruppe', 'dbw-immo-suite'); ?></strong></td><td><code>Externe Medien</code></td></tr>
+				<tr><td><strong><?php esc_html_e('Name', 'dbw-immo-suite'); ?></strong></td><td><code>OpenStreetMap</code></td></tr>
+				<tr><td><strong><?php esc_html_e('Service-ID', 'dbw-immo-suite'); ?></strong></td><td><code><?php echo esc_html($configured_service !== '' ? $configured_service : 'openstreetmap'); ?></code></td></tr>
+				<tr><td><strong><?php esc_html_e('Anbieter', 'dbw-immo-suite'); ?></strong></td><td><code>OpenStreetMap Foundation, St John's Innovation Centre, Cowley Road, Cambridge, CB4 0WS, United Kingdom</code></td></tr>
+				<tr><td><strong><?php esc_html_e('Hosts', 'dbw-immo-suite'); ?></strong></td><td><code>tile.openstreetmap.org</code></td></tr>
+				<tr><td><strong><?php esc_html_e('Cookies', 'dbw-immo-suite'); ?></strong></td><td><?php esc_html_e('keine (OpenStreetMap setzt keine, uebertragen wird die IP-Adresse)', 'dbw-immo-suite'); ?></td></tr>
+			</tbody>
+		</table>
+		<p style="max-width: 800px;">
+			<?php esc_html_e('Der Name des Services ist frei waehlbar: Enthaelt ein Service "OpenStreetMap" oder "OSM" im Namen, in der ID, beim Anbieter oder in den Hosts, erkennt das Plugin ihn automatisch, auch ohne passende Service-ID im Customizer. Fehlt der Service, bleibt es bei der Zwei-Klick-Loesung - rechtlich sauber, nur ein Klick mehr.', 'dbw-immo-suite'); ?>
+		</p>
+		<p>
+			<a href="<?php echo esc_url(admin_url('admin.php?page=borlabs-cookie-services')); ?>" class="button"><?php esc_html_e('Zu den Borlabs-Services', 'dbw-immo-suite'); ?></a>
+		</p>
+		<?php endif; ?>
+
 		<h3><?php esc_html_e('Textbaustein fuer die Datenschutzerklaerung', 'dbw-immo-suite'); ?></h3>
 		<p style="max-width: 800px;">
 			<?php esc_html_e('Diesen Baustein in die Datenschutzerklaerung der Website uebernehmen und bei Bedarf anpassen (z.B. Abschnitte entfernen, deren Features deaktiviert sind). Er ersetzt keine Rechtsberatung.', 'dbw-immo-suite'); ?>

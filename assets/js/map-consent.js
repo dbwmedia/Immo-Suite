@@ -27,6 +27,45 @@
     var POLL_WINDOW = 30000;
 
     /**
+     * Find the OSM service in the consent tool's own service list, whatever it is named.
+     * Saves the site from having to match a hardcoded service id.
+     *
+     * Deliberately strict: a generic maps service (Borlabs ships "maps" for Google Maps)
+     * is NOT accepted, consent for another provider is not consent for OpenStreetMap.
+     *
+     * @return {Array} matching service ids
+     */
+    function discoverBorlabsServiceIds(bc) {
+        var found = [];
+        try {
+            var all = bc.Services && bc.Services.services;
+            if (!all) return found;
+            Object.keys(all).forEach(function (key) {
+                var s = all[key] || {};
+                var haystack = [
+                    s.id || key,
+                    s.name || '',
+                    s.providerId || '',
+                    (s.hosts || []).join(' ')
+                ].join(' ').toLowerCase();
+                if (/openstreetmap|open street map|(^|[^a-z])osm([^a-z]|$)/.test(haystack)) {
+                    found.push(s.id || key);
+                }
+            });
+        } catch (e) { /* unknown structure, fall back to the configured ids */ }
+        return found;
+    }
+
+    function borlabsCheckIds(bc, ids) {
+        for (var i = 0; i < ids.length; i++) {
+            try {
+                if (bc.Consents.hasConsent(ids[i])) return true;
+            } catch (e) { /* unknown service id, try the next one */ }
+        }
+        return false;
+    }
+
+    /**
      * @return {boolean|null} true/false when a tool answered, null when none is present yet.
      */
     function askConsentTool() {
@@ -41,10 +80,13 @@
         if (bc) {
             // Borlabs Cookie 3.x
             if (bc.Consents && typeof bc.Consents.hasConsent === 'function') {
-                for (var i = 0; i < serviceIds.length; i++) {
-                    try {
-                        if (bc.Consents.hasConsent(serviceIds[i])) return true;
-                    } catch (e) { /* unknown service id, try the next one */ }
+                if (borlabsCheckIds(bc, serviceIds)) return true;
+                // Configured id did not match — ask the tool which service is the OSM one
+                if (cfg.autoDetect !== false) {
+                    var discovered = discoverBorlabsServiceIds(bc).filter(function (id) {
+                        return serviceIds.indexOf(id) === -1;
+                    });
+                    if (discovered.length && borlabsCheckIds(bc, discovered)) return true;
                 }
                 return false;
             }

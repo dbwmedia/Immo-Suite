@@ -181,6 +181,8 @@ class Plugin
         wp_enqueue_script('dbw-immo-map-consent', self::asset_url('assets/js/map-consent.js'), array('leaflet'), DBW_IMMO_SUITE_VERSION, array('in_footer' => true, 'strategy' => 'defer'));
         wp_localize_script('dbw-immo-map-consent', 'dbwImmoMapConsentCfg', array(
             'serviceIds' => self::map_consent_service_ids(),
+            // Find the OSM service in the consent tool by itself, whatever it is named
+            'autoDetect' => (bool) apply_filters('dbw_immo_map_consent_auto_detect', true),
             // Opt-in for the WP Consent API (Real Cookie Banner, Complianz):
             // empty by default, categories are too coarse to guess.
             'consentApiCategory' => (string) apply_filters('dbw_immo_map_consent_api_category', ''),

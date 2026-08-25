@@ -7,6 +7,15 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.4] - 2026-08-25
+
+### Hinzugefuegt
+
+- **Karten-Service wird im Cookie-Tool automatisch gefunden** - Die Consent-Bruecke liest die Service-Liste von Borlabs Cookie 3.x aus und erkennt den OpenStreetMap-Service selbst, egal wie er benannt ist (Treffer auf "OpenStreetMap" oder "OSM" in Service-ID, Name, Anbieter oder Hosts). Eine passende Service-ID im Customizer ist damit optional. Bewusst streng: Ein allgemeiner Karten-Service wie Borlabs' `maps` (Google Maps) zaehlt nicht, die Einwilligung fuer einen anderen Anbieter ist keine Einwilligung fuer OpenStreetMap. Abschaltbar per Filter `dbw_immo_map_consent_auto_detect`.
+- **Einrichtungshilfe in den Plugin-Einstellungen** (Reiter Datenschutz) - Ist Borlabs Cookie aktiv, zeigt das Plugin die fertigen Werte fuer den anzulegenden OpenStreetMap-Service samt Link zur Borlabs-Service-Verwaltung und erklaert, warum der Borlabs-Scanner die Karte nicht selbst findet: Er sieht nur, was ungefragt laedt, und genau das verhindert die Zwei-Klick-Loesung.
+
+---
+
 ## [2.8.3] - 2026-08-25
 
 ### Behoben
