@@ -7,6 +7,15 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.8.5] - 2026-08-25
+
+### Behoben
+
+- **Karte startete trotz erkannter Einwilligung nicht** - Auf Seiten mit aggressiver JS-Optimierung (AccelerateWP, WP Rocket) wird das Inline-Skript der Karte in eine verzoegerte `data:`-URL umgeschrieben. Damit gilt die Reihenfolge von `wp_add_inline_script` nicht mehr: Das Karten-Skript lief teilweise vor der Consent-Bruecke, fand `window.dbwImmoMapConsent` noch nicht vor und registrierte sich nirgends. Ergebnis: Consent lag vor, die Bruecke meldete ihn, die Karte blieb trotzdem hinter dem Platzhalter. Beide Seiten nutzen jetzt eine Warteschlange (`window.dbwImmoMapConsentQueue`) und finden sich unabhaengig von der Ladereihenfolge.
+- **Karte robust gegen verzoegertes Leaflet** - Ist Leaflet beim Klick auf "Karte laden" noch nicht ausgefuehrt, wartet die Initialisierung jetzt darauf, statt mit einem Fehler abzubrechen.
+
+---
+
 ## [2.8.4] - 2026-08-25
 
 ### Hinzugefuegt

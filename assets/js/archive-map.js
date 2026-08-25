@@ -163,13 +163,17 @@
             });
         }
 
-        // Consent granted in the site's consent tool (now or later)
+        // Consent granted in the site's consent tool (now or later).
+        // Queue when the bridge is not there yet: optimizers can reorder scripts.
+        var onConsent = function () {
+            var wrapper = document.getElementById('dbw-archive-map-wrapper');
+            // Map view may be hidden behind the view switcher — activate() handles that case
+            if (!wrapper || !wrapper.hidden) initMap();
+        };
         if (window.dbwImmoMapConsent) {
-            window.dbwImmoMapConsent.onGrant(function () {
-                var wrapper = document.getElementById('dbw-archive-map-wrapper');
-                // Map view may be hidden behind the view switcher — activate() handles that case
-                if (!wrapper || !wrapper.hidden) initMap();
-            });
+            window.dbwImmoMapConsent.onGrant(onConsent);
+        } else {
+            (window.dbwImmoMapConsentQueue = window.dbwImmoMapConsentQueue || []).push(onConsent);
         }
     });
 })();

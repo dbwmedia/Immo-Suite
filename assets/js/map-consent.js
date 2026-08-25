@@ -158,6 +158,11 @@
         window.addEventListener(type, startPolling, { once: true, passive: true });
     });
 
+    // Scripts that need the map may run BEFORE this bridge: aggressive optimizers
+    // (AccelerateWP, WP Rocket) rewrite inline scripts into deferred data: URIs and
+    // lose the wp_add_inline_script ordering guarantee. They push into this queue.
+    var queued = window.dbwImmoMapConsentQueue;
+
     window.dbwImmoMapConsent = {
         /** Run cb as soon as consent is available (immediately if it already is). */
         onGrant: function (cb) {
@@ -168,6 +173,15 @@
         isGranted: function () { return granted; },
         /** Explicit opt-in, e.g. the visitor pressed the "load map" button. */
         grant: grant
+    };
+
+    // Drain callbacks queued before the bridge existed, then keep the queue usable
+    // for anything that still loads later
+    if (queued && typeof queued.forEach === 'function') {
+        queued.forEach(function (cb) { window.dbwImmoMapConsent.onGrant(cb); });
+    }
+    window.dbwImmoMapConsentQueue = {
+        push: function (cb) { window.dbwImmoMapConsent.onGrant(cb); }
     };
 
     check();

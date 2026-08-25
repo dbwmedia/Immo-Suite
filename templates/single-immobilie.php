@@ -404,7 +404,10 @@ get_header(); ?>
 								'if(!consent||!mapEl||!btn)return;' .
 								'var done=false;' .
 								'function initMap(){' .
-									'if(done)return;done=true;' .
+									'if(done)return;' .
+									// Optimizers can reorder scripts, so Leaflet may still be pending
+									'if(typeof L==="undefined"){setTimeout(initMap,100);return;}' .
+									'done=true;' .
 									'consent.style.display="none";' .
 									'mapEl.style.display="block";' .
 									'var m=L.map("dbw-map",{scrollWheelZoom:false}).setView([%1$.7F,%2$.7F],14);' .
@@ -416,8 +419,11 @@ get_header(); ?>
 									'if(window.dbwImmoMapConsent)window.dbwImmoMapConsent.grant();' .
 									'initMap();' .
 								'});' .
-								// Skip the placeholder when the consent tool already has a yes
-								'if(window.dbwImmoMapConsent)window.dbwImmoMapConsent.onGrant(initMap);' .
+								// Skip the placeholder when the consent tool already has a yes.
+								// Queue instead of a direct call: this inline script may run before
+								// the bridge when an optimizer rewrites script order.
+								'if(window.dbwImmoMapConsent){window.dbwImmoMapConsent.onGrant(initMap);}' .
+								'else{(window.dbwImmoMapConsentQueue=window.dbwImmoMapConsentQueue||[]).push(initMap);}' .
 								'})();',
 								// Float cast: coords land in a bare numeric JS context,
 								// esc_js would not stop a breakout there
