@@ -55,6 +55,7 @@ wp_clear_scheduled_hook('dbw_immo_telemetry_ping');
 
 // Monitoring/onboarding state
 delete_option('dbw_immo_import_alert');
+delete_option('dbw_immo_last_run');
 delete_option('dbw_immo_onboarding_dismissed');
 delete_option('dbw_immo_media_migrated');
 

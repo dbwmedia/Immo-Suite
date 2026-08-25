@@ -352,6 +352,11 @@ class Importer
             // Release Lock
             $this->release_lock();
 
+            // Proof that the importer actually ran. A run without new files
+            // writes no history entry, so this is the only way to tell a dead
+            // cron apart from a broker who simply changed nothing.
+            update_option('dbw_immo_last_run', time(), false);
+
             return array(
                 'success' => true,
                 'message' => sprintf('Import fertig. Erstellt: %d, Aktualisiert: %d, Fehler: %d', $stats['created'], $stats['updated'], $stats['errors']),
@@ -365,6 +370,7 @@ class Importer
 
             // Log failed run
             $this->log_history('System', array('created' => 0, 'updated' => 0, 'errors' => 1), 'error');
+            update_option('dbw_immo_last_run', time(), false);
 
             return array('success' => false, 'message' => $e->getMessage());
         }

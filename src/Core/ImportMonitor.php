@@ -5,9 +5,19 @@ namespace DBW\ImmoSuite\Core;
 if (!defined('ABSPATH')) { exit; }
 
 /**
- * Import monitoring: raises an admin notice + throttled email when the last
- * import failed or no feed has been processed for too long. A broken FTP
- * push otherwise goes unnoticed for weeks while the website shows stale data.
+ * Import monitoring.
+ *
+ * Two classes of findings, deliberately kept apart:
+ *
+ * - Faults (the import is broken): a run that aborted, or a cron that stopped
+ *   firing. These are real, provable and worth an email.
+ * - Notes (something looks quiet): single objects that failed, or no new feed
+ *   for a long time. A broker who changes nothing simply uploads nothing, so
+ *   silence is not evidence of a fault. Dashboard only by default.
+ *
+ * The stale threshold used to mail after 48h and produced a false alarm after
+ * every quiet weekend. Time is a weak signal; whether the importer itself still
+ * runs is a strong one, which is what the cron check covers.
  */
 class ImportMonitor
 {
@@ -21,10 +31,19 @@ class ImportMonitor
     private static function stale_hours()
     {
         $settings = get_option('dbw_immo_suite_settings', array());
-        $hours = isset($settings['monitor_stale_hours']) && $settings['monitor_stale_hours'] !== ''
-            ? (int) $settings['monitor_stale_hours']
-            : 48;
-        return (int) apply_filters('dbw_immo_import_stale_hours', $hours);
+        $days = isset($settings['monitor_stale_days']) && $settings['monitor_stale_days'] !== ''
+            ? (int) $settings['monitor_stale_days']
+            : 14;
+        return (int) apply_filters('dbw_immo_import_stale_hours', $days * 24);
+    }
+
+    /**
+     * How long the importer may stay silent before the cron counts as dead.
+     * Generous, because WP-Cron only fires on traffic.
+     */
+    private static function cron_grace_hours()
+    {
+        return (int) apply_filters('dbw_immo_cron_grace_hours', 6);
     }
 
     /**
@@ -41,13 +60,21 @@ class ImportMonitor
     }
 
     /**
-     * Whether a run that finished but reported single object errors should mail.
-     * Off by default: one broken image in a feed of 80 is not an incident.
+     * Alert types that actually prove a broken import.
      */
-    private static function mail_on_partial()
+    private static function is_fault($type)
+    {
+        return in_array($type, array('errors', 'cron'), true);
+    }
+
+    /**
+     * Whether notes are mailed too. Off by default: the point of this rework is
+     * that a quiet feed must not fill anyone's inbox.
+     */
+    private static function mail_everything()
     {
         $settings = get_option('dbw_immo_suite_settings', array());
-        return !empty($settings['monitor_mail_on_partial']);
+        return isset($settings['monitor_mail_level']) && $settings['monitor_mail_level'] === 'all';
     }
 
     public function init()
@@ -76,7 +103,13 @@ class ImportMonitor
         }
 
         $last = end($history);
-        $alert = null;
+        $alert = self::cron_alert();
+
+        if ($alert) {
+            // A dead importer outranks anything the history says
+            $this->raise($alert);
+            return;
+        }
 
         if (!in_array($last['status'], array('success', 'skipped'), true)) {
             // Run aborted — the feed did not get through at all
@@ -119,14 +152,61 @@ class ImportMonitor
                 $alert = array(
                     'type'    => 'stale',
                     'message' => sprintf(
-                        __('Seit ueber %1$d Stunden wurde kein OpenImmo-Feed mehr verarbeitet (letzter Feed: %2$s). Moeglicherweise ist der FTP-Upload der Maklersoftware gestoert.', 'dbw-immo-suite'),
-                        $hours,
+                        __('Seit %1$d Tagen ist kein neuer OpenImmo-Feed angekommen (letzter Feed: %2$s). Das ist normal, solange sich beim Anbieter nichts aendert - dauerhaft still kann aber auch ein abgerissener FTP-Upload sein.', 'dbw-immo-suite'),
+                        (int) round($hours / 24),
                         $last_ok['date']
                     ),
                 );
             }
         }
 
+        $this->raise($alert);
+    }
+
+    /**
+     * Is the importer itself still running? A run stamps dbw_immo_last_run even
+     * when there was nothing to do, so silence here means the cron stopped,
+     * not that the broker was idle.
+     *
+     * @return array|null
+     */
+    private static function cron_alert()
+    {
+        $next     = wp_next_scheduled('dbw_immo_cron_hook');
+        $last_run = (int) get_option('dbw_immo_last_run', 0);
+        $grace    = self::cron_grace_hours() * HOUR_IN_SECONDS;
+
+        if (!$next) {
+            return array(
+                'type'    => 'cron',
+                'message' => __('Der automatische Import ist nicht mehr eingeplant. Bis der Zeitplan wieder steht, werden keine neuen Objekte uebernommen.', 'dbw-immo-suite'),
+            );
+        }
+
+        // No stamp yet: plugin updated between runs, judge after the next one
+        if (!$last_run) {
+            return null;
+        }
+
+        if (time() - $last_run > $grace) {
+            return array(
+                'type'    => 'cron',
+                'message' => sprintf(
+                    __('Der automatische Import laeuft seit ueber %1$d Stunden nicht mehr (letzter Lauf: %2$s). Der WordPress-Cron feuert offenbar nicht.', 'dbw-immo-suite'),
+                    self::cron_grace_hours(),
+                    date_i18n('d.m.Y H:i', $last_run)
+                ),
+            );
+        }
+
+        return null;
+    }
+
+    /**
+     * Persist the alert and mail it when it qualifies.
+     */
+    private function raise($alert)
+    {
         if (!$alert) {
             delete_option(self::ALERT_OPTION);
             return;
@@ -138,13 +218,16 @@ class ImportMonitor
             : current_time('mysql');
         $alert['last_mail'] = isset($existing['last_mail']) ? $existing['last_mail'] : 0;
 
-        // Throttled email: at most one per 24h per ongoing alert.
-        // A partial run only mails when the site explicitly asked for it.
-        $may_mail = $alert['type'] !== 'partial' || self::mail_on_partial();
+        // Throttled email: at most one per 24h per ongoing alert. Notes stay
+        // silent unless the site asked for everything.
+        $may_mail = self::is_fault($alert['type']) || self::mail_everything();
         if ($may_mail && time() - (int) $alert['last_mail'] > DAY_IN_SECONDS) {
+            $subject = self::is_fault($alert['type'])
+                ? __('Immobilien-Import gestoert', 'dbw-immo-suite')
+                : __('Hinweis zum Immobilien-Import', 'dbw-immo-suite');
             $sent = wp_mail(
                 self::alert_email(),
-                sprintf('[%s] %s', get_bloginfo('name'), __('Immobilien-Import benoetigt Aufmerksamkeit', 'dbw-immo-suite')),
+                sprintf('[%s] %s', get_bloginfo('name'), $subject),
                 $alert['message'] . "\n\n"
                     . __('Import-Dashboard:', 'dbw-immo-suite') . ' '
                     . admin_url('edit.php?post_type=immobilie&page=dbw-immo-import')
@@ -173,8 +256,10 @@ class ImportMonitor
         if (empty($alert['message'])) {
             return;
         }
+        $class = self::is_fault(isset($alert['type']) ? $alert['type'] : '') ? 'notice-warning' : 'notice-info';
         printf(
-            '<div class="notice notice-warning"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+            '<div class="notice %s"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
+            esc_attr($class),
             esc_html__('Immo Suite:', 'dbw-immo-suite'),
             esc_html($alert['message']),
             esc_url(admin_url('edit.php?post_type=immobilie&page=dbw-immo-import')),

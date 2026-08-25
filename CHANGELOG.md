@@ -7,6 +7,24 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.9.0] - 2026-08-25
+
+### Geaendert
+
+- **Import-Ueberwachung neu gedacht: Stoerung statt Stille** - Bisher galt "seit 48 Stunden kein neuer Feed" als Warnung. Das ist kein brauchbares Signal: Die Maklersoftware laedt nur bei Aenderungen hoch, ein ruhiges Wochenende sah damit aus wie ein Defekt. Ueberwacht wird jetzt, was tatsaechlich kaputt sein kann.
+  - **Stoerung** (loest eine E-Mail aus): abgebrochener Import, fehlendes oder unlesbares Import-Verzeichnis, oder ein automatischer Import, der nicht mehr laeuft.
+  - **Hinweis** (nur im Import-Dashboard): einzelne fehlerhafte Objekte, laengere Feed-Stille. Per Einstellung auf E-Mail umstellbar.
+- **Neue Einstellung "E-Mails senden bei"** (Reiter Bericht & System): "Nur echten Stoerungen" (Standard) oder "Stoerungen und Hinweisen". Ersetzt den Schalter fuer einzelne Objektfehler aus 2.8.6.
+- **Feed-Stille als Hinweis** mit Schwelle in Tagen (Standard 14 statt bisher 48 Stunden, 0 blendet ihn aus) und neutraler Formulierung. Filter `dbw_immo_import_stale_hours` bleibt bestehen.
+- **Betreffzeilen sagen jetzt, was los ist:** "Immobilien-Import gestoert" bei einer Stoerung, "Hinweis zum Immobilien-Import" sonst. Frueher hiess beides "benoetigt Aufmerksamkeit".
+- Der Hinweis im Backend erscheint bei Hinweisen blau statt gelb.
+
+### Hinzugefuegt
+
+- **Waechter fuer den automatischen Import** - Jeder Lauf hinterlaesst jetzt einen Zeitstempel (`dbw_immo_last_run`), auch wenn es nichts zu tun gab. Damit faellt erstmals auf, wenn der WordPress-Cron gar nicht mehr feuert: Bisher schrieb ein Lauf ohne neue Dateien keinen Eintrag, ein toter Cron sah deshalb genauso aus wie ein ruhiger Feed. Kulanzzeit 6 Stunden, Filter `dbw_immo_cron_grace_hours`. Ein fehlender Zeitplan wird ebenfalls gemeldet.
+
+---
+
 ## [2.8.7] - 2026-08-25
 
 ### Behoben

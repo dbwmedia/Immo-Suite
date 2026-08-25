@@ -585,8 +585,8 @@ class Settings
 
 		add_settings_section('section_monitor', __('Import-Ueberwachung', 'dbw-immo-suite'), array($this, 'print_monitor_section_info'), 'dbw-settings-report');
 		add_settings_field('monitor_email', __('Warnungen an', 'dbw-immo-suite'), array($this, 'monitor_email_callback'), 'dbw-settings-report', 'section_monitor');
-		add_settings_field('monitor_stale_hours', __('Warnen nach (Stunden ohne Feed)', 'dbw-immo-suite'), array($this, 'monitor_stale_hours_callback'), 'dbw-settings-report', 'section_monitor');
-		add_settings_field('monitor_mail_on_partial', __('Bei einzelnen Objektfehlern', 'dbw-immo-suite'), array($this, 'monitor_mail_on_partial_callback'), 'dbw-settings-report', 'section_monitor');
+		add_settings_field('monitor_mail_level', __('E-Mails senden bei', 'dbw-immo-suite'), array($this, 'monitor_mail_level_callback'), 'dbw-settings-report', 'section_monitor');
+		add_settings_field('monitor_stale_days', __('Hinweis bei Feed-Stille (Tage)', 'dbw-immo-suite'), array($this, 'monitor_stale_days_callback'), 'dbw-settings-report', 'section_monitor');
 
 		add_settings_section('section_system', __('System & Betreuung', 'dbw-immo-suite'), array($this, 'print_system_section_info'), 'dbw-settings-report');
 		add_settings_field('telemetry_enabled', __('Status-Meldung an dbw media', 'dbw-immo-suite'), array($this, 'telemetry_enabled_callback'), 'dbw-settings-report', 'section_system');
@@ -638,7 +638,7 @@ class Settings
 
 	public function print_monitor_section_info()
 	{
-		print __('Meldet sich, wenn der OpenImmo-Import haengt oder gar kein Feed mehr ankommt. Diese Warnungen sind technisch und gehoeren in der Regel zur Betreuung, nicht zum Kunden.', 'dbw-immo-suite');
+		print __('Meldet, wenn der Import wirklich gestoert ist: abgebrochener Lauf, fehlendes Import-Verzeichnis oder ein Cron, der nicht mehr feuert. Dass laengere Zeit kein neuer Feed ankommt, ist dagegen meist normal (die Maklersoftware laedt nur bei Aenderungen hoch) und erscheint deshalb nur hier im Backend. Diese Meldungen sind technisch und gehoeren zur Betreuung, nicht zum Kunden.', 'dbw-immo-suite');
 	}
 
 	public function monitor_email_callback()
@@ -654,24 +654,36 @@ class Settings
 		echo '<p class="description">' . esc_html__('Leer lassen = WordPress-Admin-Adresse (auf Kundenseiten meist der Kunde selbst).', 'dbw-immo-suite') . '</p>';
 	}
 
-	public function monitor_stale_hours_callback()
+	public function monitor_mail_level_callback()
 	{
-		$this->number_field_callback(
-			'monitor_stale_hours',
-			48,
-			1,
-			0,
-			720,
-			__('Warnt, wenn so lange kein Feed mehr verarbeitet wurde. 0 schaltet diese Warnung ab - sinnvoll bei Maklersoftware, die nur bei Aenderungen hochlaedt.', 'dbw-immo-suite')
+		$options = get_option($this->option_name);
+		$val = isset($options['monitor_mail_level']) ? $options['monitor_mail_level'] : 'faults';
+		$choices = array(
+			'faults' => __('Nur echten Stoerungen (empfohlen)', 'dbw-immo-suite'),
+			'all'    => __('Stoerungen und Hinweisen', 'dbw-immo-suite'),
 		);
+		printf('<select id="monitor_mail_level" name="%s[monitor_mail_level]">', esc_attr($this->option_name));
+		foreach ($choices as $key => $label) {
+			printf(
+				'<option value="%s"%s>%s</option>',
+				esc_attr($key),
+				selected($val, $key, false),
+				esc_html($label)
+			);
+		}
+		echo '</select>';
+		echo '<p class="description">' . esc_html__('Stoerung = Import abgebrochen, Import-Verzeichnis fehlt oder der automatische Import laeuft nicht mehr. Hinweis = einzelne fehlerhafte Objekte oder laengere Feed-Stille; die stehen ohnehin im Import-Dashboard.', 'dbw-immo-suite') . '</p>';
 	}
 
-	public function monitor_mail_on_partial_callback()
+	public function monitor_stale_days_callback()
 	{
-		$this->checkbox_callback(
-			'monitor_mail_on_partial',
-			__('Auch dann eine E-Mail senden, wenn der Import durchlief und nur einzelne Objekte fehlerhaft waren. Standardmaessig aus: ein defektes Bild ist kein Stoerfall, der Hinweis erscheint dann nur im Import-Dashboard.', 'dbw-immo-suite'),
-			false
+		$this->number_field_callback(
+			'monitor_stale_days',
+			14,
+			1,
+			0,
+			365,
+			__('Ab wann im Import-Dashboard darauf hingewiesen wird, dass kein neuer Feed mehr ankam. 0 blendet den Hinweis aus. Keine E-Mail, ausser oben ist "Stoerungen und Hinweise" gewaehlt.', 'dbw-immo-suite')
 		);
 	}
 
@@ -828,10 +840,12 @@ class Settings
 		$new_input['weekly_report_enabled'] = isset($input['weekly_report_enabled']) ? 1 : 0;
 		$new_input['weekly_report_email'] = sanitize_email($input['weekly_report_email'] ?? '');
 		$new_input['monitor_email'] = sanitize_email($input['monitor_email'] ?? '');
-		$new_input['monitor_stale_hours'] = isset($input['monitor_stale_hours']) && $input['monitor_stale_hours'] !== ''
-			? min(720, max(0, (int) $input['monitor_stale_hours']))
-			: 48;
-		$new_input['monitor_mail_on_partial'] = isset($input['monitor_mail_on_partial']) ? 1 : 0;
+		$new_input['monitor_stale_days'] = isset($input['monitor_stale_days']) && $input['monitor_stale_days'] !== ''
+			? min(365, max(0, (int) $input['monitor_stale_days']))
+			: 14;
+		$new_input['monitor_mail_level'] = isset($input['monitor_mail_level']) && $input['monitor_mail_level'] === 'all'
+			? 'all'
+			: 'faults';
 		$new_input['telemetry_enabled'] = isset($input['telemetry_enabled']) ? 1 : 0;
 
 		// Trigger Page Generation if enabled and changed
