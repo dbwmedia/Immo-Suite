@@ -152,6 +152,8 @@ Zeigt verkaufte und Referenz-Objekte an.
 
 Schritt-fuer-Schritt inkl. onOffice-Menuepfaden und FTP-Setup: [docs/ANLEITUNG-ONOFFICE.md](docs/ANLEITUNG-ONOFFICE.md)
 
+Welche Daten das Plugin verarbeitet (fuer Datenschutzerklaerung, Verarbeitungsverzeichnis und Rechtspruefung): [docs/DATENSCHUTZ.md](docs/DATENSCHUTZ.md)
+
 ### Fuer Entwickler
 ```bash
 git clone [repo-url]
@@ -226,6 +228,7 @@ assets/
   js/infra-score.js         # Infrastruktur-Score Animation (IntersectionObserver)
   js/admin.js               # Import-AJAX mit Nonce
 docs/
+  DATENSCHUTZ.md            # Datenschutz-Uebersicht fuer Betreiber + Rechtsberatung
   AUDIT-PROMPT.md           # Wiederverwendbarer Audit-Prompt
   TODO.md                   # Bekannte Altlasten + Feature-Roadmap
   PROMPT-KAUFNEBENKOSTEN.md # Prompt fuer Finanzierungsrechner
