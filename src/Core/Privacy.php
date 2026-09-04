@@ -77,6 +77,7 @@ class Privacy
                 array('name' => __('Nachricht', 'dbw-immo-suite'), 'value' => $m('message')),
                 array('name' => __('Objekt', 'dbw-immo-suite'), 'value' => get_the_title((int) $m('property'))),
                 array('name' => __('Datenschutz-Zustimmung', 'dbw-immo-suite'), 'value' => $m('consent')),
+                array('name' => __('Wortlaut der Einwilligung', 'dbw-immo-suite'), 'value' => $m('consent_text')),
             );
 
             $data[] = array(

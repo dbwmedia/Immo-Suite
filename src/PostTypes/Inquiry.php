@@ -131,6 +131,10 @@ class Inquiry
             '_dbw_anfrage_source'    => isset($data['source']) ? sanitize_key($data['source']) : 'kontakt',
             '_dbw_anfrage_preferred' => isset($data['preferred']) ? sanitize_key($data['preferred']) : '',
             '_dbw_anfrage_consent'   => wp_date('Y-m-d H:i:s'),
+            // Art. 7 (1) GDPR: proof needs the wording that was agreed to, not just a tick
+            '_dbw_anfrage_consent_text' => isset($data['consent_text'])
+                ? sanitize_textarea_field($data['consent_text'])
+                : \DBW\ImmoSuite\Core\Legal::consent_text(isset($data['source']) && $data['source'] === 'expose' ? 'expose' : 'contact'),
         );
         foreach ($meta as $key => $value) {
             update_post_meta($post_id, $key, $value);

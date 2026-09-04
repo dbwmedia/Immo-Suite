@@ -426,8 +426,8 @@ class Filter
             </svg>
             <h3 class="dbw-empty-state__title"><?php esc_html_e('Keine Immobilien gefunden', 'dbw-immo-suite'); ?></h3>
             <p class="dbw-empty-state__text"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                __('Fuer diese Suche gibt es aktuell keine Treffer. Passen Sie die Filter an oder schauen Sie sich unsere aktuellen Objekte an.', 'dbw-immo-suite'),
-                __('Fuer diese Suche gibt es aktuell keine Treffer. Passe die Filter an oder schau dir unsere aktuellen Objekte an.', 'dbw-immo-suite')
+                __('Für diese Suche gibt es aktuell keine Treffer. Passen Sie die Filter an oder schauen Sie sich unsere aktuellen Objekte an.', 'dbw-immo-suite'),
+                __('Für diese Suche gibt es aktuell keine Treffer. Passe die Filter an oder schau dir unsere aktuellen Objekte an.', 'dbw-immo-suite')
             )); ?></p>
             <a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-btn dbw-btn--primary dbw-filter-reset">
                 <?php esc_html_e('Filter zurücksetzen', 'dbw-immo-suite'); ?>

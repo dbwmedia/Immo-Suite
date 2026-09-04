@@ -265,7 +265,7 @@ class EnergyRenderer
         $show_positive_hint = ($diff_percent < -5);
         $positive_text = $show_positive_hint
             ? sprintf(
-                __('Unterdurchschnittliche Heizkosten — %d %% unter dem Durchschnitt fuer diese Groesse', 'dbw-immo-suite'),
+                __('Unterdurchschnittliche Heizkosten — %d %% unter dem Durchschnitt für diese Größe', 'dbw-immo-suite'),
                 abs($diff_percent)
             )
             : '';
@@ -277,7 +277,7 @@ class EnergyRenderer
         <div class="dbw-ecost-box" data-endenergie="<?php echo esc_attr($endenergie); ?>" data-wohnflaeche="<?php echo esc_attr($wohnflaeche); ?>" data-price="<?php echo esc_attr($price_kwh); ?>">
             <div class="dbw-ecost-header">
                 <svg class="dbw-ecost-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3-2 5-2 8a4 4 0 0 0 8 0c0-3-2-4-2-8"/><path d="M12 22v-4"/><path d="M8 22h8"/></svg>
-                <span><?php esc_html_e('Geschaetzte Heizkosten', 'dbw-immo-suite'); ?></span>
+                <span><?php esc_html_e('Geschätzte Heizkosten', 'dbw-immo-suite'); ?></span>
             </div>
 
             <div class="dbw-ecost-result">
@@ -291,7 +291,7 @@ class EnergyRenderer
 
             <div class="dbw-ecost-details">
                 <div class="dbw-ecost-detail-row">
-                    <span><?php esc_html_e('Energietraeger', 'dbw-immo-suite'); ?></span>
+                    <span><?php esc_html_e('Energieträger', 'dbw-immo-suite'); ?></span>
                     <strong>
                         <?php echo esc_html($source_label); ?>
                         <?php if ($source_unknown): ?>
@@ -311,7 +311,7 @@ class EnergyRenderer
 
             <?php if ($solar_hint): ?>
                 <div class="dbw-ecost-solar-hint">
-                    <?php esc_html_e('Primaerenergie durch Solaranlage — keine laufenden Heizkosten.', 'dbw-immo-suite'); ?>
+                    <?php esc_html_e('Primärenergie durch Solaranlage — keine laufenden Heizkosten.', 'dbw-immo-suite'); ?>
                 </div>
             <?php elseif ($show_positive_hint): ?>
                 <div class="dbw-ecost-positive-hint">
@@ -329,7 +329,7 @@ class EnergyRenderer
             </div>
 
             <p class="dbw-ecost-disclaimer">
-                <?php esc_html_e('Schaetzung basierend auf Energieausweis-Daten. Tatsaechliche Kosten koennen abweichen.', 'dbw-immo-suite'); ?>
+                <?php esc_html_e('Schätzung basierend auf Energieausweis-Daten. Tatsächliche Kosten können abweichen.', 'dbw-immo-suite'); ?>
             </p>
         </div>
 

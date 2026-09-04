@@ -40,14 +40,11 @@ class ArchiveMap
             <div id="dbw-archive-map-consent" class="dbw-map-placeholder">
                 <div class="dbw-map-placeholder__inner">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    <p class="dbw-map-placeholder__text"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                        __('Klicken Sie, um die Karte zu laden.', 'dbw-immo-suite'),
-                        __('Klicke, um die Karte zu laden.', 'dbw-immo-suite')
-                    )); ?></p>
+                    <p class="dbw-map-placeholder__text"><?php echo esc_html(\DBW\ImmoSuite\Core\Legal::map_prompt()); ?></p>
                     <button type="button" class="dbw-btn dbw-btn--ghost dbw-map-placeholder__btn" id="dbw-archive-map-load">
                         <?php esc_html_e('Karte laden', 'dbw-immo-suite'); ?>
                     </button>
-                    <p class="dbw-map-placeholder__hint"><?php esc_html_e('Dabei werden Daten an OpenStreetMap uebertragen.', 'dbw-immo-suite'); ?></p>
+                    <p class="dbw-map-placeholder__hint"><?php echo esc_html(\DBW\ImmoSuite\Core\Legal::map_notice()); ?></p>
                 </div>
             </div>
             <?php endif; ?>

@@ -270,6 +270,9 @@ class Plugin
         $plugin_privacy = new \DBW\ImmoSuite\Core\Privacy();
         $this->loader->add_action('init', $plugin_privacy, 'init');
 
+        $plugin_legal = new \DBW\ImmoSuite\Core\Legal();
+        $this->loader->add_action('init', $plugin_legal, 'init');
+
         $plugin_block_references = new \DBW\ImmoSuite\blocks\ReferencesBlock();
         $this->loader->add_action('init', $plugin_block_references, 'init');
 

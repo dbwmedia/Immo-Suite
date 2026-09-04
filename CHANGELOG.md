@@ -7,6 +7,30 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.10.0] - 2026-09-04
+
+### Geaendert
+
+- **Einwilligungstexte nach anwaltlicher Pruefung** (Datenschutz-Audit Kontentiert Legal, 02.09.2026) - Die Checkbox sagte bisher nur "Ich stimme der Datenschutzerklaerung zu". Das nennt weder den Verarbeitungszweck noch erfuellt es die Transparenzpflicht. Neuer Wortlaut in Kontakt- und Expose-Formular:
+  - Kontaktformular: *"Ich bin mit der Verarbeitung meiner personenbezogenen Daten zum Zwecke der Kontaktaufnahme entsprechend der Datenschutzerklaerung ausdruecklich einverstanden."*
+  - Expose-Anfrage: derselbe Satz, erweitert um die Zusendung des Exposes als zweiten Zweck.
+  - Die Datenschutzerklaerung ist im Satz verlinkt, nicht mehr nur daneben erwaehnt.
+- **Nachweis der Einwilligung enthaelt jetzt den Wortlaut** - Anfrage-Mail und gespeicherte Anfrage dokumentierten bisher nur "akzeptiert: Ja" mit Zeitstempel. Ein Haken allein belegt nicht, *wozu* eingewilligt wurde (Art. 7 Abs. 1 DSGVO). Der zugestimmte Satz wird jetzt mitgespeichert, in der Anfragen-Detailansicht angezeigt und im Datenschutz-Export nach Art. 15 DSGVO ausgegeben.
+- **Karten-Hinweis benennt Empfaenger und Datum** - Aus "Dabei werden Daten an OpenStreetMap uebertragen" wird "Dabei wird Ihre IP-Adresse an die OpenStreetMap Foundation uebertragen".
+- **Sichtbare Frontend-Texte mit echten Umlauten** - Formulare, Expose-Ansicht und Meldungen schrieben "Datenschutzerklaerung", "Expose" oder "Hoehe". Auf Screenshots einer Rechtspruefung faellt das auf und wirkt unfertig. Backend-Texte bleiben vorerst unveraendert.
+
+### Hinzugefuegt
+
+- **Zentrale Klasse fuer Rechtstexte** (`Core\Legal`) - Einwilligungstext, Provisionshinweis und Karten-Hinweis lagen inline in drei Templates. Eine geaenderte Formulierung hiess: alle Stellen finden und keine vergessen. Alles kommt jetzt aus einer Quelle, jeder Text ist filterbar:
+  - `dbw_immo_legal_consent_text` (Wortlaut je Kontext), `dbw_immo_legal_consent_html` (mit Link)
+  - `dbw_immo_legal_provision_text`, `dbw_immo_legal_map_notice`, `dbw_immo_legal_map_prompt`
+  - `dbw_immo_legal_privacy_url`
+- **Einstellung "Datenschutzerklaerung (URL)"** im neuen Abschnitt Rechtstexte (Reiter Datenschutz, jetzt speicherbar). Leer = die unter Einstellungen > Datenschutz gesetzte WordPress-Seite. Fuer Seiten, deren Datenschutzerklaerung ausserhalb von WordPress liegt.
+- **Warnung im Backend, wenn keine Datenschutzerklaerung verlinkt ist** - Ohne Ziel laeuft der Einwilligungstext ohne Link, und die Einwilligung ist angreifbar. Der Hinweis erscheint auf den Immobilien-Seiten mit Direktlink zu beiden Einstellorten.
+- **`docs/DATENSCHUTZ.md`** - Uebersicht aller vom Plugin verarbeiteten Daten fuer Datenschutzerklaerung, Verarbeitungsverzeichnis und Rechtspruefung.
+
+---
+
 ## [2.9.0] - 2026-08-25
 
 ### Geaendert

@@ -26,18 +26,11 @@ class ExposeRequest
     }
 
     /**
-     * Get the configured provision text.
+     * Get the configured provision text (wording lives in Core\Legal).
      */
     private static function get_provision_text()
     {
-        $settings = get_option('dbw_immo_suite_settings');
-        $text = isset($settings['expose_provision_text']) ? $settings['expose_provision_text'] : '';
-
-        if (empty($text)) {
-            $text = __('Ich nehme zur Kenntnis, dass bei Zustandekommen eines Kaufvertrages eine Maklerprovision in der im Expose genannten Hoehe anfaellt. Die Provisionshoehe entnehme ich dem Expose.', 'dbw-immo-suite');
-        }
-
-        return $text;
+        return \DBW\ImmoSuite\Core\Legal::provision_text();
     }
 
     /**
@@ -53,7 +46,7 @@ class ExposeRequest
                 class="dbw-cta dbw-cta--outline"
                 data-dbw-open-expose="<?php echo esc_attr($post_id); ?>">
             <svg class="dbw-cta__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <span class="dbw-cta__text"><?php esc_html_e('Expose anfordern', 'dbw-immo-suite'); ?></span>
+            <span class="dbw-cta__text"><?php esc_html_e('Exposé anfordern', 'dbw-immo-suite'); ?></span>
         </button>
         <?php
     }
@@ -82,7 +75,7 @@ class ExposeRequest
                         <img class="dbw-modal__thumb" src="<?php echo esc_url($thumb); ?>" alt="" loading="lazy">
                     <?php endif; ?>
                     <div class="dbw-modal__header-text">
-                        <p class="dbw-modal__eyebrow"><?php esc_html_e('Expose anfordern', 'dbw-immo-suite'); ?></p>
+                        <p class="dbw-modal__eyebrow"><?php esc_html_e('Exposé anfordern', 'dbw-immo-suite'); ?></p>
                         <h2 id="dbw-expose-title" class="dbw-modal__title"><?php echo esc_html($title); ?></h2>
                     </div>
                     <button type="button" class="dbw-modal__close" data-close-expose aria-label="<?php esc_attr_e('Schliessen', 'dbw-immo-suite'); ?>">&times;</button>
@@ -91,8 +84,8 @@ class ExposeRequest
                 <!-- Form body -->
                 <div class="dbw-modal__body" data-expose-step="form">
                     <p class="dbw-expose__intro"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                        __('Hinterlassen Sie Ihre Kontaktdaten und wir senden Ihnen das ausfuehrliche Expose zu.', 'dbw-immo-suite'),
-                        __('Hinterlasse deine Kontaktdaten und wir senden dir das ausfuehrliche Expose zu.', 'dbw-immo-suite')
+                        __('Hinterlassen Sie Ihre Kontaktdaten und wir senden Ihnen das ausführliche Exposé zu.', 'dbw-immo-suite'),
+                        __('Hinterlasse deine Kontaktdaten und wir senden dir das ausführliche Exposé zu.', 'dbw-immo-suite')
                     )); ?></p>
 
                     <label class="dbw-field__label">
@@ -120,22 +113,8 @@ class ExposeRequest
                         <span><?php echo esc_html($provision_text); ?></span>
                     </label>
 
-                    <!-- Privacy -->
-                    <label class="dbw-privacy">
-                        <input type="checkbox" name="privacy" required>
-                        <span><?php
-                            $privacy_url = get_privacy_policy_url();
-                            if ($privacy_url) {
-                                echo sprintf(
-                                    __('Ich stimme der %1$sDatenschutzerklaerung%2$s zu.', 'dbw-immo-suite'),
-                                    '<a href="' . esc_url($privacy_url) . '" target="_blank" rel="noopener">',
-                                    '</a>'
-                                );
-                            } else {
-                                esc_html_e('Ich stimme der Datenschutzerklaerung zu.', 'dbw-immo-suite');
-                            }
-                        ?></span>
-                    </label>
+                    <!-- Privacy (wording + link: Core\Legal) -->
+                    <?php \DBW\ImmoSuite\Core\Legal::consent_checkbox('expose'); ?>
 
                     <!-- Hidden fields -->
                     <input type="hidden" name="property_id" value="<?php echo esc_attr($post_id); ?>">
@@ -146,7 +125,7 @@ class ExposeRequest
                 <!-- Submit -->
                 <div class="dbw-modal__submit" data-expose-step="form">
                     <button type="submit" class="dbw-btn dbw-btn--primary">
-                        <?php esc_html_e('Expose anfordern', 'dbw-immo-suite'); ?>
+                        <?php esc_html_e('Exposé anfordern', 'dbw-immo-suite'); ?>
                     </button>
                 </div>
 
@@ -164,8 +143,8 @@ class ExposeRequest
                         </h3>
                         <p class="dbw-success__msg">
                             <?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                                __('Ihre Expose-Anfrage ist eingegangen. Wir senden Ihnen das Expose schnellstmoeglich zu.', 'dbw-immo-suite'),
-                                __('Deine Expose-Anfrage ist eingegangen. Wir senden dir das Expose schnellstmoeglich zu.', 'dbw-immo-suite')
+                                __('Ihre Exposé-Anfrage ist eingegangen. Wir senden Ihnen das Exposé schnellstmöglich zu.', 'dbw-immo-suite'),
+                                __('Deine Exposé-Anfrage ist eingegangen. Wir senden dir das Exposé schnellstmöglich zu.', 'dbw-immo-suite')
                             )); ?>
                         </p>
                         <button type="button" class="dbw-btn dbw-btn--ghost" data-close-expose>
@@ -205,10 +184,10 @@ class ExposeRequest
 
         // Validation
         if (empty($_POST['privacy'])) {
-            wp_send_json_error(__('Bitte Datenschutzerklaerung akzeptieren.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte der Datenschutzerklärung zustimmen.', 'dbw-immo-suite'));
         }
         if (empty($_POST['provision_ack'])) {
-            wp_send_json_error(__('Bitte den Provisionshinweis bestaetigen.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte den Provisionshinweis bestätigen.', 'dbw-immo-suite'));
         }
 
         $post_id = intval($_POST['property_id'] ?? 0);
@@ -217,7 +196,7 @@ class ExposeRequest
         $phone   = sanitize_text_field($_POST['phone'] ?? '');
 
         if (!$post_id || !$name || !$email) {
-            wp_send_json_error(__('Bitte alle Pflichtfelder ausfuellen.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte alle Pflichtfelder ausfüllen.', 'dbw-immo-suite'));
         }
 
         $property = get_post($post_id);
@@ -226,7 +205,7 @@ class ExposeRequest
         }
 
         if (!is_email($email)) {
-            wp_send_json_error(__('Bitte eine gueltige E-Mail-Adresse eingeben.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte eine gültige E-Mail-Adresse eingeben.', 'dbw-immo-suite'));
         }
 
         // Rate limiting: per IP+property (120s) + hourly per-IP cap.
@@ -252,7 +231,8 @@ class ExposeRequest
         $body .= "Provisionshinweis akzeptiert: Ja\n";
         // Consent record (Art. 7 Abs. 1 DSGVO): the mail in the broker's inbox
         // doubles as proof of the privacy-checkbox consent
-        $body .= "Datenschutzerklaerung akzeptiert: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Expose-Anfrage)\n";
+        $body .= "Datenschutz-Einwilligung erteilt: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Exposé-Anfrage)\n";
+        $body .= "Wortlaut: " . \DBW\ImmoSuite\Core\Legal::consent_text('expose') . "\n";
 
         // Store in the inbox first — a failed/spam-filtered mail must not lose the lead
         if (class_exists('DBW\ImmoSuite\PostTypes\Inquiry')) {
@@ -264,6 +244,7 @@ class ExposeRequest
                 'intent_details' => 'Provisionshinweis akzeptiert: Ja',
                 'property_id'    => $post_id,
                 'source'         => 'expose',
+                'consent_text'   => \DBW\ImmoSuite\Core\Legal::consent_text('expose'),
             ));
         }
 
@@ -293,8 +274,8 @@ class ExposeRequest
             ContactForm::send_visitor_confirmation($post_id, $name, $email);
 
             wp_send_json_success(\DBW\ImmoSuite\dbw_anrede(
-                __('Ihre Expose-Anfrage wurde erfolgreich versendet.', 'dbw-immo-suite'),
-                __('Deine Expose-Anfrage wurde erfolgreich versendet.', 'dbw-immo-suite')
+                __('Ihre Exposé-Anfrage wurde erfolgreich versendet.', 'dbw-immo-suite'),
+                __('Deine Exposé-Anfrage wurde erfolgreich versendet.', 'dbw-immo-suite')
             ));
         } else {
             wp_send_json_error(\DBW\ImmoSuite\dbw_anrede(

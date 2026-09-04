@@ -163,7 +163,7 @@ get_header(); ?>
 				<!-- Floating Buttons - Top Left -->
 				<a href="<?php echo esc_url(get_post_type_archive_link('immobilie')); ?>" class="dbw-gallery-btn dbw-gallery-btn--back"
 					onclick="if(history.length>1){history.back();return false;}"
-					aria-label="<?php esc_attr_e('Zurueck zur Uebersicht', 'dbw-immo-suite'); ?>">
+					aria-label="<?php esc_attr_e('Zurück zur Übersicht', 'dbw-immo-suite'); ?>">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 						stroke-linecap="round" stroke-linejoin="round">
 						<line x1="19" y1="12" x2="5" y2="12"></line>
@@ -199,8 +199,8 @@ get_header(); ?>
 						<a href="<?php echo esc_url(\DBW\ImmoSuite\Frontend\PdfExpose::get_expose_url($id)); ?>"
 							target="_blank" rel="noopener"
 							class="dbw-gallery-btn dbw-gallery-btn--action"
-							aria-label="<?php esc_attr_e('Expose als PDF herunterladen', 'dbw-immo-suite'); ?>"
-							title="<?php esc_attr_e('Expose als PDF', 'dbw-immo-suite'); ?>">
+							aria-label="<?php esc_attr_e('Exposé als PDF herunterladen', 'dbw-immo-suite'); ?>"
+							title="<?php esc_attr_e('Exposé als PDF', 'dbw-immo-suite'); ?>">
 							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
 								stroke-linecap="round" stroke-linejoin="round">
 								<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -229,7 +229,7 @@ get_header(); ?>
 					<?php foreach ($gallery_images as $index => $img): ?>
 						<button type="button" class="dbw-gallery-slide" id="slide-<?php echo (int) $index; ?>"
 							onclick="dbwLightbox.open('gallery', <?php echo (int) $index; ?>)"
-							aria-label="<?php echo esc_attr(sprintf(__('Bild %d in Lightbox oeffnen', 'dbw-immo-suite'), $index + 1)); ?>">
+							aria-label="<?php echo esc_attr(sprintf(__('Bild %d in Lightbox öffnen', 'dbw-immo-suite'), $index + 1)); ?>">
 							<img src="<?php echo esc_url($img['url']); ?>"
 								alt="<?php echo esc_attr($img['alt'] ?: sprintf(__('%1$s — Bild %2$d', 'dbw-immo-suite'), get_the_title(), $index + 1)); ?>"
 								<?php if ($img['srcset']): ?>srcset="<?php echo esc_attr($img['srcset']); ?>"<?php endif; ?>
@@ -380,14 +380,11 @@ get_header(); ?>
 							data-lng="<?php echo esc_attr($lng); ?>">
 							<div class="dbw-map-placeholder__inner">
 								<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-								<p class="dbw-map-placeholder__text"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-									__('Klicken Sie, um die Karte zu laden.', 'dbw-immo-suite'),
-									__('Klicke, um die Karte zu laden.', 'dbw-immo-suite')
-								)); ?></p>
+								<p class="dbw-map-placeholder__text"><?php echo esc_html(\DBW\ImmoSuite\Core\Legal::map_prompt()); ?></p>
 								<button type="button" class="dbw-btn dbw-btn--ghost dbw-map-placeholder__btn" id="dbw-map-load">
 									<?php esc_html_e('Karte laden', 'dbw-immo-suite'); ?>
 								</button>
-								<p class="dbw-map-placeholder__hint"><?php esc_html_e('Dabei werden Daten an OpenStreetMap uebertragen.', 'dbw-immo-suite'); ?></p>
+								<p class="dbw-map-placeholder__hint"><?php echo esc_html(\DBW\ImmoSuite\Core\Legal::map_notice()); ?></p>
 							</div>
 						</div>
 						<?php endif; ?>
@@ -476,7 +473,7 @@ get_header(); ?>
 						<div class="dbw-gallery-grid dbw-gallery-grid--floorplans">
 							<?php foreach ($floor_plans as $fp_index => $fp): ?>
 								<button type="button" class="dbw-gallery-item dbw-gallery-item--floorplan" onclick="dbwLightbox.open('floorplan', <?php echo (int) $fp_index; ?>)"
-									aria-label="<?php echo esc_attr(sprintf(__('Grundriss %d oeffnen', 'dbw-immo-suite'), $fp_index + 1)); ?>"
+									aria-label="<?php echo esc_attr(sprintf(__('Grundriss %d öffnen', 'dbw-immo-suite'), $fp_index + 1)); ?>"
 									style="background-image: url(<?php echo esc_url($fp['url']); ?>);">
 								</button>
 								<?php
@@ -737,8 +734,8 @@ get_header(); ?>
 			?>
 			<div class="dbw-similar-properties">
 				<h3 class="dbw-section-title"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-					__('Das koennte Sie auch interessieren', 'dbw-immo-suite'),
-					__('Das koennte dich auch interessieren', 'dbw-immo-suite')
+					__('Das könnte Sie auch interessieren', 'dbw-immo-suite'),
+					__('Das könnte dich auch interessieren', 'dbw-immo-suite')
 				)); ?>
 				</h3>
 				<div class="dbw-property-grid">

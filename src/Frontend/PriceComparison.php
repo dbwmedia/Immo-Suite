@@ -182,7 +182,7 @@ class PriceComparison
                     $badge_class = 'dbw-price-sqm-above';
                     $arrow = '▲';
                     $badge_text = sprintf(
-                        __('%s%% ueber dem Schnitt in %s', 'dbw-immo-suite'),
+                        __('%s%% über dem Schnitt in %s', 'dbw-immo-suite'),
                         number_format(abs($dev), 0, ',', '.'),
                         $comparison['ort']
                     );

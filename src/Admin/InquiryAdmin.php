@@ -236,6 +236,10 @@ class InquiryAdmin
             }
             $row(__('Quelle', 'dbw-immo-suite'), esc_html($m('source') === 'expose' ? __('Expose-Anfrage', 'dbw-immo-suite') : __('Kontaktformular', 'dbw-immo-suite')));
             $row(__('Datenschutz-Zustimmung', 'dbw-immo-suite'), esc_html($m('consent')));
+            // The wording that was actually agreed to — a tick alone proves nothing
+            if ($m('consent_text')) {
+                $row(__('Wortlaut', 'dbw-immo-suite'), '<em>' . esc_html($m('consent_text')) . '</em>');
+            }
             ?>
         </table>
         <p class="description" style="margin-top:12px;">

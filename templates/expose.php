@@ -51,7 +51,7 @@ $primary = get_theme_mod('dbw_immo_color_primary', '#2c3e50');
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title><?php echo esc_html(sprintf(__('%s — Expose', 'dbw-immo-suite'), $d['title'])); ?></title>
+<title><?php echo esc_html(sprintf(__('%s — Exposé', 'dbw-immo-suite'), $d['title'])); ?></title>
 <style>
 /* ── Reset & Base ─────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -362,8 +362,8 @@ img { max-width: 100%; height: auto; display: block; }
 <!-- Print Trigger Bar (screen only) -->
 <div class="print-trigger-bar">
     <?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-        __('Expose bereit. Waehlen Sie im Druckdialog "Als PDF speichern".', 'dbw-immo-suite'),
-        __('Expose bereit. Waehle im Druckdialog "Als PDF speichern".', 'dbw-immo-suite')
+        __('Exposé bereit. Wählen Sie im Druckdialog "Als PDF speichern".', 'dbw-immo-suite'),
+        __('Exposé bereit. Wähle im Druckdialog "Als PDF speichern".', 'dbw-immo-suite')
     )); ?>
     <button onclick="window.print()"><?php esc_html_e('PDF speichern / Drucken', 'dbw-immo-suite'); ?></button>
 </div>

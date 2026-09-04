@@ -81,8 +81,8 @@ class FinanceCalculator
                     __('Deine Finanzierung berechnen', 'dbw-immo-suite')
                 ),
                 'hinweis'           => \DBW\ImmoSuite\dbw_anrede(
-                    __('Die Berechnung dient als unverbindliche Orientierung. Sprechen Sie uns fuer ein individuelles Finanzierungsangebot an.', 'dbw-immo-suite'),
-                    __('Die Berechnung dient als unverbindliche Orientierung. Sprich uns fuer ein individuelles Finanzierungsangebot an.', 'dbw-immo-suite')
+                    __('Die Berechnung dient als unverbindliche Orientierung. Sprechen Sie uns für ein individuelles Finanzierungsangebot an.', 'dbw-immo-suite'),
+                    __('Die Berechnung dient als unverbindliche Orientierung. Sprich uns für ein individuelles Finanzierungsangebot an.', 'dbw-immo-suite')
                 ),
                 'bundesland_unknown' => __('Bundesland nicht erkannt', 'dbw-immo-suite'),
             ),

@@ -108,12 +108,12 @@ class ContactModal
                     <div class="dbw-modal__step is-active" data-step="1">
                         <div class="dbw-step__content">
                             <h3 class="dbw-step__title"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                                __('Wie koennen wir Ihnen helfen?', 'dbw-immo-suite'),
-                                __('Wie koennen wir dir helfen?', 'dbw-immo-suite')
+                                __('Wie können wir Ihnen helfen?', 'dbw-immo-suite'),
+                                __('Wie können wir dir helfen?', 'dbw-immo-suite')
                             )); ?></h3>
                             <p class="dbw-step__subtitle"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                                __('Waehlen Sie Ihr Anliegen — wir kuemmern uns darum.', 'dbw-immo-suite'),
-                                __('Waehl dein Anliegen — wir kuemmern uns darum.', 'dbw-immo-suite')
+                                __('Wählen Sie Ihr Anliegen — wir kümmern uns darum.', 'dbw-immo-suite'),
+                                __('Wähl dein Anliegen — wir kümmern uns darum.', 'dbw-immo-suite')
                             )); ?></p>
 
                             <div class="dbw-intent-grid">
@@ -131,7 +131,7 @@ class ContactModal
                                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                     </span>
                                     <span class="dbw-intent__label"><?php esc_html_e('Mehr Infos', 'dbw-immo-suite'); ?></span>
-                                    <span class="dbw-intent__desc"><?php esc_html_e('Expose & Details', 'dbw-immo-suite'); ?></span>
+                                    <span class="dbw-intent__desc"><?php esc_html_e('Exposé & Details', 'dbw-immo-suite'); ?></span>
                                 </label>
                                 <label class="dbw-intent" data-intent="preis">
                                     <input type="radio" name="intent" value="preis">
@@ -146,7 +146,7 @@ class ContactModal
                                     <span class="dbw-intent__icon" aria-hidden="true">
                                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                                     </span>
-                                    <span class="dbw-intent__label"><?php esc_html_e('Rueckruf', 'dbw-immo-suite'); ?></span>
+                                    <span class="dbw-intent__label"><?php esc_html_e('Rückruf', 'dbw-immo-suite'); ?></span>
                                     <span class="dbw-intent__desc"><?php esc_html_e('Wir rufen an', 'dbw-immo-suite'); ?></span>
                                 </label>
                             </div>
@@ -156,9 +156,9 @@ class ContactModal
                     <!-- ═══ STEP 2: Contact Details ═══ -->
                     <div class="dbw-modal__step" data-step="2">
                         <div class="dbw-step__content">
-                            <button type="button" class="dbw-step__back" data-goto-step="1" aria-label="<?php esc_attr_e('Zurueck', 'dbw-immo-suite'); ?>">
+                            <button type="button" class="dbw-step__back" data-goto-step="1" aria-label="<?php esc_attr_e('Zurück', 'dbw-immo-suite'); ?>">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                                <?php esc_html_e('Zurueck', 'dbw-immo-suite'); ?>
+                                <?php esc_html_e('Zurück', 'dbw-immo-suite'); ?>
                             </button>
 
                             <h3 class="dbw-step__title"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
@@ -189,7 +189,7 @@ class ContactModal
                             </fieldset>
 
                             <fieldset class="dbw-field dbw-field--context" data-context="preis" hidden>
-                                <legend><?php esc_html_e('Finanzierung bereits geklaert?', 'dbw-immo-suite'); ?></legend>
+                                <legend><?php esc_html_e('Finanzierung bereits geklärt?', 'dbw-immo-suite'); ?></legend>
                                 <div class="dbw-pill-group">
                                     <label class="dbw-pill"><input type="radio" name="financing" value="yes"> <?php esc_html_e('Ja', 'dbw-immo-suite'); ?></label>
                                     <label class="dbw-pill"><input type="radio" name="financing" value="partial"> <?php esc_html_e('Teilweise', 'dbw-immo-suite'); ?></label>
@@ -224,23 +224,8 @@ class ContactModal
                                 )); ?>"></textarea>
                             </label>
 
-                            <!-- Privacy -->
-                            <label class="dbw-privacy">
-                                <input type="checkbox" name="privacy" required>
-                                <span><?php
-                                    $privacy_url = get_privacy_policy_url();
-                                    if ($privacy_url) {
-                                        echo sprintf(
-                                            /* translators: %1$s opening <a> tag, %2$s closing </a> tag */
-                                            __('Ich stimme der %1$sDatenschutzerklaerung%2$s zu.', 'dbw-immo-suite'),
-                                            '<a href="' . esc_url($privacy_url) . '" target="_blank" rel="noopener">',
-                                            '</a>'
-                                        );
-                                    } else {
-                                        esc_html_e('Ich stimme der Datenschutzerklaerung zu.', 'dbw-immo-suite');
-                                    }
-                                ?></span>
-                            </label>
+                            <!-- Privacy (wording + link: Core\Legal) -->
+                            <?php \DBW\ImmoSuite\Core\Legal::consent_checkbox('contact'); ?>
 
                             <!-- Hidden fields -->
                             <input type="hidden" name="property_id" value="<?php echo esc_attr($post_id); ?>">
@@ -281,8 +266,8 @@ class ContactModal
                                 <?php if ($contact_name): ?>
                                     <div class="dbw-success__agent">
                                         <p class="dbw-success__agent-hint"><?php echo esc_html(\DBW\ImmoSuite\dbw_anrede(
-                                            __('Sie moechten direkt sprechen?', 'dbw-immo-suite'),
-                                            __('Du moechtest direkt sprechen?', 'dbw-immo-suite')
+                                            __('Sie möchten direkt sprechen?', 'dbw-immo-suite'),
+                                            __('Du möchtest direkt sprechen?', 'dbw-immo-suite')
                                         )); ?></p>
                                         <div class="dbw-success__agent-card">
                                             <?php if ($contact_img_url): ?>

@@ -83,7 +83,7 @@ class Settings
 			'references'  => array(__('Referenzen & Verkauf', 'dbw-immo-suite'), 'awards', true),
 			'seo'         => array(__('Maklerfirma (SEO)', 'dbw-immo-suite'), 'store', true),
 			'report'      => array(__('Bericht & System', 'dbw-immo-suite'), 'email-alt', true),
-			'privacy'     => array(__('Datenschutz', 'dbw-immo-suite'), 'shield', false),
+			'privacy'     => array(__('Datenschutz', 'dbw-immo-suite'), 'shield', true),
 			'shortcodes'  => array(__('Shortcodes', 'dbw-immo-suite'), 'shortcode', false),
 			'license'     => array(__('Lizenz', 'dbw-immo-suite'), 'admin-network', false),
 		);
@@ -140,14 +140,16 @@ class Settings
 							<?php do_settings_sections('dbw-settings-report'); ?>
 						</div>
 
+						<div class="dbw-tab-panel" id="tab-privacy" style="display:none;">
+							<?php do_settings_sections('dbw-settings-privacy'); ?>
+							<?php $this->render_privacy_tab(); ?>
+						</div>
+
 						<div class="dbw-settings-savebar">
 							<?php submit_button(__('Einstellungen speichern', 'dbw-immo-suite'), 'primary', 'submit', false); ?>
 						</div>
 					</form>
 
-					<div class="dbw-tab-panel" id="tab-privacy" style="display:none;">
-						<?php $this->render_privacy_tab(); ?>
-					</div>
 
 					<div class="dbw-tab-panel" id="tab-shortcodes" style="display:none;">
 						<?php $this->render_shortcode_reference(); ?>
@@ -164,7 +166,7 @@ class Settings
 		(function() {
 			var tabs = document.querySelectorAll('.dbw-settings-tabs a');
 			var panels = document.querySelectorAll('.dbw-tab-panel');
-			var formTabs = ['import', 'display', 'calculator', 'references', 'seo', 'report'];
+			var formTabs = ['import', 'display', 'calculator', 'references', 'seo', 'report', 'privacy'];
 
 			function activate(slug) {
 				tabs.forEach(function(t) {
@@ -222,8 +224,9 @@ class Settings
 			. 'Auf dieser Website werden Immobilienangebote dargestellt. Die eingesetzte Software arbeitet datensparsam: Sie setzt keine Cookies und bindet keine externen Schriftarten oder Skripte ein. ' . $intro_storage . "\n\n"
 			. 'Kontakt- und Exposé-Anfragen' . "\n"
 			. 'Wenn Sie über ein Formular eine Anfrage zu einer Immobilie stellen, verarbeiten wir die von Ihnen angegebenen Daten (Name, E-Mail-Adresse, ggf. Telefonnummer sowie Ihre Nachricht und Angaben zu Ihrem Anliegen) ausschließlich zur Bearbeitung Ihrer Anfrage (Art. 6 Abs. 1 lit. b DSGVO). ' . $storage_sentence . ' Zur Abwehr von Missbrauch (Spam-Schutz) wird Ihre IP-Adresse in pseudonymisierter Form (Hashwert) für maximal zwei Minuten zwischengespeichert (Art. 6 Abs. 1 lit. f DSGVO).' . "\n\n"
+			. 'Vor dem Absenden bestätigen Sie den Einwilligungstext: "' . \DBW\ImmoSuite\Core\Legal::consent_text('contact') . '" Der Wortlaut wird zusammen mit dem Zeitpunkt der Einwilligung dokumentiert.' . "\n\n"
 			. 'Karten (OpenStreetMap)' . "\n"
-			. 'Zur Darstellung von Objektstandorten nutzen wir OpenStreetMap. Die Karte wird erst geladen, wenn Sie sie aktiv per Klick freigeben (Art. 6 Abs. 1 lit. a DSGVO). Erst dann wird Ihre IP-Adresse an die OpenStreetMap Foundation (Vereinigtes Königreich; Angemessenheitsbeschluss der EU-Kommission) übertragen.' . "\n\n"
+			. 'Zur Darstellung von Objektstandorten nutzen wir OpenStreetMap. Die Karte wird erst geladen, wenn Sie sie aktiv per Klick freigeben oder im Consent-Tool einwilligen (Art. 6 Abs. 1 lit. a DSGVO). Erst dann wird Ihre IP-Adresse an die OpenStreetMap Foundation (Vereinigtes Königreich; Angemessenheitsbeschluss der EU-Kommission, gültig bis 27.12.2031) übertragen. Ihre Einwilligung können Sie jederzeit widerrufen.' . "\n\n"
 			. 'WhatsApp-Kontakt' . "\n"
 			. 'Sofern ein WhatsApp-Kontaktbutton angeboten wird, findet eine Datenübertragung an WhatsApp (Meta Platforms) erst statt, wenn Sie den Button aktiv anklicken und WhatsApp öffnen.' . "\n\n"
 			. 'Merkliste' . "\n"
@@ -249,6 +252,8 @@ class Settings
 					esc_html_e('Kontakt- und Expose-Anfragen werden nur per E-Mail zugestellt und nicht in der Datenbank gespeichert.', 'dbw-immo-suite');
 				}
 			?></li>
+			<li><?php esc_html_e('Der Einwilligungstext nennt den Verarbeitungszweck und verlinkt die Datenschutzerklaerung. Wortlaut zentral in Core\Legal, anpassbar per Filter dbw_immo_legal_consent_text.', 'dbw-immo-suite'); ?></li>
+			<li><?php esc_html_e('Anfrage-Mail und gespeicherte Anfrage enthalten den Wortlaut der Einwilligung, nicht nur einen Haken (Nachweis nach Art. 7 Abs. 1 DSGVO).', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('Gespeicherte Anfragen sind in den WordPress-Datenschutz-Export und die Loeschung nach Art. 15/17 DSGVO eingebunden.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('Spam-Schutz speichert die IP-Adresse nur als Hashwert fuer maximal 2 Minuten.', 'dbw-immo-suite'); ?></li>
 			<li><?php esc_html_e('OpenStreetMap-Karten laden erst nach aktivem Klick (Zwei-Klick-Loesung). Wird im Cookie-Tool ein Karten-Service akzeptiert, laedt die Karte direkt - Service-ID im Customizer hinterlegen.', 'dbw-immo-suite'); ?></li>
@@ -578,6 +583,10 @@ class Settings
 		}
 
 		// ── Tab: Bericht & System ──
+		// Legal texts (privacy tab)
+		add_settings_section('section_legal', __('Rechtstexte', 'dbw-immo-suite'), array($this, 'print_legal_section_info'), 'dbw-settings-privacy');
+		add_settings_field('privacy_url', __('Datenschutzerklärung (URL)', 'dbw-immo-suite'), array($this, 'privacy_url_callback'), 'dbw-settings-privacy', 'section_legal');
+
 		add_settings_section('section_report', __('Wochenbericht', 'dbw-immo-suite'), array($this, 'print_report_section_info'), 'dbw-settings-report');
 		add_settings_field('weekly_report_enabled', __('Wochenbericht senden', 'dbw-immo-suite'), array($this, 'weekly_report_enabled_callback'), 'dbw-settings-report', 'section_report');
 		add_settings_field('weekly_report_email', __('Empfaenger', 'dbw-immo-suite'), array($this, 'weekly_report_email_callback'), 'dbw-settings-report', 'section_report');
@@ -815,6 +824,10 @@ class Settings
 		}
 
 		// Expose Request
+		if (isset($input['privacy_url'])) {
+			$new_input['privacy_url'] = esc_url_raw(trim($input['privacy_url']));
+		}
+
 		if (isset($input['expose_provision_text'])) {
 			$new_input['expose_provision_text'] = sanitize_textarea_field($input['expose_provision_text']);
 		}
@@ -1244,6 +1257,36 @@ class Settings
 		$this->number_field_callback('price_per_sqm_cache_hours', 24, 1, 1, 168, __('Cache-Dauer fuer Durchschnittswerte in Stunden (Standard: 24)', 'dbw-immo-suite'));
 	}
 
+	public function print_legal_section_info()
+	{
+		print esc_html__('Der Einwilligungstext der Formulare verweist auf die Datenschutzerklärung. Ohne verlinkte Datenschutzerklärung ist eine Einwilligung angreifbar.', 'dbw-immo-suite');
+	}
+
+	public function privacy_url_callback()
+	{
+		$options = get_option($this->option_name);
+		$val     = !empty($options['privacy_url']) ? $options['privacy_url'] : '';
+		$wp_url  = (string) get_privacy_policy_url();
+
+		printf(
+			'<input type="url" id="privacy_url" name="%s[privacy_url]" value="%s" class="regular-text" placeholder="https://...">',
+			esc_attr($this->option_name),
+			esc_attr($val)
+		);
+
+		if ($val === '' && $wp_url !== '') {
+			echo '<p class="description">' . sprintf(
+				/* translators: %s: URL of the privacy page set in WordPress */
+				esc_html__('Leer = WordPress-Datenschutzseite wird verwendet (%s).', 'dbw-immo-suite'),
+				'<code>' . esc_html($wp_url) . '</code>'
+			) . '</p>';
+		} elseif ($val === '') {
+			echo '<p class="description" style="color:#b32d2e;">' . esc_html__('Achtung: In WordPress ist keine Datenschutzseite gesetzt (Einstellungen > Datenschutz). Der Einwilligungstext erscheint dadurch ohne Link.', 'dbw-immo-suite') . '</p>';
+		} else {
+			echo '<p class="description">' . esc_html__('Diese URL wird im Einwilligungstext der Formulare verlinkt.', 'dbw-immo-suite') . '</p>';
+		}
+	}
+
 	public function print_expose_section_info()
 	{
 		print esc_html__('Der Expose-Anfrage-Button wird im Customizer aktiviert (Detailansicht > Expose-Anfrage Button). Hier kann der rechtliche Hinweistext konfiguriert werden.', 'dbw-immo-suite');
@@ -1253,7 +1296,7 @@ class Settings
 	{
 		$options = get_option($this->option_name);
 		$val = !empty($options['expose_provision_text']) ? $options['expose_provision_text'] : '';
-		$placeholder = 'Ich nehme zur Kenntnis, dass bei Zustandekommen eines Kaufvertrages eine Maklerprovision in der im Expose genannten Hoehe anfaellt.';
+		$placeholder = \DBW\ImmoSuite\Core\Legal::provision_default();
 		printf(
 			'<textarea id="expose_provision_text" name="%s[expose_provision_text]" rows="3" class="large-text" placeholder="%s">%s</textarea>',
 			esc_attr($this->option_name),

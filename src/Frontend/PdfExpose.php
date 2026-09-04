@@ -41,7 +41,7 @@ class PdfExpose
             $valid = (bool) wp_verify_nonce(sanitize_text_field($_GET['_wpnonce']), 'dbw_immo_expose_' . $post_id);
         }
         if (!$valid) {
-            wp_die(__('Ungueltiger Link.', 'dbw-immo-suite'), 403);
+            wp_die(__('Ungültiger Link.', 'dbw-immo-suite'), 403);
         }
 
         $this->render_expose($post_id);

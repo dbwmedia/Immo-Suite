@@ -1,6 +1,6 @@
 # Datenschutz-Übersicht: ImmoSuite
 
-**Stand: Plugin-Version 2.9.0**
+**Stand: Plugin-Version 2.10.0**
 
 ## Was die ImmoSuite macht
 
@@ -55,16 +55,25 @@ Je nach gewähltem Anliegen zusätzlich:
 - Finanzierungsstatus
 - Gewünschte Rückrufzeit
 
-Die Datenschutz-Checkbox ist Pflichtfeld. Es wird ein **Zeitstempel der
-Zustimmung** gespeichert und in der Benachrichtigungs-Mail ausgegeben
-(Nachweis nach Art. 7 DSGVO).
+Die Datenschutz-Checkbox ist Pflichtfeld. Der Einwilligungstext lautet:
+
+> Ich bin mit der Verarbeitung meiner personenbezogenen Daten zum Zwecke der
+> Kontaktaufnahme entsprechend der Datenschutzerklärung [verlinkt]
+> ausdrücklich einverstanden.
+
+Gespeichert und in der Benachrichtigungs-Mail ausgegeben werden **Zeitstempel
+und Wortlaut** der Zustimmung (Nachweis nach Art. 7 Abs. 1 DSGVO).
 
 Vorgeschlagene Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche
-Maßnahme auf Anfrage der betroffenen Person).
+Maßnahme auf Anfrage der betroffenen Person), gestützt auf die ausdrückliche
+Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO.
 
 ### 2.2 Exposé-Anfrage
 
-Name, E-Mail-Adresse, Telefonnummer, Objektbezug, Consent-Zeitstempel.
+Name, E-Mail-Adresse, Telefonnummer, Objektbezug, Zeitstempel und Wortlaut der
+Einwilligung. Zusätzlich ist eine Kenntnisnahme des Provisionshinweises
+Pflichtfeld (Text pro Website konfigurierbar). Der Einwilligungstext nennt hier
+als Zweck die Zusendung des Exposés und die Kontaktaufnahme.
 
 ### 2.3 Wohin die Anfragedaten gehen
 
@@ -80,7 +89,8 @@ Name, E-Mail-Adresse, Telefonnummer, Objektbezug, Consent-Zeitstempel.
   bei `0` findet keine automatische Löschung statt.
 - Angebunden an den WordPress-Datenschutz-Export und die
   Löschfunktion (Art. 15 und Art. 17 DSGVO): Die Suche erfolgt über die
-  E-Mail-Adresse der anfragenden Person.
+  E-Mail-Adresse der anfragenden Person. Der Export enthält auch den Wortlaut
+  der erteilten Einwilligung.
 
 ### 2.4 Spamschutz
 
@@ -124,7 +134,8 @@ ausdrücklich gewünschte Funktion).
 ### 3.1 Karte (OpenStreetMap)
 
 - Standard ist die Zwei-Klick-Lösung: Statt der Karte erscheint ein Platzhalter
-  mit Hinweis. Erst der Klick lädt die Kacheln und überträgt die IP-Adresse.
+  mit dem Hinweis "Dabei wird Ihre IP-Adresse an die OpenStreetMap Foundation
+  übertragen". Erst der Klick lädt die Kacheln und überträgt die IP-Adresse.
 - Ist im Consent-Tool ein Service für OpenStreetMap vorhanden und akzeptiert,
   lädt die Karte direkt. Erkannt werden Services, die "OpenStreetMap" oder
   "OSM" in Name, ID, Anbieter oder Hosts tragen; die Service-ID lässt sich im
@@ -217,7 +228,30 @@ Dieser Bereich wird häufig übersehen, enthält aber den größten Fremdbezug.
 
 ---
 
-## 7. Abgrenzung
+## 7. Wo die Texte im Code liegen
+
+Alle rechtlich relevanten Texte, die Besucher sehen, kommen aus einer einzigen
+Klasse (`src/Core/Legal.php`). Eine geänderte Formulierung muss dadurch nur an
+einer Stelle gepflegt werden. Jeder Text ist per Filter überschreibbar, ohne das
+Plugin zu ändern:
+
+| Filter | Text |
+|---|---|
+| `dbw_immo_legal_consent_text` | Einwilligungstext (Kontakt / Exposé) |
+| `dbw_immo_legal_consent_html` | Einwilligungstext inklusive Link |
+| `dbw_immo_legal_provision_text` | Provisionshinweis der Exposé-Anfrage |
+| `dbw_immo_legal_map_notice` | Hinweis unter dem Karten-Platzhalter |
+| `dbw_immo_legal_map_prompt` | Aufforderung über dem Karten-Button |
+| `dbw_immo_legal_privacy_url` | Ziel der Datenschutz-Verlinkung |
+
+Die verlinkte Datenschutzerklärung kommt aus der Einstellung
+*Immobilien -> Einstellungen -> Datenschutz -> Rechtstexte*, ersatzweise aus der
+in WordPress gesetzten Datenschutzseite. Fehlt beides, warnt das Backend, weil
+der Einwilligungstext dann ohne Link erscheint.
+
+---
+
+## 8. Abgrenzung
 
 Diese Übersicht beschreibt ausschließlich die ImmoSuite.
 Gesondert zu prüfen sind: Consent-Tool, Theme und übrige Plugins,

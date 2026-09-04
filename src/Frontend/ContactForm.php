@@ -118,12 +118,12 @@ class ContactForm
             sprintf(__('Hallo %s,', 'dbw-immo-suite'), $name)
         );
         $thanks = \DBW\ImmoSuite\dbw_anrede(
-            __('vielen Dank fuer Ihre Anfrage zu folgendem Objekt:', 'dbw-immo-suite'),
-            __('vielen Dank fuer deine Anfrage zu folgendem Objekt:', 'dbw-immo-suite')
+            __('vielen Dank für Ihre Anfrage zu folgendem Objekt:', 'dbw-immo-suite'),
+            __('vielen Dank für deine Anfrage zu folgendem Objekt:', 'dbw-immo-suite')
         );
         $followup = \DBW\ImmoSuite\dbw_anrede(
-            __('Wir haben Ihre Nachricht erhalten und melden uns schnellstmoeglich bei Ihnen.', 'dbw-immo-suite'),
-            __('Wir haben deine Nachricht erhalten und melden uns schnellstmoeglich bei dir.', 'dbw-immo-suite')
+            __('Wir haben Ihre Nachricht erhalten und melden uns schnellstmöglich bei Ihnen.', 'dbw-immo-suite'),
+            __('Wir haben deine Nachricht erhalten und melden uns schnellstmöglich bei dir.', 'dbw-immo-suite')
         );
 
         $body  = $greeting . "\n\n";
@@ -143,7 +143,7 @@ class ContactForm
             $body .= __('E-Mail:', 'dbw-immo-suite') . ' ' . $kp_email . "\n\n";
         }
 
-        $body .= __('Viele Gruesse', 'dbw-immo-suite') . "\n";
+        $body .= __('Viele Grüße', 'dbw-immo-suite') . "\n";
         $body .= $firm . "\n";
 
         // Reply-To: the broker, not the (possibly no-reply) sender address
@@ -178,7 +178,7 @@ class ContactForm
 
         // Privacy consent check
         if (empty($_POST['privacy'])) {
-            wp_send_json_error(__('Bitte Datenschutzerklaerung akzeptieren.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte der Datenschutzerklärung zustimmen.', 'dbw-immo-suite'));
         }
 
         $post_id   = intval($_POST['property_id'] ?? 0);
@@ -190,7 +190,7 @@ class ContactForm
         $preferred = sanitize_key($_POST['preferred'] ?? 'email');
 
         if (!$post_id || !$name || !$email) {
-            wp_send_json_error(__('Bitte alle Pflichtfelder ausfuellen.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte alle Pflichtfelder ausfüllen.', 'dbw-immo-suite'));
         }
 
         // Verify property exists and is public (blocks enumeration of drafts/private posts)
@@ -200,7 +200,7 @@ class ContactForm
         }
 
         if (!is_email($email)) {
-            wp_send_json_error(__('Bitte eine gueltige E-Mail-Adresse eingeben.', 'dbw-immo-suite'));
+            wp_send_json_error(__('Bitte eine gültige E-Mail-Adresse eingeben.', 'dbw-immo-suite'));
         }
 
         // Rate limiting: per IP+property (120s) + hourly per-IP cap.
@@ -281,7 +281,8 @@ class ContactForm
 
         // Consent record (Art. 7 Abs. 1 DSGVO): the mail in the broker's inbox
         // doubles as proof of the privacy-checkbox consent
-        $body .= "\nDatenschutzerklaerung akzeptiert: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Kontaktformular Objektseite)\n";
+        $body .= "\nDatenschutz-Einwilligung erteilt: Ja (" . wp_date('d.m.Y H:i') . " Uhr, Kontaktformular Objektseite)\n";
+        $body .= "Wortlaut: " . \DBW\ImmoSuite\Core\Legal::consent_text('contact') . "\n";
 
         // Store in the inbox first — a failed/spam-filtered mail must not lose the lead
         if (class_exists('DBW\ImmoSuite\PostTypes\Inquiry')) {
@@ -295,6 +296,7 @@ class ContactForm
                 'property_id'    => $post_id,
                 'source'         => 'kontakt',
                 'preferred'      => $preferred,
+                'consent_text'   => \DBW\ImmoSuite\Core\Legal::consent_text('contact'),
             ));
         }
 
