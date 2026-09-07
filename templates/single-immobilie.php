@@ -580,8 +580,11 @@ get_header(); ?>
 							if (strpos($provision, 'MwSt') === false && strpos($provision, '%') !== false) {
 								$prov .= ' ' . __('inkl. ges. MwSt.', 'dbw-immo-suite');
 							}
+							// Label first: brokers put whole sentences in this field
+							// ("3,57% inkl. MwSt. auf den notariell beurkundeten Kaufpreis"),
+							// and a trailing label turns that into broken German.
 							/* translators: %s: commission rate incl. optional VAT note */
-							$price_sub[] = sprintf(__('zzgl. %s Käuferprovision', 'dbw-immo-suite'), $prov);
+							$price_sub[] = sprintf(__('zzgl. Käuferprovision %s', 'dbw-immo-suite'), $prov);
 						}
 						if ($hausgeld > 0) {
 							$cost_rows[] = array(__('Hausgeld', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis_genau') . ' €');

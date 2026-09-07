@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.14.1] - 2026-09-07
+
+### Behoben
+
+- **Provisionszeile stand falsch herum** - Die neue Preiszeile schrieb "zzgl. 3,57% inkl. gesetzl. MwSt. auf den notariell beurkundeten Kaufpreis Kaeuferprovision". Makler tragen in `aussen_courtage` haeufig einen ganzen Satz ein, und ein nachgestelltes Label kippt den dann. Jetzt steht das Label vorne: "zzgl. Kaeuferprovision 3,57% inkl. gesetzl. MwSt. auf den notariell beurkundeten Kaufpreis".
+
+---
+
 ## [2.14.0] - 2026-09-07
 
 ### Geaendert
