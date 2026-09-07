@@ -167,6 +167,21 @@ class PropertyDetails
                     <label><?php _e('Käuferprovision (inkl. Text)', 'dbw-immo-suite'); ?></label>
                     <input type="text" name="provision_kaeufer" value="<?php echo $val('provision_kaeufer'); ?>" placeholder="z.B. 3,57% inkl. MwSt.">
                 </div>
+
+                <?php
+                // Parking space prices come structured from OpenImmo (<preise><stp_*>),
+                // so they are shown read-only. Editing happens in the broker software.
+                $stellplatz_lines = \DBW\ImmoSuite\dbw_stellplatz_lines(get_post_meta($post->ID, 'stellplatz_preise', true));
+                if (!empty($stellplatz_lines)):
+                ?>
+                <div class="dbw-field-row">
+                    <label><?php _e('Stellplätze (Import)', 'dbw-immo-suite'); ?></label>
+                    <div>
+                        <?php echo implode('<br>', array_map('esc_html', $stellplatz_lines)); ?>
+                        <p class="description"><?php _e('Aus der Maklersoftware übernommen. Änderungen bitte dort vornehmen, der nächste Import überschreibt sie sonst.', 'dbw-immo-suite'); ?></p>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
 
             <!-- TAB: Areas -->

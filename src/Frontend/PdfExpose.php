@@ -110,6 +110,11 @@ class PdfExpose
             'stellplaetze'      => $m('anzahl_stellplaetze'),
         );
 
+        // Parking spaces incl. price per space (OpenImmo <preise><stp_*>)
+        $stellplatz_lines = \DBW\ImmoSuite\dbw_stellplatz_lines(get_post_meta($post_id, 'stellplatz_preise', true));
+        $pricing['stellplatz_kaufpreis'] = $m('stellplatz_kaufpreis_gesamt');
+        $pricing['stellplatz_miete']     = $m('stellplatz_miete_gesamt');
+
         // Address — respect the "hide address" toggle: keep city-level info,
         // but never expose the street in the public expose.
         $show_address = (bool) get_theme_mod('dbw_immo_single_show_address', true);
@@ -176,6 +181,7 @@ class PdfExpose
             'org'         => $org,
             'pricing'     => $pricing,
             'areas'       => $areas,
+            'stellplatz_lines' => $stellplatz_lines,
             'address'     => $address,
             'energy'      => $energy,
             'contact'     => $contact,

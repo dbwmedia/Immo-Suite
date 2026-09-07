@@ -35,6 +35,12 @@ get_header(); ?>
 		$bathrooms = $m('anzahl_badezimmer');
 		$parking = $m('anzahl_stellplaetze');
 
+		// Parking spaces incl. price per space (OpenImmo <preise><stp_*>)
+		$stellplaetze = get_post_meta($id, 'stellplatz_preise', true);
+		$stellplatz_lines = \DBW\ImmoSuite\dbw_stellplatz_lines($stellplaetze);
+		$stellplatz_kauf = (float) $m('stellplatz_kaufpreis_gesamt');
+		$stellplatz_miete = (float) $m('stellplatz_miete_gesamt');
+
 		// Geo
 		$plz = $m('plz');
 		$city = $m('ort');
@@ -334,7 +340,7 @@ get_header(); ?>
 				<?php
 				$features = get_post_meta($id, '_dbw_immo_features', true);
 				if (!is_array($features)) $features = array();
-				if ($text_ausstattung || $parking > 0 || !empty($features)):
+				if ($text_ausstattung || $parking > 0 || !empty($stellplatz_lines) || !empty($features)):
 			?>
 					<div class="dbw-section">
 						<h3 class="dbw-section-title"><?php esc_html_e('Ausstattung', 'dbw-immo-suite'); ?></h3>
@@ -348,7 +354,11 @@ get_header(); ?>
 						<?php endif; ?>
 
 						<div class="dbw-description">
-							<?php if ($parking > 0): ?>
+							<?php if (!empty($stellplatz_lines)): ?>
+								<p><strong><?php _e('Stellplätze:', 'dbw-immo-suite'); ?></strong><br>
+									<?php echo implode('<br>', array_map('esc_html', $stellplatz_lines)); ?>
+								</p>
+							<?php elseif ($parking > 0): ?>
 								<p><strong><?php _e('Stellplätze:', 'dbw-immo-suite'); ?></strong>
 									<?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($parking, 'zimmer')); ?>
 								</p>
@@ -566,6 +576,12 @@ get_header(); ?>
 									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis')); ?> €</strong>
 								</li>
 							<?php endif; ?>
+							<?php if ($stellplatz_kauf > 0): ?>
+								<li>
+									<span><?php esc_html_e('Stellplatz-Kaufpreis', 'dbw-immo-suite'); ?></span>
+									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($stellplatz_kauf, 'preis_genau')); ?> €</strong>
+								</li>
+							<?php endif; ?>
 							<?php if ($provision): ?>
 								<li class="dbw-highlights-provision">
 									<span><?php esc_html_e('Käuferprovision', 'dbw-immo-suite'); ?></span>
@@ -595,6 +611,12 @@ get_header(); ?>
 								<li>
 									<span><?php esc_html_e('Warmmiete', 'dbw-immo-suite'); ?></span>
 									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_warm, 'preis')); ?> €</strong>
+								</li>
+							<?php endif; ?>
+							<?php if ($stellplatz_miete > 0): ?>
+								<li>
+									<span><?php esc_html_e('Stellplatzmiete', 'dbw-immo-suite'); ?></span>
+									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($stellplatz_miete, 'preis_genau')); ?> €</strong>
 								</li>
 							<?php endif; ?>
 

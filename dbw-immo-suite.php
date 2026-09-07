@@ -3,7 +3,7 @@
  * Plugin Name:       Immo Suite
  * Plugin URI:        https://dennisbuchwald.de/apps/immo-suite
  * Description:       Die Brücke zwischen Maklersoftware und moderner Website. Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
- * Version:           2.10.0
+ * Version:           2.11.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Dennis Buchwald
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define Constants
-define('DBW_IMMO_SUITE_VERSION', '2.10.0');
+define('DBW_IMMO_SUITE_VERSION', '2.11.0');
 define('DBW_IMMO_SUITE_PATH', plugin_dir_path(__FILE__));
 define('DBW_IMMO_SUITE_URL', plugin_dir_url(__FILE__));
 
@@ -122,10 +122,105 @@ function dbw_format_number($value, $type = 'flaeche')
 		case 'preis':
 			return number_format($num, 0, ',', '.');
 
+		case 'preis_genau':
+			// Keeps cents where they exist: 8000 → "8.000", 65.5 → "65,50".
+			// Parking rents are often not round numbers.
+			if (fmod($num, 1) == 0) {
+				return number_format($num, 0, ',', '.');
+			}
+			return number_format($num, 2, ',', '.');
+
 		case 'flaeche':
 		default:
 			return number_format(round($num), 0, ',', '.');
 	}
+}
+
+/**
+ * Human readable label for an OpenImmo parking space type.
+ *
+ * @param string $art    Type key ('tiefgarage', 'garage', 'carport', ...).
+ * @param int    $anzahl Count, decides singular vs. plural.
+ * @return string
+ */
+function dbw_stellplatz_label($art, $anzahl = 1)
+{
+	// Literal strings inside __() keep the labels extractable for translators.
+	$labels = array(
+		'carport'    => array(__('Carport', 'dbw-immo-suite'), __('Carports', 'dbw-immo-suite')),
+		'duplex'     => array(__('Duplex-Stellplatz', 'dbw-immo-suite'), __('Duplex-Stellplätze', 'dbw-immo-suite')),
+		'freiplatz'  => array(__('Stellplatz', 'dbw-immo-suite'), __('Stellplätze', 'dbw-immo-suite')),
+		'garage'     => array(__('Garage', 'dbw-immo-suite'), __('Garagen', 'dbw-immo-suite')),
+		'parkhaus'   => array(__('Parkhaus-Stellplatz', 'dbw-immo-suite'), __('Parkhaus-Stellplätze', 'dbw-immo-suite')),
+		'tiefgarage' => array(__('Tiefgaragenstellplatz', 'dbw-immo-suite'), __('Tiefgaragenstellplätze', 'dbw-immo-suite')),
+		'sonstige'   => array(__('Stellplatz', 'dbw-immo-suite'), __('Stellplätze', 'dbw-immo-suite')),
+	);
+
+	$key = isset($labels[$art]) ? $art : 'sonstige';
+	$idx = ((int) $anzahl === 1) ? 0 : 1;
+
+	return $labels[$key][$idx];
+}
+
+/**
+ * Build display lines for the parking spaces of a property.
+ *
+ * OpenImmo carries the price PER space
+ * (<preise><stp_tiefgarage anzahl="2" stellplatzkaufpreis="8000"/>), so the
+ * "à 8.000 €" wording mirrors the source data instead of silently summing it up.
+ * The total is shown separately in the highlights box.
+ *
+ * @param array $entries Post meta 'stellplatz_preise'.
+ * @return string[] e.g. ['2 Tiefgaragenstellplätze à 8.000 € (Kauf)']
+ */
+function dbw_stellplatz_lines($entries)
+{
+	if (!is_array($entries) || empty($entries)) {
+		return array();
+	}
+
+	$lines = array();
+
+	foreach ($entries as $entry) {
+		if (!is_array($entry)) {
+			continue;
+		}
+
+		$anzahl = isset($entry['anzahl']) ? (int) $entry['anzahl'] : 0;
+		if ($anzahl < 1) {
+			$anzahl = 1;
+		}
+		$art = isset($entry['art']) ? $entry['art'] : 'sonstige';
+
+		$line = $anzahl . ' ' . dbw_stellplatz_label($art, $anzahl);
+
+		$prices = array();
+		$kaufpreis = isset($entry['kaufpreis']) ? (float) $entry['kaufpreis'] : 0;
+		$miete     = isset($entry['miete']) ? (float) $entry['miete'] : 0;
+
+		if ($kaufpreis > 0) {
+			$prices[] = sprintf(
+				/* translators: %s: price per parking space */
+				__('%s € (Kauf)', 'dbw-immo-suite'),
+				dbw_format_number($kaufpreis, 'preis_genau')
+			);
+		}
+		if ($miete > 0) {
+			$prices[] = sprintf(
+				/* translators: %s: monthly rent per parking space */
+				__('%s € mtl. (Miete)', 'dbw-immo-suite'),
+				dbw_format_number($miete, 'preis_genau')
+			);
+		}
+
+		if (!empty($prices)) {
+			$line .= ' ' . __('à', 'dbw-immo-suite') . ' ' . implode(' · ', $prices);
+		}
+
+		$lines[] = $line;
+	}
+
+	return $lines;
 }
 
 /**

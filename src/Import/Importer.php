@@ -558,6 +558,35 @@ class Importer
     }
 
     /**
+     * Parse a numeric attribute from OpenImmo.
+     *
+     * The XSD asks for a dot as decimal separator, but exports with a German
+     * comma exist in the wild. Everything unparseable becomes 0.
+     *
+     * @param string $raw
+     * @return float
+     */
+    private function parse_decimal($raw)
+    {
+        $raw = trim((string) $raw);
+        if ($raw === '') {
+            return 0.0;
+        }
+
+        // "8.000,50" → "8000.50", "8000,50" → "8000.50"
+        if (strpos($raw, ',') !== false) {
+            $raw = str_replace('.', '', $raw);
+            $raw = str_replace(',', '.', $raw);
+        }
+
+        if (!is_numeric($raw)) {
+            return 0.0;
+        }
+
+        return (float) $raw;
+    }
+
+    /**
      * Map XML fields to Post Meta.
      * 
      * @param int $post_id
@@ -565,6 +594,10 @@ class Importer
      */
     private function map_fields($post_id, $xml)
     {
+        // Total number of parking spaces derived from <preise><stp_*>, used as
+        // fallback when <flaechen><anzahl_stellplaetze> is missing (see below).
+        $stellplatz_anzahl_gesamt = 0;
+
         // Basic Pricing
         if (isset($xml->preise)) {
             $kaufpreis = (string)$xml->preise->kaufpreis;
@@ -580,6 +613,65 @@ class Importer
             update_post_meta($post_id, 'hausgeld', $hausgeld);
             update_post_meta($post_id, 'nebenkosten', $nebenkosten);
             update_post_meta($post_id, 'provision_kaeufer', $provision_kaeufer);
+
+            // Parking space prices.
+            // OpenImmo keeps them in <preise>, one element per type, with the price
+            // PER space: <stp_tiefgarage anzahl="2" stellplatzkaufpreis="8000"/>.
+            // Both variants exist, purchase (stellplatzkaufpreis) and rent
+            // (stellplatzmiete), which is why we carry both through.
+            $stellplatz_arten = array(
+                'stp_carport'    => 'carport',
+                'stp_duplex'     => 'duplex',
+                'stp_freiplatz'  => 'freiplatz',
+                'stp_garage'     => 'garage',
+                'stp_parkhaus'   => 'parkhaus',
+                'stp_tiefgarage' => 'tiefgarage',
+                'stp_sonstige'   => 'sonstige',
+            );
+
+            $stellplaetze   = array();
+            $stp_kauf_total = 0.0;
+            $stp_miete_total = 0.0;
+
+            foreach ($stellplatz_arten as $tag => $art) {
+                if (!isset($xml->preise->{$tag})) {
+                    continue;
+                }
+
+                foreach ($xml->preise->{$tag} as $stp_node) {
+                    $stp_attrs = $stp_node->attributes();
+
+                    $anzahl    = $this->parse_decimal(isset($stp_attrs['anzahl']) ? (string)$stp_attrs['anzahl'] : '');
+                    $kaufpreis = $this->parse_decimal(isset($stp_attrs['stellplatzkaufpreis']) ? (string)$stp_attrs['stellplatzkaufpreis'] : '');
+                    $miete     = $this->parse_decimal(isset($stp_attrs['stellplatzmiete']) ? (string)$stp_attrs['stellplatzmiete'] : '');
+
+                    // Software exports the full set of empty stp_* elements, so skip
+                    // everything that carries neither a count nor a price.
+                    if ($anzahl <= 0 && $kaufpreis <= 0 && $miete <= 0) {
+                        continue;
+                    }
+
+                    // A price without a count means exactly one space.
+                    $anzahl = ($anzahl > 0) ? (int) round($anzahl) : 1;
+
+                    $stellplaetze[] = array(
+                        'art'       => $art,
+                        'anzahl'    => $anzahl,
+                        'kaufpreis' => $kaufpreis,
+                        'miete'     => $miete,
+                    );
+
+                    $stellplatz_anzahl_gesamt += $anzahl;
+                    $stp_kauf_total  += $anzahl * $kaufpreis;
+                    $stp_miete_total += $anzahl * $miete;
+                }
+            }
+
+            // Always write, also when empty: a broker who removes the parking price
+            // must not leave the old one standing on the next import.
+            update_post_meta($post_id, 'stellplatz_preise', $stellplaetze);
+            update_post_meta($post_id, 'stellplatz_kaufpreis_gesamt', $stp_kauf_total > 0 ? (string) $stp_kauf_total : '');
+            update_post_meta($post_id, 'stellplatz_miete_gesamt', $stp_miete_total > 0 ? (string) $stp_miete_total : '');
 
             // Set Marketing Type Taxonomy.
             // Primary source: <objektkategorie><vermarktungsart KAUF=".." MIETE_PACHT=".."
@@ -626,7 +718,13 @@ class Importer
             update_post_meta($post_id, 'anzahl_zimmer', (string)$xml->flaechen->anzahl_zimmer);
             update_post_meta($post_id, 'anzahl_schlafzimmer', (string)$xml->flaechen->anzahl_schlafzimmer);
             update_post_meta($post_id, 'anzahl_badezimmer', (string)$xml->flaechen->anzahl_badezimmer);
-            update_post_meta($post_id, 'anzahl_stellplaetze', (string)$xml->flaechen->anzahl_stellplaetze);
+            // onOffice fills the count in <flaechen>, but not every software does.
+            // The stp_* elements then carry it, so use them as fallback.
+            $anzahl_stellplaetze = trim((string)$xml->flaechen->anzahl_stellplaetze);
+            if ($anzahl_stellplaetze === '' && $stellplatz_anzahl_gesamt > 0) {
+                $anzahl_stellplaetze = (string) $stellplatz_anzahl_gesamt;
+            }
+            update_post_meta($post_id, 'anzahl_stellplaetze', $anzahl_stellplaetze);
         }
 
         // Geo

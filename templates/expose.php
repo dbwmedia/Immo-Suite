@@ -508,7 +508,9 @@ img { max-width: 100%; height: auto; display: block; }
                     <?php if ($d['areas']['badezimmer'] > 0): ?>
                         <tr><td><?php esc_html_e('Badezimmer', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['areas']['badezimmer'], 'zimmer')); ?></td></tr>
                     <?php endif; ?>
-                    <?php if ($d['areas']['stellplaetze'] > 0): ?>
+                    <?php if (!empty($d['stellplatz_lines'])): ?>
+                        <tr><td><?php _e('Stellpl&auml;tze', 'dbw-immo-suite'); ?></td><td><?php echo implode('<br>', array_map('esc_html', $d['stellplatz_lines'])); ?></td></tr>
+                    <?php elseif ($d['areas']['stellplaetze'] > 0): ?>
                         <tr><td><?php _e('Stellpl&auml;tze', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['areas']['stellplaetze'], 'zimmer')); ?></td></tr>
                     <?php endif; ?>
 
@@ -527,6 +529,9 @@ img { max-width: 100%; height: auto; display: block; }
                         <?php if ($d['pricing']['hausgeld'] > 0): ?>
                             <tr><td><?php esc_html_e('Hausgeld', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['pricing']['hausgeld'], 'preis')); ?> &euro;</td></tr>
                         <?php endif; ?>
+                        <?php if ($d['pricing']['stellplatz_kaufpreis'] > 0): ?>
+                            <tr><td><?php _e('Stellplatz-Kaufpreis', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['pricing']['stellplatz_kaufpreis'], 'preis_genau')); ?> &euro;</td></tr>
+                        <?php endif; ?>
                         <?php if ($d['pricing']['provision']): ?>
                             <tr><td><?php _e('K&auml;uferprovision', 'dbw-immo-suite'); ?></td><td><?php
                                 echo esc_html($d['pricing']['provision']);
@@ -542,6 +547,9 @@ img { max-width: 100%; height: auto; display: block; }
                         <?php endif; ?>
                         <?php if ($d['pricing']['warmmiete'] > 0): ?>
                             <tr><td><?php esc_html_e('Warmmiete', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['pricing']['warmmiete'], 'preis')); ?> &euro;</td></tr>
+                        <?php endif; ?>
+                        <?php if ($d['pricing']['stellplatz_miete'] > 0): ?>
+                            <tr><td><?php esc_html_e('Stellplatzmiete', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['pricing']['stellplatz_miete'], 'preis_genau')); ?> &euro;</td></tr>
                         <?php endif; ?>
                     <?php else: ?>
                         <tr><td><?php esc_html_e('Preis', 'dbw-immo-suite'); ?></td><td><?php esc_html_e('Auf Anfrage', 'dbw-immo-suite'); ?></td></tr>

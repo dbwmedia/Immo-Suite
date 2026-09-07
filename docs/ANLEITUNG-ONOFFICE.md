@@ -138,6 +138,21 @@ Nach dem ersten Import laesst sich das pruefen: Im Objekt in WordPress muessen d
 Das Feld **Eigene Internetseite > Veroeffentlichen** betrifft dagegen nur die von onOffice selbst
 gehostete Website und hat auf diese Anbindung keinen Einfluss.
 
+### Stellplatzpreise pruefen
+
+onOffice fuehrt Stellplaetze im Reiter **Details** unter *Stellplaetze* mit Art, Anzahl und Preis
+("2 Tiefgaragenstellplaetze a 8.000,00 EUR (Kauf)"). Diese Angaben landen im OpenImmo-Paket im
+Bereich `<preise>` als `stp_tiefgarage`, `stp_garage`, `stp_carport` usw., jeweils mit den
+Attributen `anzahl`, `stellplatzkaufpreis` und `stellplatzmiete`.
+
+Die Immo Suite zeigt daraus ab v2.11.0 den Preis je Stellplatz in der Ausstattung und den
+Gesamtbetrag in der Highlights-Box. Kommt auf der Website kein Preis an, obwohl in onOffice einer
+steht, fehlen die Felder in der **Feldzuordnung des Portals**. Sie liegt in onOffice unter
+Extras > Einstellungen > Portale beim jeweiligen Portal.
+
+Pruefen laesst sich das an einem Objekt in WordPress: Immobilie oeffnen > Reiter **Preise**. Ist
+dort keine Zeile "Stellplaetze (Import)" zu sehen, hat das OpenImmo-Paket keine Preise geliefert.
+
 ## Schritt 5: WordPress konfigurieren
 
 1. **Immobilien > Einstellungen > Reiter "Import"**

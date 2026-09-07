@@ -7,6 +7,26 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.11.0] - 2026-09-07
+
+### Hinzugefuegt
+
+- **Stellplatzpreise aus OpenImmo** - Ein Kunde hat bemerkt, dass die Website die Stellplaetze zwar zaehlt, aber nie sagt, was sie kosten. Genau dafuer gibt es in OpenImmo einen eigenen Bereich, der bisher komplett ignoriert wurde: `<preise>` enthaelt je Stellplatzart ein Element (`stp_carport`, `stp_duplex`, `stp_freiplatz`, `stp_garage`, `stp_parkhaus`, `stp_tiefgarage`, `stp_sonstige`), jeweils mit `anzahl`, `stellplatzkaufpreis` und `stellplatzmiete`. Der Preis gilt pro Stellplatz, nicht als Summe.
+  - Neue Meta-Felder: `stellplatz_preise` (Liste je Art), `stellplatz_kaufpreis_gesamt`, `stellplatz_miete_gesamt` (Anzahl x Preis).
+  - **Ausstattung** zeigt statt "Stellplaetze: 2" jetzt "2 Tiefgaragenstellplaetze a 8.000 EUR (Kauf)" - dieselbe Schreibweise wie in onOffice. Mehrere Arten stehen untereinander.
+  - **Highlights-Box**: Zeile "Stellplatz-Kaufpreis" bei Kaufobjekten, "Stellplatzmiete" bei Mietobjekten, jeweils als Gesamtbetrag. So haelt es ImmobilienScout24 auch.
+  - **PDF-Expose** uebernimmt beides, Detailzeilen bei den Eckdaten und den Gesamtbetrag bei den Preisen.
+  - Im Backend stehen die importierten Stellplaetze schreibgeschuetzt im Reiter Preise. Geaendert wird in der Maklersoftware, sonst ueberschreibt sie der naechste Import.
+  - Bewusst **nicht** in den Kaufnebenkosten- und Finanzierungsrechner eingerechnet: die Grunderwerbsteuer haengt am Kaufpreis der Immobilie, ein stillschweigend addierter Stellplatz wuerde die Rechnung falsch machen.
+
+### Geaendert
+
+- **Anzahl der Stellplaetze faellt auf die Preis-Angaben zurueck** - Bisher kam die Zahl ausschliesslich aus `<flaechen><anzahl_stellplaetze>`. onOffice fuellt das Feld, andere Maklersoftware nicht immer. Fehlt es, wird die Anzahl jetzt aus den `stp_*`-Elementen summiert.
+- Leere `stp_*`-Elemente werden ignoriert. Die meisten Exporte schicken alle sieben Arten mit, auch die ungenutzten.
+- Preisangaben mit deutschem Dezimalkomma ("65,50") werden beim Import korrekt gelesen, obwohl das OpenImmo-Schema den Punkt vorsieht.
+
+---
+
 ## [2.10.0] - 2026-09-04
 
 ### Geaendert
