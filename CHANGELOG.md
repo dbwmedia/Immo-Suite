@@ -7,6 +7,24 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.14.0] - 2026-09-07
+
+### Geaendert
+
+- **Highlights-Box neu aufgebaut** - Durch die Ergaenzungen aus 2.12.0 (Stellplatzmiete, Heizkosten, Kaution) war die Box auf zehn gleich laute Zeilen gewachsen. "Anzahl Badezimmer: 1" stand in derselben Groesse da wie die Kaltmiete, und der Preis, wegen dem die Box ueberhaupt existiert, war Zeile sechs von zehn.
+  - **Der Preis fuehrt.** Gross, oben, allein, darunter klein die Nebenrechnung ("zzgl. 300 € Nebenkosten · Warmmiete 1.990 €"). Bei Kaufobjekten steht die Kaeuferprovision in dieser Zeile statt als eigener Block.
+  - **Die Fakten stehen zweispaltig** (Flaeche, Zimmer, Schlafzimmer, Bad, Etage, Grundstueck, Energieklasse) statt als sieben volle Zeilen. Gleiche Information, etwa halbe Hoehe.
+  - **Nebenkosten-Angaben** (Hausgeld, Stellplatz, Heizkosten, Kaution) stehen abgesetzt als Kleingedrucktes. Detailangaben duerfen wie Detailangaben aussehen.
+  - Bewusst **kein Aufklapper**: In einer klebrigen Seitenleiste springt das Layout beim Aufklappen, und niemand sollte klicken muessen, um die Warmmiete zu sehen.
+  - Die Ueberschrift "Highlights" ist nur noch fuer Screenreader da. Das Preis-Label ist die eigentliche Ueberschrift der Box.
+  - Die Trennlinien der Box kamen aus `rgba(255,255,255,...)` und setzten damit voraus, dass die Box dunkel eingefaerbt ist. Bei einer hellen Highlights-Farbe aus dem Customizer waren sie unsichtbar. Sie nutzen jetzt dieselben abgeleiteten Tokens wie der Rest.
+
+### Entfernt
+
+- Die Modifier `dbw-highlights-provision`, `dbw-highlights-request` und `dbw-highlights-energy` als Listenzeilen. Die Box rendert keine flache Liste mehr.
+
+---
+
 ## [2.13.0] - 2026-09-07
 
 ### Geaendert

@@ -556,138 +556,134 @@ get_header(); ?>
 					style="--dbw-hl-bg: <?php echo esc_attr($hl_bg_color); ?>; --dbw-hl-text: <?php echo esc_attr($hl_text_color); ?>;">
 
 
-					<h3>
-						<?php esc_html_e('Highlights', 'dbw-immo-suite'); ?></h3>
+					<h3 class="dbw-sr-only"><?php esc_html_e('Highlights', 'dbw-immo-suite'); ?></h3>
 
-					<ul>
-						<?php if ($area > 0): ?>
-							<li>
-								<span><?php esc_html_e('Wohnfläche', 'dbw-immo-suite'); ?></span>
-								<strong><?php esc_html_e('ca.', 'dbw-immo-suite'); ?> <?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($area, 'flaeche')); ?> m²</strong>
-							</li>
+					<?php
+					// The price leads — it is what people open this box for. Facts follow
+					// as a two-column grid, side costs as small print below them. The old
+					// flat list gave "Anzahl Badezimmer" the same weight as the rent.
+					$kaution_display = $kaution_text !== ''
+						? $kaution_text
+						: ($kaution > 0 ? \DBW\ImmoSuite\dbw_format_number($kaution, 'preis_genau') . ' €' : '');
+
+					$price_label = '';
+					$price_value = '';
+					$price_sub   = array();
+					$cost_rows   = array();
+
+					if ($price_kauf > 0) {
+						$price_label = __('Kaufpreis', 'dbw-immo-suite');
+						$price_value = \DBW\ImmoSuite\dbw_format_number($price_kauf, 'preis') . ' €';
+
+						if ($provision) {
+							$prov = $provision;
+							if (strpos($provision, 'MwSt') === false && strpos($provision, '%') !== false) {
+								$prov .= ' ' . __('inkl. ges. MwSt.', 'dbw-immo-suite');
+							}
+							/* translators: %s: commission rate incl. optional VAT note */
+							$price_sub[] = sprintf(__('zzgl. %s Käuferprovision', 'dbw-immo-suite'), $prov);
+						}
+						if ($hausgeld > 0) {
+							$cost_rows[] = array(__('Hausgeld', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis_genau') . ' €');
+						}
+						if ($stellplatz_kauf > 0) {
+							$cost_rows[] = array(__('Stellplatz-Kaufpreis', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($stellplatz_kauf, 'preis_genau') . ' €');
+						}
+					} elseif ($price_miete > 0) {
+						$price_label = __('Kaltmiete', 'dbw-immo-suite');
+						$price_value = \DBW\ImmoSuite\dbw_format_number($price_miete, 'preis') . ' €';
+
+						if ($nebenkosten > 0) {
+							/* translators: %s: formatted service charge */
+							$price_sub[] = sprintf(__('zzgl. %s € Nebenkosten', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($nebenkosten, 'preis_genau'));
+						}
+						if ($price_warm > 0) {
+							/* translators: %s: formatted total rent */
+							$price_sub[] = sprintf(__('Warmmiete %s €', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($price_warm, 'preis_genau'));
+						}
+						if ($stellplatz_miete > 0) {
+							$cost_rows[] = array(__('Stellplatzmiete', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($stellplatz_miete, 'preis_genau') . ' €');
+						}
+						if ($heizkosten > 0) {
+							$cost_rows[] = array(__('Heizkosten', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($heizkosten, 'preis_genau') . ' €');
+						} elseif ($heizkosten_enthalten === '1') {
+							$cost_rows[] = array(__('Heizkosten', 'dbw-immo-suite'), __('In den Nebenkosten enthalten', 'dbw-immo-suite'));
+						}
+						if ($kaution_display !== '') {
+							$cost_rows[] = array(__('Kaution', 'dbw-immo-suite'), $kaution_display);
+						}
+					} else {
+						$price_label = __('Preis', 'dbw-immo-suite');
+						$price_value = __('Auf Anfrage', 'dbw-immo-suite');
+					}
+
+					// Facts, in the order a viewer scans them
+					$facts = array();
+					if ($area > 0) {
+						$facts[] = array(__('Wohnfläche', 'dbw-immo-suite'), __('ca.', 'dbw-immo-suite') . ' ' . \DBW\ImmoSuite\dbw_format_number($area, 'flaeche') . ' m²');
+					}
+					if ($rooms > 0) {
+						$facts[] = array(__('Zimmer', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer'));
+					}
+					if ($bedrooms > 0) {
+						$facts[] = array(__('Schlafzimmer', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($bedrooms, 'zimmer'));
+					}
+					if ($bathrooms > 0) {
+						$facts[] = array(__('Badezimmer', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($bathrooms, 'zimmer'));
+					}
+					if ($etage !== '') {
+						$facts[] = array(
+							__('Etage', 'dbw-immo-suite'),
+							$etagen_gesamt !== '' ? sprintf(__('%1$s von %2$s', 'dbw-immo-suite'), $etage, $etagen_gesamt) : $etage
+						);
+					}
+					if ($land_area > 0) {
+						$facts[] = array(__('Grundstück', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($land_area, 'flaeche') . ' m²');
+					}
+					?>
+
+					<div class="dbw-hl-price<?php echo ($price_kauf > 0 || $price_miete > 0) ? '' : ' dbw-hl-price--request'; ?>">
+						<span class="dbw-hl-price__label"><?php echo esc_html($price_label); ?></span>
+						<span class="dbw-hl-price__value"><?php echo esc_html($price_value); ?></span>
+						<?php if (!empty($price_sub)): ?>
+							<span class="dbw-hl-price__sub"><?php echo esc_html(implode(' · ', $price_sub)); ?></span>
 						<?php endif; ?>
+					</div>
 
-						<?php if ($rooms > 0): ?>
-							<li>
-								<span><?php esc_html_e('Anzahl Zimmer', 'dbw-immo-suite'); ?></span>
-								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($rooms, 'zimmer')); ?></strong>
-							</li>
-						<?php endif; ?>
+					<?php if (!empty($facts) || !empty($energy_class)): ?>
+						<div class="dbw-hl-facts">
+							<?php foreach ($facts as $fact): ?>
+								<div class="dbw-hl-fact">
+									<span class="dbw-hl-fact__label"><?php echo esc_html($fact[0]); ?></span>
+									<span class="dbw-hl-fact__value"><?php echo esc_html($fact[1]); ?></span>
+								</div>
+							<?php endforeach; ?>
 
-						<?php if ($bedrooms > 0): ?>
-							<li>
-								<span><?php esc_html_e('Anzahl Schlafzimmer', 'dbw-immo-suite'); ?></span>
-								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($bedrooms, 'zimmer')); ?></strong>
-							</li>
-						<?php endif; ?>
+							<?php if (!empty($energy_class)): ?>
+								<div class="dbw-hl-fact dbw-hl-fact--energy">
+									<span class="dbw-hl-fact__label"><?php esc_html_e('Energieklasse', 'dbw-immo-suite'); ?></span>
+									<span class="dbw-hl-fact__value">
+										<?php
+										if (class_exists('DBW\ImmoSuite\Frontend\EnergyRenderer')) {
+											\DBW\ImmoSuite\Frontend\EnergyRenderer::render_archive_flag($id);
+										}
+										?>
+									</span>
+								</div>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
 
-						<?php if ($bathrooms > 0): ?>
-							<li>
-								<span><?php esc_html_e('Anzahl Badezimmer', 'dbw-immo-suite'); ?></span>
-								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($bathrooms, 'zimmer')); ?></strong>
-							</li>
-						<?php endif; ?>
-
-						<?php
-						$energy_class_hl = $energy_class;
-						if (!empty($energy_class_hl)):
-							?>
-							<li class="dbw-highlights-energy">
-								<span><?php esc_html_e('Energieklasse', 'dbw-immo-suite'); ?></span>
-								<?php
-								if (class_exists('DBW\ImmoSuite\Frontend\EnergyRenderer')) {
-									\DBW\ImmoSuite\Frontend\EnergyRenderer::render_archive_flag(get_the_ID());
-								}
-								?>
-							</li>
-						<?php endif; ?>
-
-						<?php if ($price_kauf > 0): ?>
-							<!-- KAUF -->
-							<li>
-								<span><?php esc_html_e('Kaufpreis', 'dbw-immo-suite'); ?></span>
-								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_kauf, 'preis')); ?> €</strong>
-							</li>
-							<?php if ($hausgeld > 0): ?>
+					<?php if (!empty($cost_rows)): ?>
+						<ul class="dbw-hl-costs">
+							<?php foreach ($cost_rows as $row): ?>
 								<li>
-									<span><?php esc_html_e('Hausgeld', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis')); ?> €</strong>
+									<span><?php echo esc_html($row[0]); ?></span>
+									<strong><?php echo esc_html($row[1]); ?></strong>
 								</li>
-							<?php endif; ?>
-							<?php if ($stellplatz_kauf > 0): ?>
-								<li>
-									<span><?php esc_html_e('Stellplatz-Kaufpreis', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($stellplatz_kauf, 'preis_genau')); ?> €</strong>
-								</li>
-							<?php endif; ?>
-							<?php if ($provision): ?>
-								<li class="dbw-highlights-provision">
-									<span><?php esc_html_e('Käuferprovision', 'dbw-immo-suite'); ?></span>
-									<strong><?php
-									echo esc_html($provision);
-									// Optionale Prüfung, falls XML nur "3,57%" schickt ohne "inkl. MwSt"
-									if (strpos($provision, 'MwSt') === false && strpos($provision, '%') !== false) {
-										echo ' ' . esc_html__('inkl. ges. MwSt.', 'dbw-immo-suite');
-									}
-									?></strong>
-								</li>
-							<?php endif; ?>
-
-						<?php elseif ($price_miete > 0): ?>
-							<!-- MIETE -->
-							<li>
-								<span><?php esc_html_e('Kaltmiete', 'dbw-immo-suite'); ?></span>
-								<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_miete, 'preis')); ?> €</strong>
-							</li>
-							<?php if ($nebenkosten > 0): ?>
-								<li>
-									<span><?php esc_html_e('Nebenkosten', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($nebenkosten, 'preis')); ?> €</strong>
-								</li>
-							<?php endif; ?>
-							<?php if ($price_warm > 0): ?>
-								<li>
-									<span><?php esc_html_e('Warmmiete', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($price_warm, 'preis')); ?> €</strong>
-								</li>
-							<?php endif; ?>
-							<?php if ($stellplatz_miete > 0): ?>
-								<li>
-									<span><?php esc_html_e('Stellplatzmiete', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($stellplatz_miete, 'preis_genau')); ?> €</strong>
-								</li>
-							<?php endif; ?>
-							<?php if ($heizkosten > 0): ?>
-								<li>
-									<span><?php esc_html_e('Heizkosten', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($heizkosten, 'preis_genau')); ?> €</strong>
-								</li>
-							<?php elseif ($heizkosten_enthalten === '1'): ?>
-								<li>
-									<span><?php esc_html_e('Heizkosten', 'dbw-immo-suite'); ?></span>
-									<strong><?php esc_html_e('In den Nebenkosten enthalten', 'dbw-immo-suite'); ?></strong>
-								</li>
-							<?php endif; ?>
-							<?php
-							$kaution_display = $kaution_text !== ''
-								? $kaution_text
-								: ($kaution > 0 ? \DBW\ImmoSuite\dbw_format_number($kaution, 'preis_genau') . ' €' : '');
-							?>
-							<?php if ($kaution_display !== ''): ?>
-								<li>
-									<span><?php esc_html_e('Kaution', 'dbw-immo-suite'); ?></span>
-									<strong><?php echo esc_html($kaution_display); ?></strong>
-								</li>
-							<?php endif; ?>
-
-						<?php else: ?>
-							<!-- AUF ANFRAGE -->
-							<li class="dbw-highlights-request">
-								<span><?php esc_html_e('Preis', 'dbw-immo-suite'); ?></span>
-								<strong><?php esc_html_e('Auf Anfrage', 'dbw-immo-suite'); ?></strong>
-							</li>
-						<?php endif; ?>
-					</ul>
+							<?php endforeach; ?>
+						</ul>
+					<?php endif; ?>
 
 					<?php if ($courtage_hinweis !== ''): ?>
 						<p class="dbw-highlights-note"><?php echo esc_html($courtage_hinweis); ?></p>

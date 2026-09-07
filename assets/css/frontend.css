@@ -346,7 +346,8 @@
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-#dbw-immo-suite .dbw-highlights-energy .dbw-energy-flag {
+#dbw-immo-suite .dbw-highlights-energy .dbw-energy-flag,
+#dbw-immo-suite .dbw-hl-fact--energy .dbw-energy-flag {
 	position: static;
 	display: inline-flex;
 	align-items: center;
@@ -4658,13 +4659,138 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
    style="--dbw-hl-bg: ...; --dbw-hl-text: ...;" */
 #dbw-immo-suite .dbw-highlights-card {
 	position: relative;
+	container-type: inline-size;
 	background-color: var(--dbw-hl-bg, var(--dbw-primary, #0073aa));
 	color: var(--dbw-hl-text, #ffffff);
-	border-radius: var(--dbw-radius, 12px);
+	border-radius: var(--dbw-radius-lg, 14px);
 	padding: 1.5rem;
 	margin-bottom: 1.5rem;
+	/* The one raised element on the page — everything else lies flat */
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
+}
+
+/* Visually hidden, kept for the document outline and screen readers */
+#dbw-immo-suite .dbw-sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* -- Price head --
+   The price is why anyone opens this box, so it leads instead of sitting as
+   row six of ten. Everything below is subordinate to it. */
+#dbw-immo-suite .dbw-hl-price {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding-bottom: 1.1rem;
+	margin-bottom: 1.1rem;
+	border-bottom: 1px solid var(--dbw-hairline);
+}
+
+#dbw-immo-suite .dbw-hl-price__label {
+	font-size: 0.6875rem;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	opacity: 0.7;
+	font-weight: 500;
+}
+
+#dbw-immo-suite .dbw-hl-price__value {
+	font-size: clamp(1.75rem, 4.5cqi, 2.25rem);
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+}
+
+#dbw-immo-suite .dbw-hl-price--request .dbw-hl-price__value {
+	font-size: 1.5rem;
+}
+
+#dbw-immo-suite .dbw-hl-price__sub {
+	font-size: 0.85rem;
+	line-height: 1.45;
+	opacity: 0.75;
+	margin-top: 4px;
+}
+
+/* -- Fact grid --
+   Two columns instead of six full-width rows: same information, half the
+   height, and no single number pretending to be as important as the price. */
+#dbw-immo-suite .dbw-hl-facts {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.9rem 1rem;
+	padding-bottom: 1.1rem;
+}
+
+#dbw-immo-suite .dbw-hl-fact {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+
+#dbw-immo-suite .dbw-hl-fact__label {
+	font-size: 0.6875rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	opacity: 0.65;
+	font-weight: 500;
+}
+
+#dbw-immo-suite .dbw-hl-fact__value {
+	font-size: 1.05rem;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	font-variant-numeric: tabular-nums;
+	overflow-wrap: anywhere;
+}
+
+#dbw-immo-suite .dbw-hl-fact--energy .dbw-hl-fact__value {
+	display: flex;
+	align-items: center;
+	min-height: 1.6em;
+}
+
+/* -- Side costs --
+   Detail figures that may look like detail figures. */
+#dbw-immo-suite .dbw-hl-costs {
+	list-style: none;
+	padding: 1rem 0 0;
+	margin: 0;
+	border-top: 1px solid var(--dbw-hairline);
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 0.85rem;
+}
+
+#dbw-immo-suite .dbw-hl-costs li {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 0.75rem;
+}
+
+#dbw-immo-suite .dbw-hl-costs li span {
+	opacity: 0.7;
+	white-space: nowrap;
+}
+
+#dbw-immo-suite .dbw-hl-costs li strong {
+	font-weight: 600;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	overflow-wrap: anywhere;
 }
 
 #dbw-immo-suite .dbw-highlights-card h3 {
@@ -4673,7 +4799,7 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	margin-bottom: 1.8rem;
 	font-size: 1.6rem;
 	letter-spacing: -0.5px;
-	border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+	border-bottom: 2px solid var(--dbw-hairline);
 	padding-bottom: 10px;
 }
 
@@ -4686,42 +4812,21 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 #dbw-immo-suite .dbw-highlights-card ul li {
 	display: flex;
 	justify-content: space-between;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+	border-bottom: 1px solid var(--dbw-hairline);
 	padding: 8px 0;
 	margin-bottom: 4px;
+}
+
+#dbw-immo-suite .dbw-highlights-card .dbw-hl-costs li {
+	border-bottom: 0;
+	padding: 0;
+	margin-bottom: 0;
 }
 
 /* Replaces the former inline <style> block (theme-proof coloring) */
 #dbw-immo-suite .dbw-highlights-card ul li span,
 #dbw-immo-suite .dbw-highlights-card ul li strong {
 	color: var(--dbw-hl-text, #ffffff) !important;
-}
-
-/* Modifier: energy class row */
-#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-energy {
-	align-items: center;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-	padding: 10px 0;
-}
-
-/* Modifier: buyer commission row (stacked) */
-#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-provision {
-	flex-direction: column;
-}
-
-#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-provision span {
-	display: block;
-	margin-bottom: 4px;
-}
-
-/* Modifier: "price on request" row */
-#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-request {
-	border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-	padding: 10px 0;
-}
-
-#dbw-immo-suite .dbw-highlights-card li.dbw-highlights-request strong {
-	font-size: 1.1em;
 }
 
 /* Commission note from OpenImmo (<preise><courtage_hinweis>) */
