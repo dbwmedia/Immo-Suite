@@ -7,6 +7,20 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.13.0] - 2026-09-07
+
+### Geaendert
+
+- **Flaechen werden abgeleitet statt gemalt** - Die Eckdaten-Kacheln, der Objektdaten-Block, das Energie-Panel, die Ausstattungs-Badges und die Ansprechpartner-Karte hatten feste helle Fuellungen (`#f8f9fa`, `#f5f5f5`, `#fff`). Das war keine Farbwahl, sondern die stille Behauptung "die Seite hinter mir ist weiss". Auf einer Website mit farbigem Hintergrund lagen die Kacheln als graue Flecken darauf.
+  - Neue Tokens `--dbw-surface`, `--dbw-surface-strong`, `--dbw-hairline`, `--dbw-hairline-soft`, `--dbw-label`, `--dbw-radius-lg`. Sie mischen die Flaeche aus der geerbten Textfarbe (`color-mix` mit `currentColor`). Das Plugin kennt den Seitenhintergrund des Themes nicht, erbt aber dessen Textfarbe - eine daraus gemischte Flaeche passt auf jeden Grund: helles Grau auf Weiss, helles Rosa auf einer rosa Seite, eine Aufhellung im dunklen Theme.
+  - Die Kacheln tragen jetzt eine Haarlinie statt einer Fuellung (Stripe-/Linear-Stil), grosseren Radius und ruhigere Beschriftungen: Label kleiner mit Sperrung, Wert groesser.
+  - Schatten sind von den Flaechen verschwunden. Die Highlights-Box ist das einzige erhoehte Element der Seite; wenn alles schwebt, schwebt nichts.
+  - Zahlen laufen auf `tabular-nums` und fluchten damit untereinander.
+  - Ueberschreibbar pro Projekt: `#dbw-immo-suite { --dbw-surface: ...; --dbw-hairline: ...; }` im Child-Theme genuegt.
+- Fuer Browser ohne `color-mix` (vor 2023) stehen feste `rgba`-Werte als Rueckfall in `:root`, die per `@supports` ersetzt werden. Auch die sind transluzent und passen sich damit hellen Hintergruenden an.
+
+---
+
 ## [2.12.0] - 2026-09-07
 
 Der zweite Teil des OpenImmo-Abgleichs. Nach den Stellplatzpreisen in 2.11.0 kommt jetzt alles dazu, was die Maklersoftware sonst noch strukturiert liefert und bisher im XML liegen blieb. **Wichtig: Damit die neuen Felder ankommen, muss der Bestand einmal komplett neu uebertragen werden (Vollabgleich in der Maklersoftware).**
