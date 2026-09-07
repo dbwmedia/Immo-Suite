@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.14.2] - 2026-09-07
+
+### Geaendert
+
+- **Kaeuferprovision ist eine Zeile, kein Satz** - Sie stand als "zzgl. ..." unter dem Preis und musste sich sprachlich in den Satz fuegen. Das ging nur bei kurzen Werten gut. Jetzt steht sie als Label/Wert-Zeile bei den uebrigen Kosten, wie es ImmobilienScout24 in seinem Kosten-Block auch macht. Lange Angaben ("3,57% inkl. gesetzl. MwSt. auf den notariell beurkundeten Kaufpreis") brechen dabei in der Wertspalte um, statt die Zeile auseinanderzuziehen. Bei Kaufobjekten steht der Preis damit allein, ohne Beisatz.
+
+---
+
 ## [2.14.1] - 2026-09-07
 
 ### Behoben

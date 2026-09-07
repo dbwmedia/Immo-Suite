@@ -4791,6 +4791,10 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	text-align: right;
 	font-variant-numeric: tabular-nums;
 	overflow-wrap: anywhere;
+	/* Brokers write whole sentences into the commission field — the value
+	   shrinks and wraps in its own column instead of pushing the row apart. */
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 #dbw-immo-suite .dbw-highlights-card h3 {

@@ -575,16 +575,16 @@ get_header(); ?>
 						$price_label = __('Kaufpreis', 'dbw-immo-suite');
 						$price_value = \DBW\ImmoSuite\dbw_format_number($price_kauf, 'preis') . ' €';
 
+						// The commission is a cost row, not a sentence under the price.
+						// Brokers put anything in this field, from "3,1%" to a full
+						// clause about the notarised purchase price, and only a
+						// label/value row carries both lengths.
 						if ($provision) {
 							$prov = $provision;
 							if (strpos($provision, 'MwSt') === false && strpos($provision, '%') !== false) {
 								$prov .= ' ' . __('inkl. ges. MwSt.', 'dbw-immo-suite');
 							}
-							// Label first: brokers put whole sentences in this field
-							// ("3,57% inkl. MwSt. auf den notariell beurkundeten Kaufpreis"),
-							// and a trailing label turns that into broken German.
-							/* translators: %s: commission rate incl. optional VAT note */
-							$price_sub[] = sprintf(__('zzgl. Käuferprovision %s', 'dbw-immo-suite'), $prov);
+							$cost_rows[] = array(__('Käuferprovision', 'dbw-immo-suite'), $prov);
 						}
 						if ($hausgeld > 0) {
 							$cost_rows[] = array(__('Hausgeld', 'dbw-immo-suite'), \DBW\ImmoSuite\dbw_format_number($hausgeld, 'preis_genau') . ' €');
