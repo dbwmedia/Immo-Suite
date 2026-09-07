@@ -680,7 +680,17 @@ get_header(); ?>
 					<?php if (!empty($cost_rows)): ?>
 						<ul class="dbw-hl-costs">
 							<?php foreach ($cost_rows as $row): ?>
-								<li>
+								<?php
+								// Amounts belong in a right-aligned column so the figures
+								// line up. Prose does not: a commission clause set right
+								// aligned over three lines has a ragged left edge and the
+								// eye loses the start of each line. Anything that is not an
+								// amount (and not short enough to pass for one) gets its own
+								// block below the label instead.
+								$is_amount = (bool) preg_match('/^[\d.,]+\s*(€|%|m²)?$/u', $row[1])
+									|| mb_strlen($row[1]) <= 14;
+								?>
+								<li<?php echo $is_amount ? '' : ' class="is-stacked"'; ?>>
 									<span><?php echo esc_html($row[0]); ?></span>
 									<strong><?php echo esc_html($row[1]); ?></strong>
 								</li>

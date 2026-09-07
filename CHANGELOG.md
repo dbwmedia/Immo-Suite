@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.14.3] - 2026-09-07
+
+### Geaendert
+
+- **Textangaben in der Kostenliste stehen unter ihrem Label** - Betraege gehoeren rechtsbuendig in eine Spalte, damit die Zahlen untereinander fluchten. Ganze Saetze nicht: Eine Provisionsklausel wie "3,57% inkl. gesetzl. MwSt. auf den notariell beurkundeten Kaufpreis" lief rechtsbuendig ueber drei Zeilen, und bei Flattersatz nach links findet das Auge den Zeilenanfang nicht. Werte, die kein Betrag sind, stehen jetzt linksbuendig unter ihrem Label. Betrifft die Kaeuferprovision und "In den Nebenkosten enthalten"; kurze Werte wie "3 MM" oder "481 €" bleiben zweispaltig.
+
+---
+
 ## [2.14.2] - 2026-09-07
 
 ### Geaendert

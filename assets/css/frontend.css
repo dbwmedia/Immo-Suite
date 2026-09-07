@@ -4827,6 +4827,26 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	margin-bottom: 0;
 }
 
+/* Prose values (commission clauses, "In den Nebenkosten enthalten") sit under
+   their label and read left to right, instead of running right-aligned over
+   three lines with a ragged left edge. */
+#dbw-immo-suite .dbw-hl-costs li.is-stacked {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 1px;
+	margin: 2px 0;
+}
+
+#dbw-immo-suite .dbw-hl-costs li.is-stacked span {
+	white-space: normal;
+}
+
+#dbw-immo-suite .dbw-hl-costs li.is-stacked strong {
+	text-align: left;
+	font-weight: 500;
+	line-height: 1.45;
+}
+
 /* Replaces the former inline <style> block (theme-proof coloring) */
 #dbw-immo-suite .dbw-highlights-card ul li span,
 #dbw-immo-suite .dbw-highlights-card ul li strong {
