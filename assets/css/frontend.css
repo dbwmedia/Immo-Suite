@@ -4677,6 +4677,14 @@ body:has(dialog[open]) .dbw-whatsapp-floating {
 	font-size: 1.1em;
 }
 
+/* Commission note from OpenImmo (<preise><courtage_hinweis>) */
+#dbw-immo-suite .dbw-highlights-card .dbw-highlights-note {
+	margin: 12px 0 0;
+	font-size: 0.8125rem;
+	line-height: 1.5;
+	opacity: 0.8;
+}
+
 /* -- Agent card (single template variant) --
    Overrides the generic .dbw-agent-card base above (later in file wins).
    box-shadow intentionally not reset — the base shadow applied before too. */

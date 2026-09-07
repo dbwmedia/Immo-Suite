@@ -100,6 +100,11 @@ class ArchiveMap
                 continue;
             }
 
+            // Objects whose owner did not release the address get no exact pin
+            if (!\DBW\ImmoSuite\dbw_show_address($post_id)) {
+                continue;
+            }
+
             $kaufpreis = get_post_meta($post_id, 'kaufpreis', true);
             $kaltmiete = get_post_meta($post_id, 'kaltmiete', true);
             $price = $kaufpreis ?: $kaltmiete;

@@ -132,6 +132,12 @@ Fuer die Immo Suite heisst das: Karte, Standort-Features und der Infrastruktur-S
 nur grob auf Ortsebene. Wer eine exakte Karte auf der Website will, muss die Adressfreigabe fuer
 Portale auf **ja** setzen.
 
+Seit v2.12.0 wertet das Plugin das Feld zusaetzlich aktiv aus. Meldet onOffice fuer ein Objekt
+ausdruecklich keine Freigabe (`<objektadresse_freigeben>false</objektadresse_freigeben>`), bleiben
+Strasse, Hausnummer, Karte, der Marker in der Archiv-Karte und die Adresse im strukturierten
+Schema ausgeblendet - selbst wenn die Daten mitgekommen sind. Im WordPress-Backend steht dann ein
+roter Hinweis im Reiter Basisdaten. Fehlt das Feld im Paket, bleibt es beim globalen Schalter.
+
 Nach dem ersten Import laesst sich das pruefen: Im Objekt in WordPress muessen die Felder
 `strasse`, `hausnummer` und die Geokoordinaten (`geo_breite`, `geo_laenge`) gefuellt sein.
 

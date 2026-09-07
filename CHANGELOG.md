@@ -7,6 +7,37 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.12.0] - 2026-09-07
+
+Der zweite Teil des OpenImmo-Abgleichs. Nach den Stellplatzpreisen in 2.11.0 kommt jetzt alles dazu, was die Maklersoftware sonst noch strukturiert liefert und bisher im XML liegen blieb. **Wichtig: Damit die neuen Felder ankommen, muss der Bestand einmal komplett neu uebertragen werden (Vollabgleich in der Maklersoftware).**
+
+### Behoben
+
+- **Zustand wurde nie importiert** - Der Importer suchte ein Kindelement `<zustand_art>`, das OpenImmo-Schema fuehrt den Wert aber als Attribut: `<zustand zustand_art="GEPFLEGT"/>`. Das Feld war deshalb bei jedem Objekt leer. Beide Schreibweisen werden jetzt gelesen.
+- **Leere Ausstattungs-Elemente galten als "ja"** - Ein `<sauna></sauna>` ohne Inhalt wurde als vorhandene Sauna gewertet. Ab jetzt zaehlt nur ein ausdrueckliches `true`, `1` oder `ja`. Auf betroffenen Objekten koennen dadurch Ausstattungs-Badges verschwinden, die nie stimmten.
+
+### Hinzugefuegt
+
+- **Neuer Abschnitt "Objektdaten"** auf der Detailseite und im PDF-Expose. Zeigt, was gefuellt ist: Objektnummer, Etage, Zustand, Bauart, letzte Modernisierung, Ausstattungsqualitaet, Ausrichtung, verfuegbar ab, Haustiere. Angaben ohne Aussagewert werden weggelassen - "Denkmalgeschuetzt: nein" steht nirgends, das "ja" dagegen schon.
+- **Etage** (`<geo><etage>`, `<anzahl_etagen>`) - als "2 von 4" in der Eckdaten-Zeile oben und in den Objektdaten.
+- **Objektnummer des Maklers** (`<verwaltung_techn><objektnr_extern>`) - bisher wurde nur die technische OpenImmo-ID importiert, die niemand am Telefon nennen kann. Die Nummer aus der Maklersoftware (z. B. 2026-104) steht jetzt in den Objektdaten.
+- **Kaution** (`<preise><kaution>`, `<kaution_text>`) und **Heizkosten** (`<heizkosten>`, `<heizkosten_enthalten>`) bei Mietobjekten in der Highlights-Box und im Expose. Ist der Kautionstext gefuellt ("3 Nettokaltmieten"), gewinnt er ueber den Betrag. Sind die Heizkosten laut Feed in den Nebenkosten enthalten, steht genau das dort.
+- **Provisionsangaben vollstaendig** - `courtage_hinweis` (der Freitext, in dem seit der Provisionsteilung die eigentliche Aussage steht), `innen_courtage` und `provisionspflichtig`. Der Hinweis erscheint unter den Highlights und im Expose.
+- **Verfuegbar ab** (`<verwaltung_objekt><verfuegbar_ab>` mit `<abdatum>` als Fallback). Der Freitext des Maklers ("nach Absprache") gewinnt ueber das Datum.
+- **Letzte Modernisierung** und **Altbau/Neubau** (`<letztemodernisierung>`, `<alter alter_attr>`).
+- **Deutlich mehr Ausstattung aus dem Feed** - Gaeste-WC, Kabel-/Sat-TV, Abstellraum, Fahrradraum, Dachboden, Rolllaeden, Wellnessbereich, Sporteinrichtungen, Einbaukueche/offene Kueche/Pantry, Bad-Ausstattung (Dusche, Wanne, Fenster, Bidet), Befeuerung (Gas, Waermepumpe, Pellet ...), Energietyp (KfW 40, Passivhaus, Niedrigenergie), Sicherheitstechnik, Bauweise, Dachform, moebliert/teilmoebliert. Das sind genau die Punkte, die bisher jemand von Hand in den Ausstattungstext getippt hat.
+- **Ausstattungsqualitaet** (`<ausstatt_kategorie>`: Luxus, Gehoben, Standard, Einfach) und **Ausrichtung von Balkon/Terrasse** als eigene Angaben in den Objektdaten statt als Badge-Wildwuchs.
+- **Zusaetzliche Backend-Felder** im Reiter Preise (Kaution, Heizkosten, Provisionshinweis) und Technik (Etage, letzte Modernisierung, verfuegbar ab) sowie die Objektnummer in den Basisdaten.
+- Filter `dbw_immo_objektdaten` fuer die Zeilen des Objektdaten-Blocks.
+
+### Geaendert
+
+- **Adressfreigabe wirkt jetzt pro Objekt** (`<verwaltung_objekt><objektadresse_freigeben>`). Bisher entschied allein der globale Schalter im Customizer, ob Adressen sichtbar sind. Meldet die Maklersoftware fuer ein Objekt ausdruecklich *keine* Freigabe, bleiben Strasse, Hausnummer, Karte, Kartenmarker im Archiv und die Adresse im strukturierten Schema jetzt ausgeblendet, auch wenn die Daten importiert wurden. Fehlt das Feld im Feed, aendert sich nichts am bisherigen Verhalten. Im Backend steht bei betroffenen Objekten ein Hinweis, warum die Adresse nicht erscheint.
+- **Heizungsarten heissen jetzt wie im Deutschen** - Aus dem Badge "Zentral" wird "Zentralheizung", aus "Fussboden" wird "Fussbodenheizung". Vorher wurde der XML-Attributname direkt als Beschriftung benutzt.
+- Ausstattungs-Badges werden neu durchnummeriert gespeichert (`array_values`), damit die Liste keine Luecken in den Schluesseln hat.
+
+---
+
 ## [2.11.0] - 2026-09-07
 
 ### Hinzugefuegt

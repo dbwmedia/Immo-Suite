@@ -363,7 +363,7 @@ class Plugin
             $lng = get_post_meta($map_post_id, 'geo_laenge', true);
             if ($lat && $lng
                 && get_theme_mod('dbw_immo_single_show_map', true)
-                && get_theme_mod('dbw_immo_single_show_address', true)) {
+                && \DBW\ImmoSuite\dbw_show_address($map_post_id)) {
                 wp_enqueue_style('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.css', array(), '1.9.4');
                 wp_enqueue_script('leaflet', DBW_IMMO_SUITE_URL . 'assets/vendor/leaflet/leaflet.js', array(), '1.9.4', true);
                 self::enqueue_map_consent_bridge();

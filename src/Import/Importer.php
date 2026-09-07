@@ -587,6 +587,90 @@ class Importer
     }
 
     /**
+     * Read an OpenImmo boolean element (<kamin>true</kamin>).
+     *
+     * Deliberately strict: an empty element is not a confirmation. Treating
+     * presence as "yes" produced features nobody had.
+     *
+     * @param \SimpleXMLElement|null $node
+     * @return bool
+     */
+    private function is_true($node)
+    {
+        if ($node === null) {
+            return false;
+        }
+        $val = strtolower(trim((string) $node));
+
+        return in_array($val, array('true', '1', 'ja', 'yes'), true);
+    }
+
+    /**
+     * Check a single boolean attribute.
+     *
+     * @param \SimpleXMLElement|null $attrs Attribute list.
+     * @param string                 $name
+     * @return bool
+     */
+    private function flag_is_true($attrs, $name)
+    {
+        if (!isset($attrs[$name])) {
+            return false;
+        }
+        $val = strtolower(trim((string) $attrs[$name]));
+
+        return in_array($val, array('true', '1', 'ja'), true);
+    }
+
+    /**
+     * Collect labels for all set flags of an attribute node
+     * (<kueche EBK="1" OFFEN="0"/> with array('EBK' => 'Einbaukueche')).
+     *
+     * @param \SimpleXMLElement|null $node
+     * @param array                  $labels Attribute name => display label.
+     * @return string[]
+     */
+    private function collect_flags($node, array $labels)
+    {
+        if ($node === null) {
+            return array();
+        }
+
+        $attrs = $node->attributes();
+        $found = array();
+        foreach ($labels as $attr => $label) {
+            if ($this->flag_is_true($attrs, $attr)) {
+                $found[] = $label;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
+     * Store an OpenImmo boolean as '1', '0' or '' (field absent).
+     *
+     * The empty case matters: "not stated" is not the same as "no", and only an
+     * explicit no may hide an address or claim a property is rented out.
+     *
+     * @param \SimpleXMLElement $parent
+     * @param string            $tag
+     * @return string
+     */
+    private function tristate($parent, $tag)
+    {
+        if (!isset($parent->{$tag})) {
+            return '';
+        }
+        $val = strtolower(trim((string) $parent->{$tag}));
+        if ($val === '') {
+            return '';
+        }
+
+        return in_array($val, array('true', '1', 'ja'), true) ? '1' : '0';
+    }
+
+    /**
      * Map XML fields to Post Meta.
      * 
      * @param int $post_id
@@ -613,6 +697,19 @@ class Importer
             update_post_meta($post_id, 'hausgeld', $hausgeld);
             update_post_meta($post_id, 'nebenkosten', $nebenkosten);
             update_post_meta($post_id, 'provision_kaeufer', $provision_kaeufer);
+
+            // Rent side costs. <heizkosten_enthalten> says whether the heating is
+            // already part of the Nebenkosten, which changes what the tenant pays.
+            update_post_meta($post_id, 'kaution', (string)$xml->preise->kaution);
+            update_post_meta($post_id, 'kaution_text', trim((string)$xml->preise->kaution_text));
+            update_post_meta($post_id, 'heizkosten', (string)$xml->preise->heizkosten);
+            update_post_meta($post_id, 'heizkosten_enthalten', $this->tristate($xml->preise, 'heizkosten_enthalten'));
+
+            // Commission, complete. Only aussen_courtage was read so far, but the
+            // legally relevant wording usually sits in courtage_hinweis.
+            update_post_meta($post_id, 'provision_verkaeufer', trim((string)$xml->preise->innen_courtage));
+            update_post_meta($post_id, 'courtage_hinweis', trim((string)$xml->preise->courtage_hinweis));
+            update_post_meta($post_id, 'provisionspflichtig', $this->tristate($xml->preise, 'provisionspflichtig'));
 
             // Parking space prices.
             // OpenImmo keeps them in <preise>, one element per type, with the price
@@ -733,6 +830,8 @@ class Importer
             update_post_meta($post_id, 'ort', (string)$xml->geo->ort);
             update_post_meta($post_id, 'strasse', (string)$xml->geo->strasse);
             update_post_meta($post_id, 'hausnummer', (string)$xml->geo->hausnummer);
+            update_post_meta($post_id, 'etage', trim((string)$xml->geo->etage));
+            update_post_meta($post_id, 'anzahl_etagen', trim((string)$xml->geo->anzahl_etagen));
 
             if (isset($xml->geo->geokoordinaten)) {
                 $coord = $xml->geo->geokoordinaten->attributes();
@@ -767,9 +866,25 @@ class Importer
             if (isset($zustand->baujahr)) {
                 update_post_meta($post_id, 'energiepass_baujahr', (string)$zustand->baujahr);
             }
-            if (isset($zustand->zustand_art)) {
-                update_post_meta($post_id, 'zustand_art', (string)$zustand->zustand_art);
+            // Per XSD the condition is an ATTRIBUTE: <zustand zustand_art="GEPFLEGT"/>.
+            // Reading it as a child element left the field empty on every import.
+            $zustand_art = '';
+            if (isset($zustand->zustand)) {
+                $zustand_art = trim((string)$zustand->zustand['zustand_art']);
+                if ($zustand_art === '') {
+                    $zustand_art = trim((string)$zustand->zustand);
+                }
             }
+            if ($zustand_art === '' && isset($zustand->zustand_art)) {
+                $zustand_art = trim((string)$zustand->zustand_art);
+            }
+            update_post_meta($post_id, 'zustand_art', $zustand_art);
+
+            // <alter alter_attr="ALTBAU"/>
+            $objekt_alter = isset($zustand->alter) ? trim((string)$zustand->alter['alter_attr']) : '';
+            update_post_meta($post_id, 'objekt_alter', $objekt_alter);
+
+            update_post_meta($post_id, 'letzte_modernisierung', trim((string)$zustand->letztemodernisierung));
 
             // Status Mapping
             $status = 'aktiv'; // Default
@@ -836,47 +951,130 @@ class Importer
             $features = array();
             $ausstattung = $xml->ausstattung;
 
-            // Boolean features from OpenImmo spec
+            // Boolean elements (<kamin>true</kamin>). Only an explicit yes counts:
+            // an empty element is not a confirmation, and OpenImmo types these as
+            // xs:boolean anyway.
             $feature_map = array(
-                'fahrstuhl'       => 'Aufzug',
-                'gartennutzung'   => 'Garten',
-                'kamin'           => 'Kamin',
-                'klimatisiert'    => 'Klimaanlage',
-                'rollstuhlgerecht' => 'Barrierefrei',
-                'seniorengerecht' => 'Seniorengerecht',
-                'swimmingpool'    => 'Pool',
+                'fahrstuhl'         => 'Aufzug',
+                'gartennutzung'     => 'Garten',
+                'kamin'             => 'Kamin',
+                'klimatisiert'      => 'Klimaanlage',
+                'rollstuhlgerecht'  => 'Barrierefrei',
+                'barrierefrei'      => 'Barrierefrei',
+                'seniorengerecht'   => 'Seniorengerecht',
+                'swimmingpool'      => 'Pool',
                 'wasch_trockenraum' => 'Wasch-/Trockenraum',
-                'wintergarten'    => 'Wintergarten',
-                'dv_verkabelung'  => 'Netzwerkverkabelung',
-                'sauna'           => 'Sauna',
-                'bibliothek'      => 'Bibliothek',
+                'wintergarten'      => 'Wintergarten',
+                'dv_verkabelung'    => 'Netzwerkverkabelung',
+                'sauna'             => 'Sauna',
+                'bibliothek'        => 'Bibliothek',
+                'gaestewc'          => 'Gäste-WC',
+                'kabel_sat_tv'      => 'Kabel-/Sat-TV',
+                'abstellraum'       => 'Abstellraum',
+                'fahrradraum'       => 'Fahrradraum',
+                'dachboden'         => 'Dachboden',
+                'rolladen'          => 'Rollläden',
+                'wellnessbereich'   => 'Wellnessbereich',
+                'sporteinrichtungen' => 'Sporteinrichtungen',
             );
 
             foreach ($feature_map as $xml_key => $label) {
-                if (isset($ausstattung->$xml_key)) {
-                    $val = $ausstattung->$xml_key;
-                    $attrs = $val->attributes();
-                    // Check if element exists and is not explicitly false
-                    if ($val !== null && (string)$val !== 'false' && (string)$val !== '0') {
-                        $features[] = $label;
-                    }
-                    // Also check for WAHR attribute
-                    if (isset($attrs['WAHR']) && (string)$attrs['WAHR'] === 'true') {
-                        if (!in_array($label, $features)) {
-                            $features[] = $label;
-                        }
-                    }
+                if (!isset($ausstattung->{$xml_key})) {
+                    continue;
+                }
+                $node = $ausstattung->{$xml_key};
+                if ($this->is_true($node) || $this->flag_is_true($node->attributes(), 'WAHR')) {
+                    $features[] = $label;
                 }
             }
 
-            // Balkon/Terrasse
-            if (isset($ausstattung->balkon_terrassen)) {
-                $bt = $ausstattung->balkon_terrassen->attributes();
-                if (isset($bt['BALKON']) && ((string)$bt['BALKON'] === 'true' || (string)$bt['BALKON'] === '1')) {
-                    $features[] = 'Balkon';
+            // Attribute sets (<kueche EBK="1" .../>)
+            $attribute_sets = array(
+                'kueche' => array(
+                    'EBK'    => 'Einbauküche',
+                    'OFFEN'  => 'Offene Küche',
+                    'PANTRY' => 'Pantryküche',
+                ),
+                'bad' => array(
+                    'DUSCHE'  => 'Dusche',
+                    'WANNE'   => 'Badewanne',
+                    'FENSTER' => 'Bad mit Fenster',
+                    'BIDET'   => 'Bidet',
+                ),
+                'balkon_terrassen' => array(
+                    'BALKON'   => 'Balkon',
+                    'TERRASSE' => 'Terrasse',
+                ),
+                'heizungsart' => array(
+                    'OFEN'      => 'Ofenheizung',
+                    'ETAGE'     => 'Etagenheizung',
+                    'ZENTRAL'   => 'Zentralheizung',
+                    'FERN'      => 'Fernwärme',
+                    'FUSSBODEN' => 'Fußbodenheizung',
+                ),
+                'befeuerung' => array(
+                    'OEL'             => 'Ölheizung',
+                    'GAS'             => 'Gasheizung',
+                    'ELEKTRO'         => 'Elektroheizung',
+                    'ALTERNATIV'      => 'Alternative Energie',
+                    'SOLAR'           => 'Solarheizung',
+                    'ERDWAERME'       => 'Erdwärme',
+                    'LUFTWP'          => 'Luft-Wasser-Wärmepumpe',
+                    'FERN'            => 'Fernwärme',
+                    'BLOCK'           => 'Blockheizkraftwerk',
+                    'WASSER-ELEKTRO'  => 'Wasser-Elektro-Heizung',
+                    'PELLET'          => 'Pelletheizung',
+                ),
+                'energietyp' => array(
+                    'PASSIVHAUS'     => 'Passivhaus',
+                    'NIEDRIGENERGIE' => 'Niedrigenergiehaus',
+                    'NEUBAUSTANDARD' => 'Neubaustandard',
+                    'KFW40'          => 'KfW 40',
+                    'KFW60'          => 'KfW 60',
+                ),
+                'sicherheitstechnik' => array(
+                    'ALARMANLAGE' => 'Alarmanlage',
+                    'KAMERA'      => 'Videoüberwachung',
+                    'POLIZEIRUF'  => 'Polizeiruf',
+                ),
+                'bauweise' => array(
+                    'MASSIV'      => 'Massivbauweise',
+                    'FERTIGTEILE' => 'Fertigbauweise',
+                    'HOLZ'        => 'Holzbauweise',
+                ),
+                'dachform' => array(
+                    'SATTELDACH'       => 'Satteldach',
+                    'WALMDACH'         => 'Walmdach',
+                    'KRUEPPELWALMDACH' => 'Krüppelwalmdach',
+                    'MANSARDDACH'      => 'Mansarddach',
+                    'PULTDACH'         => 'Pultdach',
+                    'FLACHDACH'        => 'Flachdach',
+                    'PYRAMIDENDACH'    => 'Pyramidendach',
+                ),
+                'stellplatzart' => array(
+                    'GARAGE'     => 'Garage',
+                    'TIEFGARAGE' => 'Tiefgarage',
+                    'CARPORT'    => 'Carport',
+                    'FREIPLATZ'  => 'Stellplatz',
+                    'PARKHAUS'   => 'Parkhaus',
+                    'DUPLEX'     => 'Duplex-Stellplatz',
+                ),
+            );
+
+            foreach ($attribute_sets as $tag => $labels) {
+                if (!isset($ausstattung->{$tag})) {
+                    continue;
                 }
-                if (isset($bt['TERRASSE']) && ((string)$bt['TERRASSE'] === 'true' || (string)$bt['TERRASSE'] === '1')) {
-                    $features[] = 'Terrasse';
+                $features = array_merge($features, $this->collect_flags($ausstattung->{$tag}, $labels));
+            }
+
+            // Boden keeps the generic mapping: the XSD lists 15 surfaces and the
+            // attribute name already reads like a label (PARKETT -> Parkett).
+            if (isset($ausstattung->boden)) {
+                foreach ($ausstattung->boden->attributes() as $name => $val) {
+                    if ((string)$val === 'true' || (string)$val === '1') {
+                        $features[] = ucfirst(strtolower(str_replace('_', ' ', $name)));
+                    }
                 }
             }
 
@@ -893,40 +1091,72 @@ class Importer
                 }
             }
 
-            // Heizung
-            if (isset($ausstattung->heizungsart)) {
-                $hz_attrs = $ausstattung->heizungsart->attributes();
-                foreach ($hz_attrs as $name => $val) {
-                    if ((string)$val === 'true' || (string)$val === '1') {
-                        $features[] = ucfirst(strtolower(str_replace('_', ' ', $name)));
-                    }
+            // Moebliert (<moebliert moeb="TEIL"/>)
+            if (isset($ausstattung->moebliert)) {
+                $moeb = strtoupper(trim((string)$ausstattung->moebliert['moeb']));
+                if ($moeb === 'JA' || $moeb === 'VOLL') {
+                    $features[] = 'Möbliert';
+                } elseif ($moeb === 'TEIL') {
+                    $features[] = 'Teilmöbliert';
                 }
             }
 
-            // Boden
-            if (isset($ausstattung->boden)) {
-                $boden_attrs = $ausstattung->boden->attributes();
-                foreach ($boden_attrs as $name => $val) {
-                    if ((string)$val === 'true' || (string)$val === '1') {
-                        $features[] = ucfirst(strtolower(str_replace('_', ' ', $name)));
-                    }
-                }
-            }
-
-            // Stellplatz
-            if (isset($ausstattung->stellplatzart)) {
-                $sp_attrs = $ausstattung->stellplatzart->attributes();
-                foreach ($sp_attrs as $name => $val) {
-                    if ((string)$val === 'true' || (string)$val === '1') {
-                        $sp_label = str_replace(array('TIEFGARAGE', 'GARAGE', 'CARPORT', 'FREIPLATZ', 'PARKHAUS'),
-                            array('Tiefgarage', 'Garage', 'Carport', 'Stellplatz', 'Parkhaus'), strtoupper($name));
-                        $features[] = $sp_label;
-                    }
-                }
-            }
-
-            $features = array_unique($features);
+            $features = array_values(array_unique($features));
             update_post_meta($post_id, '_dbw_immo_features', $features);
+
+            // Quality grade is a single value, not a badge: it belongs to the
+            // object data, next to condition and construction year.
+            $qualitaet_map = array(
+                'LUXUS'    => 'Luxus',
+                'GEHOBEN'  => 'Gehoben',
+                'STANDARD' => 'Standard',
+                'EINFACH'  => 'Einfach',
+            );
+            $qualitaet = strtoupper(trim((string)$ausstattung->ausstatt_kategorie));
+            update_post_meta($post_id, 'ausstattungsqualitaet', isset($qualitaet_map[$qualitaet]) ? $qualitaet_map[$qualitaet] : '');
+
+            // Orientation of balcony/terrace: one line, not eight badges.
+            $ausrichtung = $this->collect_flags(
+                isset($ausstattung->ausricht_balkon_terrasse) ? $ausstattung->ausricht_balkon_terrasse : null,
+                array(
+                    'NORD'     => 'Nord',
+                    'NORDOST'  => 'Nordost',
+                    'OST'      => 'Ost',
+                    'SUEDOST'  => 'Südost',
+                    'SUED'     => 'Süd',
+                    'SUEDWEST' => 'Südwest',
+                    'WEST'     => 'West',
+                    'NORDWEST' => 'Nordwest',
+                )
+            );
+            update_post_meta($post_id, 'ausrichtung', implode(', ', $ausrichtung));
+        }
+
+        // Object administration (<verwaltung_objekt>)
+        if (isset($xml->verwaltung_objekt)) {
+            $vo = $xml->verwaltung_objekt;
+
+            // Address release. The broker sets this per object; without it the
+            // website could publish a street the owner never released.
+            update_post_meta($post_id, 'adresse_freigegeben', $this->tristate($vo, 'objektadresse_freigeben'));
+
+            // Availability: free text wins, the date is the fallback.
+            $verfuegbar = trim((string)$vo->verfuegbar_ab);
+            $abdatum    = trim((string)$vo->abdatum);
+            update_post_meta($post_id, 'verfuegbar_ab', $verfuegbar);
+            update_post_meta($post_id, 'verfuegbar_ab_datum', $abdatum);
+
+            update_post_meta($post_id, 'haustiere', $this->tristate($vo, 'haustiere'));
+            update_post_meta($post_id, 'denkmalgeschuetzt', $this->tristate($vo, 'denkmalgeschuetzt'));
+            update_post_meta($post_id, 'wbs_sozialwohnung', $this->tristate($vo, 'wbs_sozialwohnung'));
+            update_post_meta($post_id, 'vermietet', $this->tristate($vo, 'vermietet'));
+        }
+
+        // Broker's own object number (<verwaltung_techn><objektnr_extern>).
+        // The internal openimmo_obid is a technical key nobody can quote on the
+        // phone; this is the number that stands in the broker software.
+        if (isset($xml->verwaltung_techn)) {
+            update_post_meta($post_id, 'objektnr_extern', trim((string)$xml->verwaltung_techn->objektnr_extern));
         }
 
         // Detailed Texts

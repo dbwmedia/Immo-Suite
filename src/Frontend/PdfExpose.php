@@ -114,10 +114,18 @@ class PdfExpose
         $stellplatz_lines = \DBW\ImmoSuite\dbw_stellplatz_lines(get_post_meta($post_id, 'stellplatz_preise', true));
         $pricing['stellplatz_kaufpreis'] = $m('stellplatz_kaufpreis_gesamt');
         $pricing['stellplatz_miete']     = $m('stellplatz_miete_gesamt');
+        $pricing['kaution']              = $m('kaution');
+        $pricing['kaution_text']         = trim($m('kaution_text'));
+        $pricing['heizkosten']           = $m('heizkosten');
+        $pricing['heizkosten_enthalten'] = $m('heizkosten_enthalten');
+        $pricing['courtage_hinweis']     = trim($m('courtage_hinweis'));
+
+        // Structured object data (Etage, Zustand, Verfuegbar ab, ...)
+        $objektdaten = \DBW\ImmoSuite\dbw_objektdaten($post_id);
 
         // Address — respect the "hide address" toggle: keep city-level info,
         // but never expose the street in the public expose.
-        $show_address = (bool) get_theme_mod('dbw_immo_single_show_address', true);
+        $show_address = \DBW\ImmoSuite\dbw_show_address($post_id);
         $address = array(
             'strasse'    => $show_address ? $m('strasse') : '',
             'hausnummer' => $show_address ? $m('hausnummer') : '',
@@ -182,6 +190,7 @@ class PdfExpose
             'pricing'     => $pricing,
             'areas'       => $areas,
             'stellplatz_lines' => $stellplatz_lines,
+            'objektdaten' => $objektdaten,
             'address'     => $address,
             'energy'      => $energy,
             'contact'     => $contact,

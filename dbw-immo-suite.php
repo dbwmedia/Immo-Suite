@@ -3,7 +3,7 @@
  * Plugin Name:       Immo Suite
  * Plugin URI:        https://dennisbuchwald.de/apps/immo-suite
  * Description:       Die Brücke zwischen Maklersoftware und moderner Website. Immo Suite importiert OpenImmo XML, strukturiert Immobilien als sauberen Custom Post Type und sorgt für eine performante, zeitgemäße Darstellung im Frontend.
- * Version:           2.11.0
+ * Version:           2.12.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Dennis Buchwald
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define Constants
-define('DBW_IMMO_SUITE_VERSION', '2.11.0');
+define('DBW_IMMO_SUITE_VERSION', '2.12.0');
 define('DBW_IMMO_SUITE_PATH', plugin_dir_path(__FILE__));
 define('DBW_IMMO_SUITE_URL', plugin_dir_url(__FILE__));
 
@@ -221,6 +221,146 @@ function dbw_stellplatz_lines($entries)
 	}
 
 	return $lines;
+}
+
+/**
+ * May the exact address of this property be shown?
+ *
+ * Two gates: the site-wide Customizer toggle and the per-object release from
+ * OpenImmo (<verwaltung_objekt><objektadresse_freigeben>). A missing field keeps
+ * the previous behaviour; only an explicit "no" from the broker hides the street.
+ *
+ * @param int $post_id
+ * @return bool
+ */
+function dbw_show_address($post_id)
+{
+	if (!get_theme_mod('dbw_immo_single_show_address', true)) {
+		return false;
+	}
+
+	return get_post_meta($post_id, 'adresse_freigegeben', true) !== '0';
+}
+
+/**
+ * Human readable condition (<zustand zustand_art="GEPFLEGT"/>).
+ *
+ * @param string $raw
+ * @return string
+ */
+function dbw_zustand_label($raw)
+{
+	$raw = strtoupper(trim((string) $raw));
+	if ($raw === '') {
+		return '';
+	}
+
+	$map = array(
+		'ERSTBEZUG'                   => __('Erstbezug', 'dbw-immo-suite'),
+		'NEUWERTIG'                   => __('Neuwertig', 'dbw-immo-suite'),
+		'GEPFLEGT'                    => __('Gepflegt', 'dbw-immo-suite'),
+		'MODERNISIERT'                => __('Modernisiert', 'dbw-immo-suite'),
+		'SANIERT'                     => __('Saniert', 'dbw-immo-suite'),
+		'TEILSANIERT'                 => __('Teilsaniert', 'dbw-immo-suite'),
+		'KERNSANIERT'                 => __('Kernsaniert', 'dbw-immo-suite'),
+		'RENOVIERT'                   => __('Renoviert', 'dbw-immo-suite'),
+		'TEILRENOVIERT'               => __('Teilrenoviert', 'dbw-immo-suite'),
+		'RENOVIERUNGSBEDUERFTIG'      => __('Renovierungsbedürftig', 'dbw-immo-suite'),
+		'SANIERUNGSBEDUERFTIG'        => __('Sanierungsbedürftig', 'dbw-immo-suite'),
+		'TEIL_VOLLRENOVIERUNGSBED'    => __('Renovierungsbedürftig', 'dbw-immo-suite'),
+		'BAUFAELLIG'                  => __('Baufällig', 'dbw-immo-suite'),
+		'ENTKERNT'                    => __('Entkernt', 'dbw-immo-suite'),
+		'ABRISSOBJEKT'                => __('Abrissobjekt', 'dbw-immo-suite'),
+		'PROJEKTIERT'                 => __('Projektiert', 'dbw-immo-suite'),
+		'ROHBAU'                      => __('Rohbau', 'dbw-immo-suite'),
+	);
+
+	if (isset($map[$raw])) {
+		return $map[$raw];
+	}
+
+	// Unknown value from an exotic export: show it readable instead of dropping it.
+	return ucfirst(strtolower(str_replace('_', ' ', $raw)));
+}
+
+/**
+ * Object data rows for the detail page, the expose and the backend.
+ *
+ * One source for all three, so a new field never has to be added in three places.
+ * Only fields the broker actually filled show up; a plain "no" is skipped where
+ * it carries no information ("Denkmalgeschützt: nein" tells nobody anything).
+ *
+ * @param int $post_id
+ * @return array<int, array{label: string, value: string}>
+ */
+function dbw_objektdaten($post_id)
+{
+	$get = function ($key) use ($post_id) {
+		return trim((string) get_post_meta($post_id, $key, true));
+	};
+
+	$rows = array();
+	$add = function ($label, $value) use (&$rows) {
+		if (trim((string) $value) !== '') {
+			$rows[] = array('label' => $label, 'value' => (string) $value);
+		}
+	};
+
+	$add(__('Objektnummer', 'dbw-immo-suite'), $get('objektnr_extern'));
+
+	// Etage: "2 von 4" reads better than two separate rows
+	$etage = $get('etage');
+	$etagen = $get('anzahl_etagen');
+	if ($etage !== '') {
+		$add(
+			__('Etage', 'dbw-immo-suite'),
+			$etagen !== '' ? sprintf(__('%1$s von %2$s', 'dbw-immo-suite'), $etage, $etagen) : $etage
+		);
+	} elseif ($etagen !== '') {
+		$add(__('Etagen im Haus', 'dbw-immo-suite'), $etagen);
+	}
+
+	$add(__('Zustand', 'dbw-immo-suite'), dbw_zustand_label($get('zustand_art')));
+
+	$alter_map = array(
+		'ALTBAU' => __('Altbau', 'dbw-immo-suite'),
+		'NEUBAU' => __('Neubau', 'dbw-immo-suite'),
+	);
+	$alter = strtoupper($get('objekt_alter'));
+	$add(__('Bauart', 'dbw-immo-suite'), isset($alter_map[$alter]) ? $alter_map[$alter] : '');
+
+	$add(__('Letzte Modernisierung', 'dbw-immo-suite'), $get('letzte_modernisierung'));
+	$add(__('Ausstattungsqualität', 'dbw-immo-suite'), $get('ausstattungsqualitaet'));
+	$add(__('Ausrichtung Balkon/Terrasse', 'dbw-immo-suite'), $get('ausrichtung'));
+
+	// Availability: the broker's own wording ("nach Absprache") beats a date
+	$verfuegbar = $get('verfuegbar_ab');
+	if ($verfuegbar === '') {
+		$datum = $get('verfuegbar_ab_datum');
+		$ts = $datum !== '' ? strtotime($datum) : false;
+		if ($ts) {
+			$verfuegbar = date_i18n('d.m.Y', $ts);
+		}
+	}
+	$add(__('Verfügbar ab', 'dbw-immo-suite'), $verfuegbar);
+
+	$haustiere = $get('haustiere');
+	if ($haustiere !== '') {
+		$add(__('Haustiere', 'dbw-immo-suite'), $haustiere === '1' ? __('Erlaubt', 'dbw-immo-suite') : __('Nicht erlaubt', 'dbw-immo-suite'));
+	}
+
+	// Only the "yes" carries information here
+	if ($get('vermietet') === '1') {
+		$add(__('Vermietet', 'dbw-immo-suite'), __('Ja', 'dbw-immo-suite'));
+	}
+	if ($get('denkmalgeschuetzt') === '1') {
+		$add(__('Denkmalgeschützt', 'dbw-immo-suite'), __('Ja', 'dbw-immo-suite'));
+	}
+	if ($get('wbs_sozialwohnung') === '1') {
+		$add(__('Wohnberechtigungsschein', 'dbw-immo-suite'), __('Erforderlich', 'dbw-immo-suite'));
+	}
+
+	return apply_filters('dbw_immo_objektdaten', $rows, $post_id);
 }
 
 /**

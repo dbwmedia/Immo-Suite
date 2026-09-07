@@ -125,6 +125,19 @@ class PropertyDetails
                     <p class="description"><?php _e('Eindeutige ID aus der Maklersoftware. Nicht änderbar.', 'dbw-immo-suite'); ?></p>
                 </div>
                 <div class="dbw-field-row">
+                    <label><?php _e('Objektnummer (Makler)', 'dbw-immo-suite'); ?></label>
+                    <input type="text" name="objektnr_extern" value="<?php echo $val('objektnr_extern'); ?>">
+                    <p class="description"><?php _e('Die Nummer aus der Maklersoftware, z. B. 2026-104. Wird auf der Detailseite unter Objektdaten angezeigt.', 'dbw-immo-suite'); ?></p>
+                </div>
+
+                <?php if (get_post_meta($post->ID, 'adresse_freigegeben', true) === '0'): ?>
+                <div class="dbw-field-row" style="background-color: #fef7f1; padding: 15px; border-radius: 5px; border-left: 4px solid #d63638; margin-bottom: 20px;">
+                    <strong><?php _e('Adresse ist nicht freigegeben', 'dbw-immo-suite'); ?></strong>
+                    <p class="description" style="font-weight: normal;"><?php _e('Die Maklersoftware meldet fuer dieses Objekt keine Adressfreigabe. Strasse, Hausnummer und Karte bleiben deshalb ausgeblendet, auch wenn die Adresse unten gefuellt ist. Aendern laesst sich das nur in der Maklersoftware.', 'dbw-immo-suite'); ?></p>
+                </div>
+                <?php endif; ?>
+
+                <div class="dbw-field-row">
                     <label><?php _e('Straße & Hausnummer', 'dbw-immo-suite'); ?></label>
                     <input type="text" name="strasse" value="<?php echo $val('strasse'); ?>" placeholder="Musterstraße">
                     <input type="text" name="hausnummer" value="<?php echo $val('hausnummer'); ?>" placeholder="1" style="width: 80px;">
@@ -163,9 +176,27 @@ class PropertyDetails
                     <label><?php _e('Nebenkosten', 'dbw-immo-suite'); ?></label>
                     <input type="number" step="0.01" name="nebenkosten" value="<?php echo $val('nebenkosten'); ?>"> €
                 </div>
+                <div class="dbw-field-row">
+                    <label><?php _e('Heizkosten', 'dbw-immo-suite'); ?></label>
+                    <input type="number" step="0.01" name="heizkosten" value="<?php echo $val('heizkosten'); ?>"> €
+                    <?php if (get_post_meta($post->ID, 'heizkosten_enthalten', true) === '1'): ?>
+                        <p class="description"><?php _e('Laut Import in den Nebenkosten enthalten.', 'dbw-immo-suite'); ?></p>
+                    <?php endif; ?>
+                </div>
+                <div class="dbw-field-row">
+                    <label><?php _e('Kaution', 'dbw-immo-suite'); ?></label>
+                    <input type="number" step="0.01" name="kaution" value="<?php echo $val('kaution'); ?>"> €
+                    <input type="text" name="kaution_text" value="<?php echo $val('kaution_text'); ?>" placeholder="z.B. 3 Nettokaltmieten">
+                    <p class="description"><?php _e('Ist der Text gefuellt, wird er statt des Betrags angezeigt.', 'dbw-immo-suite'); ?></p>
+                </div>
                  <div class="dbw-field-row">
                     <label><?php _e('Käuferprovision (inkl. Text)', 'dbw-immo-suite'); ?></label>
                     <input type="text" name="provision_kaeufer" value="<?php echo $val('provision_kaeufer'); ?>" placeholder="z.B. 3,57% inkl. MwSt.">
+                </div>
+                 <div class="dbw-field-row">
+                    <label><?php _e('Provisionshinweis', 'dbw-immo-suite'); ?></label>
+                    <input type="text" name="courtage_hinweis" value="<?php echo $val('courtage_hinweis'); ?>">
+                    <p class="description"><?php _e('Freitext aus OpenImmo (courtage_hinweis). Steht unter den Highlights und im Expose.', 'dbw-immo-suite'); ?></p>
                 </div>
 
                 <?php
@@ -244,6 +275,21 @@ class PropertyDetails
                  <div class="dbw-field-row">
                     <label><?php _e('Zustand', 'dbw-immo-suite'); ?></label>
                     <input type="text" name="zustand_art" value="<?php echo $val('zustand_art'); ?>">
+                    <p class="description"><?php _e('OpenImmo-Wert, z. B. GEPFLEGT. Wird im Frontend uebersetzt ausgegeben.', 'dbw-immo-suite'); ?></p>
+                </div>
+                <div class="dbw-field-row">
+                    <label><?php _e('Letzte Modernisierung', 'dbw-immo-suite'); ?></label>
+                    <input type="text" name="letzte_modernisierung" value="<?php echo $val('letzte_modernisierung'); ?>">
+                </div>
+                <div class="dbw-field-row">
+                    <label><?php _e('Etage', 'dbw-immo-suite'); ?></label>
+                    <input type="text" name="etage" value="<?php echo $val('etage'); ?>" style="width: 80px;">
+                    <?php _e('von', 'dbw-immo-suite'); ?>
+                    <input type="text" name="anzahl_etagen" value="<?php echo $val('anzahl_etagen'); ?>" style="width: 80px;">
+                </div>
+                <div class="dbw-field-row">
+                    <label><?php _e('Verfügbar ab', 'dbw-immo-suite'); ?></label>
+                    <input type="text" name="verfuegbar_ab" value="<?php echo $val('verfuegbar_ab'); ?>" placeholder="z.B. nach Absprache">
                 </div>
                 <div class="dbw-field-row">
                     <label><?php _e('Energieausweis Art', 'dbw-immo-suite'); ?></label>
@@ -320,6 +366,8 @@ class PropertyDetails
         $fields = [
             'openimmo_id', 'strasse', 'hausnummer', 'plz', 'ort', 'geo_breite', 'geo_laenge',
             'kaufpreis', 'kaltmiete', 'warmmiete', 'hausgeld', 'nebenkosten', 'provision_kaeufer',
+            'kaution', 'kaution_text', 'heizkosten', 'courtage_hinweis',
+            'objektnr_extern', 'etage', 'anzahl_etagen', 'letzte_modernisierung', 'verfuegbar_ab',
             'wohnflaeche', 'nutzflaeche', 'grundstuecksflaeche', 'anzahl_zimmer', 'anzahl_schlafzimmer', 'anzahl_badezimmer',
             'energiepass_baujahr', 'zustand_art', 'energiepass_art', 'energiepass_endenergie', 'energiepass_wertklasse',
             'kontaktperson_vorname', 'kontaktperson_name', 'kontaktperson_firma', 'kontaktperson_email', 'kontaktperson_tel'

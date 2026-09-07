@@ -551,11 +551,38 @@ img { max-width: 100%; height: auto; display: block; }
                         <?php if ($d['pricing']['stellplatz_miete'] > 0): ?>
                             <tr><td><?php esc_html_e('Stellplatzmiete', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['pricing']['stellplatz_miete'], 'preis_genau')); ?> &euro;</td></tr>
                         <?php endif; ?>
+                        <?php if ($d['pricing']['heizkosten'] > 0): ?>
+                            <tr><td><?php esc_html_e('Heizkosten', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($fmt($d['pricing']['heizkosten'], 'preis_genau')); ?> &euro;</td></tr>
+                        <?php elseif ($d['pricing']['heizkosten_enthalten'] === '1'): ?>
+                            <tr><td><?php esc_html_e('Heizkosten', 'dbw-immo-suite'); ?></td><td><?php esc_html_e('In den Nebenkosten enthalten', 'dbw-immo-suite'); ?></td></tr>
+                        <?php endif; ?>
+                        <?php
+                        $kaution_display = $d['pricing']['kaution_text'] !== ''
+                            ? $d['pricing']['kaution_text']
+                            : ($d['pricing']['kaution'] > 0 ? $fmt($d['pricing']['kaution'], 'preis_genau') . ' €' : '');
+                        ?>
+                        <?php if ($kaution_display !== ''): ?>
+                            <tr><td><?php esc_html_e('Kaution', 'dbw-immo-suite'); ?></td><td><?php echo esc_html($kaution_display); ?></td></tr>
+                        <?php endif; ?>
                     <?php else: ?>
                         <tr><td><?php esc_html_e('Preis', 'dbw-immo-suite'); ?></td><td><?php esc_html_e('Auf Anfrage', 'dbw-immo-suite'); ?></td></tr>
                     <?php endif; ?>
                 </table>
+                <?php if ($d['pricing']['courtage_hinweis'] !== ''): ?>
+                    <p style="font-size: 8pt; line-height: 1.5; margin-top: 8px;"><?php echo esc_html($d['pricing']['courtage_hinweis']); ?></p>
+                <?php endif; ?>
             </div>
+
+            <?php if (!empty($d['objektdaten'])): ?>
+            <div class="section">
+                <h2 class="section-title"><?php esc_html_e('Objektdaten', 'dbw-immo-suite'); ?></h2>
+                <table class="facts-table">
+                    <?php foreach ($d['objektdaten'] as $row): ?>
+                        <tr><td><?php echo esc_html($row['label']); ?></td><td><?php echo esc_html($row['value']); ?></td></tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 

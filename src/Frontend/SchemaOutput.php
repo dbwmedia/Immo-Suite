@@ -116,7 +116,7 @@ class SchemaOutput
 
         // Respect the "hide address" toggle — otherwise the schema would leak
         // street and coordinates that are hidden in the visible page.
-        $show_address = (bool) get_theme_mod('dbw_immo_single_show_address', true);
+        $show_address = \DBW\ImmoSuite\dbw_show_address($id);
 
         if ($show_address && $lat && $lng) {
             $schema['geo'] = array(

@@ -40,6 +40,16 @@ get_header(); ?>
 		$stellplatz_lines = \DBW\ImmoSuite\dbw_stellplatz_lines($stellplaetze);
 		$stellplatz_kauf = (float) $m('stellplatz_kaufpreis_gesamt');
 		$stellplatz_miete = (float) $m('stellplatz_miete_gesamt');
+		$kaution = $m('kaution');
+		$kaution_text = $m('kaution_text');
+		$heizkosten = $m('heizkosten');
+		$heizkosten_enthalten = $m('heizkosten_enthalten');
+		$courtage_hinweis = $m('courtage_hinweis');
+
+		// Structured object data (Etage, Zustand, Verfuegbar ab, ...)
+		$objektdaten = \DBW\ImmoSuite\dbw_objektdaten($id);
+		$etage = $m('etage');
+		$etagen_gesamt = $m('anzahl_etagen');
 
 		// Geo
 		$plz = $m('plz');
@@ -141,7 +151,7 @@ get_header(); ?>
 		$main_image_item = !empty($gallery_images) ? $gallery_images[0] : null;
 		?>
 
-		<?php $show_address = get_theme_mod('dbw_immo_single_show_address', true); ?>
+		<?php $show_address = \DBW\ImmoSuite\dbw_show_address($id); ?>
 
 		<!-- Header -->
 		<div class="dbw-single-header">
@@ -328,6 +338,20 @@ get_header(); ?>
 						</div>
 						<?php
 					endif; ?>
+
+					<?php if ($etage !== ''): ?>
+						<div class="dbw-feature-item">
+							<span class="dbw-meta-label"><?php esc_html_e('Etage', 'dbw-immo-suite'); ?></span><br>
+							<span class="dbw-meta-value">
+								<?php
+								echo $etagen_gesamt !== ''
+									? esc_html(sprintf(__('%1$s von %2$s', 'dbw-immo-suite'), $etage, $etagen_gesamt))
+									: esc_html($etage);
+								?>
+							</span>
+						</div>
+						<?php
+					endif; ?>
 				</div>
 
 				<div class="dbw-section">
@@ -369,6 +393,20 @@ get_header(); ?>
 						</div>
 					</div>
 			<?php endif; ?>
+
+				<?php if (!empty($objektdaten)): ?>
+					<div class="dbw-section">
+						<h3 class="dbw-section-title"><?php esc_html_e('Objektdaten', 'dbw-immo-suite'); ?></h3>
+						<div class="dbw-features-list dbw-features-list--objektdaten">
+							<?php foreach ($objektdaten as $row): ?>
+								<div class="dbw-feature-item">
+									<span class="dbw-meta-label"><?php echo esc_html($row['label']); ?></span><br>
+									<span class="dbw-meta-value"><?php echo esc_html($row['value']); ?></span>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					</div>
+				<?php endif; ?>
 
 				<?php if (($text_lage || ($lat && $lng)) && get_theme_mod('dbw_immo_single_show_map', true) && $show_address): ?>
 					<div class="dbw-section">
@@ -619,6 +657,28 @@ get_header(); ?>
 									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($stellplatz_miete, 'preis_genau')); ?> €</strong>
 								</li>
 							<?php endif; ?>
+							<?php if ($heizkosten > 0): ?>
+								<li>
+									<span><?php esc_html_e('Heizkosten', 'dbw-immo-suite'); ?></span>
+									<strong><?php echo esc_html(\DBW\ImmoSuite\dbw_format_number($heizkosten, 'preis_genau')); ?> €</strong>
+								</li>
+							<?php elseif ($heizkosten_enthalten === '1'): ?>
+								<li>
+									<span><?php esc_html_e('Heizkosten', 'dbw-immo-suite'); ?></span>
+									<strong><?php esc_html_e('In den Nebenkosten enthalten', 'dbw-immo-suite'); ?></strong>
+								</li>
+							<?php endif; ?>
+							<?php
+							$kaution_display = $kaution_text !== ''
+								? $kaution_text
+								: ($kaution > 0 ? \DBW\ImmoSuite\dbw_format_number($kaution, 'preis_genau') . ' €' : '');
+							?>
+							<?php if ($kaution_display !== ''): ?>
+								<li>
+									<span><?php esc_html_e('Kaution', 'dbw-immo-suite'); ?></span>
+									<strong><?php echo esc_html($kaution_display); ?></strong>
+								</li>
+							<?php endif; ?>
 
 						<?php else: ?>
 							<!-- AUF ANFRAGE -->
@@ -628,6 +688,10 @@ get_header(); ?>
 							</li>
 						<?php endif; ?>
 					</ul>
+
+					<?php if ($courtage_hinweis !== ''): ?>
+						<p class="dbw-highlights-note"><?php echo esc_html($courtage_hinweis); ?></p>
+					<?php endif; ?>
 
 					<?php if (get_theme_mod('dbw_immo_single_show_contact', true)): ?>
 						<!-- CTA inside the sticky box: price + action in one glance -->
