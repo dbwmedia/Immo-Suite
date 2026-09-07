@@ -29,6 +29,7 @@ Der zweite Teil des OpenImmo-Abgleichs. Nach den Stellplatzpreisen in 2.11.0 kom
 - **Ausstattungsqualitaet** (`<ausstatt_kategorie>`: Luxus, Gehoben, Standard, Einfach) und **Ausrichtung von Balkon/Terrasse** als eigene Angaben in den Objektdaten statt als Badge-Wildwuchs.
 - **Zusaetzliche Backend-Felder** im Reiter Preise (Kaution, Heizkosten, Provisionshinweis) und Technik (Etage, letzte Modernisierung, verfuegbar ab) sowie die Objektnummer in den Basisdaten.
 - Filter `dbw_immo_objektdaten` fuer die Zeilen des Objektdaten-Blocks.
+- **`docs/OPENIMMO-FELDER.md`** - vollstaendige Feldreferenz: jedes gelesene XML-Feld mit Meta-Schluessel und Fundort im Frontend, die Sonderfaelle (Stellplatzpreise, Adressfreigabe, dreiwertige Booleans), was bewusst nicht gelesen wird und warum, plus der Weg zum Neu-Import. Die Datei ist beim Abgleich mit dem Schema entstanden und hat den Zustand-Fehler oben ueberhaupt erst sichtbar gemacht.
 
 ### Geaendert
 

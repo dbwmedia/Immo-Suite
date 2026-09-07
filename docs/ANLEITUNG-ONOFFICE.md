@@ -159,6 +159,9 @@ Extras > Einstellungen > Portale beim jeweiligen Portal.
 Pruefen laesst sich das an einem Objekt in WordPress: Immobilie oeffnen > Reiter **Preise**. Ist
 dort keine Zeile "Stellplaetze (Import)" zu sehen, hat das OpenImmo-Paket keine Preise geliefert.
 
+Dasselbe gilt fuer alle anderen Felder: Welches XML-Feld wo landet und was das Plugin bewusst nicht
+liest, steht in [OPENIMMO-FELDER.md](OPENIMMO-FELDER.md).
+
 ## Schritt 5: WordPress konfigurieren
 
 1. **Immobilien > Einstellungen > Reiter "Import"**

@@ -65,9 +65,18 @@ Makler hassen Texten. Button "Text generieren" im Property-Editor (Beschreibung/
 aus strukturierten Daten), eigener API-Key des Kunden. Positionierung: als Entwurf,
 Makler prueft (passt zur dbw-KI-Haltung: Werkzeug, nicht Entscheider).
 
-### 7. Video / 360°-Touren pro Objekt
-YouTube/Vimeo/Matterport-URL (OpenImmo liefert Video-URLs oft mit). Consent-Placeholder
-nach dem Muster des Map-Consents. Matterport-Embed = Premium-Optik fuer wenig Aufwand.
+### 7. Video / 360°-Touren + Dokumente aus den Anhaengen
+Zwei Sachen, die heute stillschweigend verloren gehen (Befund 09/2026, siehe
+[OPENIMMO-FELDER.md](OPENIMMO-FELDER.md)):
+
+- **Links:** OpenImmo liefert Video- und Touren-URLs als
+  `<anhang location="EXTERN" gruppe="FILMLINK">` mit der URL im `<pfad>`. Der Anhang-Import kennt
+  nur lokale Dateien (`file_exists` in `upload_image()`), der Link faellt ohne Meldung durch.
+  Noetig: `location`-Attribut auswerten, URL als Meta ablegen, Consent-Placeholder nach dem Muster
+  des Map-Consents. Matterport-Embed = Premium-Optik fuer wenig Aufwand.
+- **Dokumente:** PDFs aus `gruppe="DOKUMENTE"` (Grundriss-PDF, Energieausweis) werden bereits
+  importiert und liegen in der Mediathek, nur zeigt sie nichts an. Download-Liste unter dem Expose
+  waere ein Nachmittag Arbeit.
 
 ### 8. Marker-Clustering fuer die Archiv-Karte
 Ab ~50 Objekten sinnvoll: Leaflet.markercluster lokal buendeln (wie Leaflet selbst).

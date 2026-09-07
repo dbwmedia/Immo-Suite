@@ -19,7 +19,11 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Garbage Collection** — archiviert Objekte die nicht mehr im Feed sind (optional)
 - **Media Handling** — automatischer Import von Bildern, Grundrissen und Kontaktfotos in einen eigenen Ordner je Objekt (`uploads/immobilien/<ID>/`), ausgeblendet aus der Mediathek
 - **Selbstreinigend** — geloeschte Objekte nehmen ihre Bilder mit, taeglicher Cron raeumt verwaiste Bilder ab, optionale Aufbewahrungsfrist fuer archivierte Objekte
-- **Ausstattungs-Parser** — extrahiert strukturierte Features (Balkon, Garage, Keller etc.) aus OpenImmo XML
+- **Ausstattungs-Parser** — extrahiert strukturierte Features aus OpenImmo XML: Balkon, Kueche (EBK/offen/Pantry), Bad-Ausstattung, Heizung und Befeuerung, Energietyp (KfW 40, Passivhaus), Stellplatzarten, Sicherheitstechnik, Bauweise, Dachform, Keller, moebliert
+- **Stellplatzpreise** — liest `<preise><stp_*>` mit Anzahl, Kaufpreis und Miete je Stellplatzart ("2 Tiefgaragenstellplaetze a 8.000 €") und zeigt den Gesamtbetrag in den Highlights
+- **Objektdaten** — Etage, Objektnummer des Maklers, Zustand, Bauart, letzte Modernisierung, Ausstattungsqualitaet, Ausrichtung, verfuegbar ab, Haustiere, Kaution, Heizkosten, Provisionshinweis
+- **Adressfreigabe pro Objekt** — `<objektadresse_freigeben>` wird ausgewertet: ohne Freigabe bleiben Strasse, Karte, Archiv-Marker und Schema-Adresse ausgeblendet
+- **Feldreferenz** — [`docs/OPENIMMO-FELDER.md`](docs/OPENIMMO-FELDER.md) dokumentiert jedes gelesene XML-Feld, sein Meta-Feld und wo es im Frontend erscheint
 
 ### Modernes Frontend
 
@@ -41,7 +45,8 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Sticky Sektions-Navigation** mit Scroll-Spy und Lesefortschritts-Balken
 - **Bild-Morph** — Kartenbild morpht per View Transition in das Hero-Bild der Detailseite
 - **Toast-Benachrichtigungen + Micro-Interactions** — Herz-Animation, Count-up-Eckdaten, "Link kopiert"-Toast
-- **Ausstattungs-Badges** — strukturierte Merkmale als Pill-Tags (Balkon, Garage, Kamin etc.)
+- **Ausstattungs-Badges** — strukturierte Merkmale als Pill-Tags (Balkon, Garage, Kamin, Einbaukueche, Gaeste-WC etc.)
+- **Objektdaten-Abschnitt** — Objektnummer, Etage, Zustand, Bauart, letzte Modernisierung, Ausstattungsqualitaet, Ausrichtung, verfuegbar ab; Angaben ohne Aussagewert werden weggelassen
 - **OpenStreetMap-Karte** via Leaflet.js (kein API-Key noetig) mit Marker
 - **Energieausweis-Skala** — grafische Darstellung mit Pfeil-Indikator
 - **Multi-Step Kontakt-Modal** — Typeform-Style 2-Step-Flow: Intent-Auswahl (4 animierte SVG-Cards) → Kontaktdaten mit intent-spezifischen Feldern, Progress-Bar, Datenschutz-Checkbox, AJAX-Submit, animiertem Erfolgs-Screen mit Makler-Kontaktkarte, Honeypot + Rate Limiting, Mobile-Bottom-Sheet + Sticky-CTA-Bar
@@ -50,7 +55,7 @@ Entwickelt fuer den professionellen Einsatz und nahtlose Integration in jede Wor
 - **Energiekosten-Rechner** — geschaetzte Heizkosten basierend auf Energiepass-Daten, konfigurierbarer Energiepreis per Slider, 9 Energietraeger
 - **Preis-pro-Quadratmeter** — automatische Berechnung mit Vergleich zum Standort-Durchschnitt, Abweichungs-Badge, optionale Archiv-Karten-Badges, Transient-Cache
 - **WhatsApp-Kontakt-Button** — gruener CTA in Sidebar, optionaler Floating-Button (pulsierend), Mobile-Sticky-Bar-Icon, Modal-Success-Link, vorbefuellte Nachricht mit Platzhaltern, globale Nummer oder pro Objekt, Du/Sie-System
-- **Highlights-Sidebar** — Sticky-Box mit Eckdaten, Preis, Provision, Energieklasse
+- **Highlights-Sidebar** — Sticky-Box mit Eckdaten, Preis, Provision inkl. Courtage-Hinweis, Stellplatzpreis, Kaution und Heizkosten bei Miete, Energieklasse
 - **Aehnliche Objekte** — "Das koennte Sie auch interessieren" mit 3-stufigem Fallback
 - **Floating Action Buttons** — Zurueck, Teilen (Web Share API), Expose/PDF-Download, Grundrisse-Anker
 - **Professionelles Expose** — standalone A4-Seite ohne Theme (Cover mit Hero-Bild, Eckdaten, Beschreibung, Ausstattung, Lage, Energie, Bildergalerie, Grundrisse, Kontakt + Disclaimer), automatischer Print-Dialog, "Als PDF speichern" im Browser, Nonce-geschuetzt, null Abhaengigkeiten
@@ -154,6 +159,8 @@ Schritt-fuer-Schritt inkl. onOffice-Menuepfaden und FTP-Setup: [docs/ANLEITUNG-O
 
 Welche Daten das Plugin verarbeitet (fuer Datenschutzerklaerung, Verarbeitungsverzeichnis und Rechtspruefung): [docs/DATENSCHUTZ.md](docs/DATENSCHUTZ.md)
 
+Welches OpenImmo-Feld wo landet, was bewusst nicht gelesen wird und wann ein Vollabgleich noetig ist: [docs/OPENIMMO-FELDER.md](docs/OPENIMMO-FELDER.md)
+
 ### Fuer Entwickler
 ```bash
 git clone [repo-url]
@@ -228,6 +235,8 @@ assets/
   js/infra-score.js         # Infrastruktur-Score Animation (IntersectionObserver)
   js/admin.js               # Import-AJAX mit Nonce
 docs/
+  OPENIMMO-FELDER.md        # Feldreferenz XML -> Meta -> Frontend, inkl. Neu-Import
+  ANLEITUNG-ONOFFICE.md     # Portal-Anbindung Schritt fuer Schritt
   DATENSCHUTZ.md            # Datenschutz-Uebersicht fuer Betreiber + Rechtsberatung
   AUDIT-PROMPT.md           # Wiederverwendbarer Audit-Prompt
   TODO.md                   # Bekannte Altlasten + Feature-Roadmap
