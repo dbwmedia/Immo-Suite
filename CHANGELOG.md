@@ -7,6 +7,14 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.14.4] - 2026-09-09
+
+### Behoben
+
+- **Import brach an einem Hoster-Ordner ab, nicht an den Daten** - Die Suche nach losen XML-Dateien lief rekursiv durch das gesamte Import-Verzeichnis. Auf CloudLinux-Servern (WP-Space) liegt dort ein `.cagefs`-Skelett, dessen Symlinks aus dem erlaubten Bereich herauszeigen. Ein einziges `isFile()` darauf loeste eine open_basedir-Meldung aus, die den kompletten Lauf abbrach: jeder Import ohne neue ZIPs wurde als "Fehler" protokolliert, und bei Laeufen mit ZIPs kam der Abbruch nach der Verarbeitung - wodurch die Garbage Collection nie erreicht wurde und verkaufte Objekte bei einem Vollabgleich stehen blieben. Der Scan ueberspringt jetzt Verzeichnisse mit fuehrendem Punkt und laeuft bei einem unlesbaren Unterordner weiter, statt aufzugeben. Betrifft Import, Analyse und Testlauf.
+
+---
+
 ## [2.14.3] - 2026-09-07
 
 ### Geaendert

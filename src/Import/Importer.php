@@ -303,14 +303,7 @@ class Importer
             }
 
             // Loose XML Processing (Fallback)
-            $loose_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($xml_path));
-            $xml_files = array();
-            foreach ($loose_files as $file) {
-                // Ignore contents of tmp_ directories and .processed files
-                if ($file->isFile() && strtolower($file->getExtension()) === 'xml' && strpos($file->getPathname(), '/tmp_') === false) {
-                    $xml_files[] = $file->getPathname();
-                }
-            }
+            $xml_files = $this->find_loose_xml_files($xml_path);
 
             if (!empty($xml_files)) {
                 foreach ($xml_files as $file) {
@@ -374,6 +367,54 @@ class Importer
 
             return array('success' => false, 'message' => $e->getMessage());
         }
+    }
+
+    /**
+     * Collect loose XML files from the import directory.
+     *
+     * Recursion stays: brokers do drop XMLs into subfolders. But the scan must
+     * never descend into dot directories. CloudLinux hosts leave a .cagefs
+     * skeleton inside the vhost whose symlinks point outside open_basedir, and
+     * a single isFile() on one of them aborts the entire import run.
+     *
+     * @param string $dir Import directory, with trailing slash.
+     * @return string[] Absolute paths of loose XML files.
+     */
+    private function find_loose_xml_files($dir)
+    {
+        if (!is_dir($dir)) {
+            return array();
+        }
+
+        $filter = new \RecursiveCallbackFilterIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            function ($current) {
+                $name = $current->getFilename();
+
+                // .cagefs, .well-known, editor leftovers - never descend
+                if ($name === '' || $name[0] === '.') {
+                    return false;
+                }
+
+                // Extraction folders are handled by the ZIP branch
+                return strpos($name, 'tmp_') !== 0;
+            }
+        );
+
+        $files = array();
+
+        // CATCH_GET_CHILD: one unreadable subfolder must not kill the walk
+        $iterator = new \RecursiveIteratorIterator($filter, \RecursiveIteratorIterator::LEAVES_ONLY, \RecursiveIteratorIterator::CATCH_GET_CHILD);
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && strtolower($file->getExtension()) === 'xml') {
+                $files[] = $file->getPathname();
+            }
+        }
+
+        sort($files);
+
+        return $files;
     }
 
     private function log_history($file, $stats, $status)
@@ -1556,21 +1597,18 @@ class Importer
             }
 
             // b) From loose XML files
-            $loose_files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($xml_path));
-            foreach ($loose_files as $file) {
-                if ($file->isFile() && strtolower($file->getExtension()) === 'xml' && strpos($file->getPathname(), '/tmp_') === false) {
-                    $xml = $this->safe_load_xml($file->getPathname());
-                    if ($xml) {
-                        $props = $xml->xpath('anbieter/immobilie');
-                        $count = is_array($props) ? count($props) : 0;
-                        if ($count > 0) {
-                            $xml_files_data[] = array(
-                                'file' => $file->getPathname(),
-                                'count' => $count,
-                                'loose' => true
-                            );
-                            $batch_full_sync = $batch_full_sync || $this->is_full_sync($xml);
-                        }
+            foreach ($this->find_loose_xml_files($xml_path) as $loose_file) {
+                $xml = $this->safe_load_xml($loose_file);
+                if ($xml) {
+                    $props = $xml->xpath('anbieter/immobilie');
+                    $count = is_array($props) ? count($props) : 0;
+                    if ($count > 0) {
+                        $xml_files_data[] = array(
+                            'file' => $loose_file,
+                            'count' => $count,
+                            'loose' => true
+                        );
+                        $batch_full_sync = $batch_full_sync || $this->is_full_sync($xml);
                     }
                 }
             }
@@ -1960,14 +1998,11 @@ class Importer
             }
 
             // Loose XMLs
-            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($xml_path)) as $f) {
-                if ($f->isFile() && strtolower($f->getExtension()) === 'xml'
-                    && strpos($f->getPathname(), '/tmp_') === false) {
-                    $items = array();
-                    $this->dry_run_analyze_xml($f->getPathname(), $items, $feed_ids, $full_sync);
-                    if (!empty($items)) {
-                        $result['files'][] = array('file' => basename($f->getPathname()), 'skipped' => false, 'items' => $items);
-                    }
+            foreach ($this->find_loose_xml_files($xml_path) as $loose_file) {
+                $items = array();
+                $this->dry_run_analyze_xml($loose_file, $items, $feed_ids, $full_sync);
+                if (!empty($items)) {
+                    $result['files'][] = array('file' => basename($loose_file), 'skipped' => false, 'items' => $items);
                 }
             }
 
