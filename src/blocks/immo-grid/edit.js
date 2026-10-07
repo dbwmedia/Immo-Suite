@@ -4,7 +4,7 @@ import { PanelBody, ToggleControl, RangeControl, SelectControl, TextControl, Pla
 import { useSelect } from '@wordpress/data';
 
 export default function Edit({ attributes, setAttributes }) {
-    const { postsPerPage, marketing, propertyType, hidePrice, showDate, onlyHighlights, location, locationSource, columns, showCtaButton, ctaButtonText, ctaButtonUrl } = attributes;
+    const { postsPerPage, marketing, propertyType, hidePrice, showDate, onlyHighlights, location, locationSource, columns, showPagination, showCtaButton, ctaButtonText, ctaButtonUrl } = attributes;
     const blockProps = useBlockProps();
 
     // Fetch taxonomy terms dynamically
@@ -76,6 +76,15 @@ export default function Edit({ attributes, setAttributes }) {
                         label={__('Einstelldatum anzeigen', 'dbw-immo-suite')}
                         checked={showDate}
                         onChange={(value) => setAttributes({ showDate: value })}
+                    />
+                    <ToggleControl
+                        label={__('Seitennavigation anzeigen', 'dbw-immo-suite')}
+                        help={showPagination
+                            ? __('Blaettert durch alle passenden Objekte. Fuer eine Liste aller Immobilien.', 'dbw-immo-suite')
+                            : __('Zeigt nur die neuesten Objekte, z.B. als Teaser auf der Startseite.', 'dbw-immo-suite')
+                        }
+                        checked={showPagination}
+                        onChange={(value) => setAttributes({ showPagination: value })}
                     />
                 </PanelBody>
                 <PanelBody title={__('Filter', 'dbw-immo-suite')} initialOpen={true}>

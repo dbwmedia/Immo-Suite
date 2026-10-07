@@ -7,6 +7,18 @@ und dieses Projekt verwendet [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.15.0] - 2026-10-07
+
+### Hinzugefuegt
+
+- **Immo Grid: Seitennavigation abschaltbar** - Neuer Schalter "Seitennavigation anzeigen" unter Darstellung. Aus = reiner Teaser (z.B. drei neueste Objekte auf der Startseite mit eigenem Button zur Uebersicht): keine Seitenzahlen, und das Grid zeigt auch unter /page/2/ immer die neuesten Objekte. Standard bleibt "an", damit bestehende Seiten, die das Grid als komplette Liste nutzen, nichts verlieren.
+
+### Behoben
+
+- **Seitennavigation auf der statischen Startseite blaetterte nicht** - WordPress legt /page/2/ auf einer statischen Startseite nicht in `paged`, sondern in `page` ab. Grid, Referenzen und die Shortcodes lasen nur `paged` und zeigten deshalb auf jeder Seite wieder Seite 1 (aufgefallen auf betz-immobilien.com). Die Seitenzahl kommt jetzt aus einem gemeinsamen Helfer, der beide Faelle kennt.
+
+---
+
 ## [2.14.4] - 2026-09-09
 
 ### Behoben

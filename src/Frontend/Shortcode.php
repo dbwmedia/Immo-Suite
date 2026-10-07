@@ -68,7 +68,7 @@ class Shortcode
         $columns = max(1, min(4, intval($atts['columns'])));
         $hide_price = ($atts['hide_price'] === 'yes');
         $show_date = ($atts['show_date'] === 'yes');
-        $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+        $paged = \DBW\ImmoSuite\Frontend\Pagination::current();
 
         $args = array(
             'post_type'      => 'immobilie',
@@ -222,7 +222,7 @@ class Shortcode
             ? ($atts['show_date'] === 'yes')
             : (isset($settings['show_sold_date']) && $settings['show_sold_date']);
 
-        $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+        $paged = \DBW\ImmoSuite\Frontend\Pagination::current();
 
         $args = array(
             'post_type'      => 'immobilie',
@@ -307,7 +307,7 @@ class Shortcode
         $pages = paginate_links(array(
             'base'      => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
             'format'    => '?paged=%#%',
-            'current'   => max(1, get_query_var('paged')),
+            'current'   => \DBW\ImmoSuite\Frontend\Pagination::current(),
             'total'     => $query->max_num_pages,
             'type'      => 'array',
             'prev_text' => '&larr;',

@@ -50,6 +50,10 @@
             "type": "number",
             "default": 3
         },
+        "showPagination": {
+            "type": "boolean",
+            "default": true
+        },
         "showCtaButton": {
             "type": "boolean",
             "default": false

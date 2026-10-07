@@ -55,7 +55,7 @@ class ReferencesBlock
             $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         }
 
-        $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+        $paged = \DBW\ImmoSuite\Frontend\Pagination::current();
 
         $args = array(
             'post_type'      => 'immobilie',
@@ -114,7 +114,7 @@ class ReferencesBlock
                 echo paginate_links(array(
                     'base' => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
                     'format' => '?paged=%#%',
-                    'current' => max(1, get_query_var('paged')),
+                    'current' => \DBW\ImmoSuite\Frontend\Pagination::current(),
                     'total' => $query->max_num_pages,
                     'prev_text' => '&larr;',
                     'next_text' => '&rarr;',

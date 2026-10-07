@@ -56,13 +56,17 @@ class GridBlock
             $location_filter = isset($attributes['location']) ? $attributes['location'] : '';
         }
 
-        $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+        // Teaser use (e.g. three objects on the homepage) has no pagination;
+        // then the grid also ignores /page/N/ and always shows the newest ones.
+        $show_pagination = isset($attributes['showPagination']) ? (bool) $attributes['showPagination'] : true;
+        $paged = $show_pagination ? \DBW\ImmoSuite\Frontend\Pagination::current() : 1;
 
         $args = array(
             'post_type'      => 'immobilie',
             'post_status'    => 'publish',
             'posts_per_page' => $posts_per_page,
             'paged'          => $paged,
+            'no_found_rows'  => !$show_pagination,
             'order'          => 'DESC',
             'orderby'        => 'date', // Default: Newest first
         );
@@ -146,12 +150,12 @@ class GridBlock
             echo '</div>';
 
             // Pagination
-            if ($query->max_num_pages > 1) {
+            if ($show_pagination && $query->max_num_pages > 1) {
                 $big = 999999999;
                 $pages = paginate_links(array(
                     'base'      => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
                     'format'    => '?paged=%#%',
-                    'current'   => max(1, get_query_var('paged')),
+                    'current'   => \DBW\ImmoSuite\Frontend\Pagination::current(),
                     'total'     => $query->max_num_pages,
                     'type'      => 'array',
                     'prev_text' => '&larr;',

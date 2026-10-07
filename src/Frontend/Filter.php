@@ -897,7 +897,7 @@ class Filter
         $pages = paginate_links(array(
             'base' => str_replace($big, '%#%', esc_url(get_pagenum_link($big))),
             'format' => '?paged=%#%',
-            'current' => max(1, get_query_var('paged')),
+            'current' => \DBW\ImmoSuite\Frontend\Pagination::current(),
             'total' => $wp_query->max_num_pages,
             'type'  => 'array',
             'prev_text' => '&larr;',
